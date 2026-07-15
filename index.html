@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocWeb — Administration</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1.5rem; }
+    #login-form { display: flex; flex-direction: column; gap: 0.75rem; max-width: 320px; }
+    input { padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
+    #app { display: none; }
+    nav { display: flex; gap: 1rem; border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; }
+    nav button { background: none; border: none; padding: 0.5rem 0; border-bottom: 2px solid transparent; }
+    nav button.active { border-bottom-color: #333; font-weight: 600; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+    .row label { flex: 0 0 160px; font-size: 0.85rem; color: #555; }
+    .row input, .row textarea { flex: 1; padding: 0.4rem; }
+    #status { font-size: 0.85rem; color: #777; margin-top: 1rem; }
+    #error { color: #b00020; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <h1>Administration LocWeb</h1>
+
+  <form id="login-form">
+    <input type="email" id="email" placeholder="Email" autocomplete="username" required>
+    <input type="password" id="password" placeholder="Mot de passe" autocomplete="current-password" required>
+    <button type="submit">Se connecter</button>
+    <p id="error"></p>
+  </form>
+
+  <div id="app">
+    <nav>
+      <button data-panel="textes" class="active">Textes</button>
+      <button data-panel="images">Images</button>
+      <button data-panel="produits">Produits / tarifs</button>
+    </nav>
+
+    <section id="panel-textes" class="panel active">
+      <div id="textes-list"></div>
+    </section>
+
+    <section id="panel-images" class="panel">
+      <div id="images-list"></div>
+    </section>
+
+    <section id="panel-produits" class="panel">
+      <table id="produits-table" width="100%">
+        <thead>
+          <tr><th align="left">Nom</th><th align="left">Prix</th><th align="left">Catégorie</th><th align="left">Stock</th><th align="left">Image URL</th><th align="left">Description</th><th></th></tr>
+        </thead>
+        <tbody id="produits-body"></tbody>
+      </table>
+      <button id="add-produit">+ Ajouter un produit</button>
+    </section>
+
+    <p id="status"></p>
+    <button id="logout">Se déconnecter</button>
+  </div>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

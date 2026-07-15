@@ -199,7 +199,7 @@ async function saveContenu(id, valeur) {
 async function loadProduits() {
   const { data, error } = await supabase
     .from('produits')
-    .select('id, nom, prix, description, image_url, stock, categorie')
+    .select('id, nom, prix, description, image_url, stock, categorie, disponible')
     .eq('client_id', clientId);
 
   const body = document.getElementById('produits-body');
@@ -219,6 +219,7 @@ async function loadProduits() {
         <input type="file" accept="image/*" data-id="${p.id}" style="width:110px;">
       </td>
       <td><input type="text" value="${p.description ?? ''}" data-field="description" data-id="${p.id}"></td>
+      <td style="text-align:center;"><input type="checkbox" data-field="disponible" data-id="${p.id}" ${p.disponible ? 'checked' : ''}></td>
       <td><button data-delete="${p.id}">Supprimer</button></td>
     `;
     body.appendChild(tr);
@@ -249,7 +250,7 @@ async function loadProduits() {
 async function saveProduit(input) {
   const id = input.dataset.id;
   const field = input.dataset.field;
-  const value = input.value;
+  const value = input.type === 'checkbox' ? input.checked : input.value;
   statusEl.textContent = 'Enregistrement…';
   const { error } = await supabase.from('produits').update({ [field]: value }).eq('id', id);
   statusEl.textContent = error ? 'Erreur lors de l\'enregistrement.' : 'Enregistré.';

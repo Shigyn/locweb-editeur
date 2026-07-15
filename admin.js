@@ -5,6 +5,7 @@
 //   produits(id, client_id, nom, prix, description, image_url, stock, categorie)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { MANIFEST, GROUP_ORDER } from './manifest.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -83,16 +84,49 @@ async function loadTextes() {
     return;
   }
 
+  if (data.length === 0) {
+    container.textContent = 'Aucun texte balisé pour ce site.';
+    return;
+  }
+
+  // Regroupe par section du manifeste (purement cosmétique, voir manifest.js)
+  const groupes = new Map();
   data.forEach((item) => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.innerHTML = `
-      <label>${item.cle_bloc}</label>
-      <textarea rows="1" data-id="${item.id}">${item.valeur ?? ''}</textarea>
-    `;
-    const textarea = row.querySelector('textarea');
-    textarea.addEventListener('change', () => saveContenu(item.id, textarea.value));
-    container.appendChild(row);
+    const meta = MANIFEST[item.cle_bloc];
+    const groupe = meta?.groupe ?? 'Autres';
+    if (!groupes.has(groupe)) groupes.set(groupe, []);
+    groupes.get(groupe).push({ ...item, label: meta?.label ?? item.cle_bloc });
+  });
+
+  const groupesTries = [...groupes.keys()].sort(
+    (a, b) => GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b)
+  );
+
+  groupesTries.forEach((groupe, i) => {
+    const details = document.createElement('details');
+    details.className = 'groupe';
+    details.open = i === 0;
+    details.innerHTML = `<summary>${groupe}</summary>`;
+    const body = document.createElement('div');
+    body.className = 'groupe-body';
+
+    groupes.get(groupe).forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const long = (item.valeur ?? '').length > 60 || (item.valeur ?? '').includes('\n');
+      row.innerHTML = `
+        <label>${item.label}</label>
+        ${long
+          ? `<textarea rows="3" data-id="${item.id}">${item.valeur ?? ''}</textarea>`
+          : `<input type="text" value="${item.valeur ?? ''}" data-id="${item.id}">`}
+      `;
+      const field = row.querySelector('textarea, input');
+      field.addEventListener('change', () => saveContenu(item.id, field.value));
+      body.appendChild(row);
+    });
+
+    details.appendChild(body);
+    container.appendChild(details);
   });
 }
 
@@ -121,8 +155,10 @@ async function loadImages() {
     row.className = 'row';
     row.innerHTML = `
       <label>${item.cle_bloc}</label>
-      <img src="${item.valeur ?? ''}" alt="" style="height:40px;width:40px;object-fit:cover;border-radius:4px;background:#eee;">
-      <input type="file" accept="image/*" data-id="${item.id}">
+      <div style="display:flex;align-items:center;gap:0.6rem;">
+        <img src="${item.valeur ?? ''}" alt="" style="height:44px;width:44px;object-fit:cover;border-radius:8px;background:#eee;border:1px solid var(--border);">
+        <input type="file" accept="image/*" data-id="${item.id}">
+      </div>
     `;
     const fileInput = row.querySelector('input[type=file]');
     const preview = row.querySelector('img');

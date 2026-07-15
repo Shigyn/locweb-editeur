@@ -73,10 +73,10 @@
     #status { font-size: 0.82rem; color: var(--text-muted); margin-top: 1rem; min-height: 1.2em; }
     #error { color: #b00020; font-size: 0.85rem; }
 
-    #produits-table { border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; }
-    #produits-table th { font-size: 0.76rem; text-transform: uppercase; color: var(--text-muted); padding: 0.6rem; border-bottom: 1px solid var(--border); }
+    #produits-table { border-collapse: collapse; background: var(--card); border-radius: 12px; min-width: 720px; width: 100%; }
+    #produits-table th { font-size: 0.76rem; text-transform: uppercase; color: var(--text-muted); padding: 0.6rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
     #produits-table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); }
-    #produits-table input { width: 100%; }
+    #produits-table input { width: 100%; min-width: 70px; }
     #add-produit { margin-top: 1rem; }
   </style>
 </head>
@@ -109,12 +109,14 @@
     </section>
 
     <section id="panel-produits" class="panel">
-      <table id="produits-table" width="100%">
-        <thead>
-          <tr><th align="left">Nom</th><th align="left">Prix</th><th align="left">Catégorie</th><th align="left">Stock</th><th align="left">Image URL</th><th align="left">Description</th><th>Disponible</th><th></th></tr>
-        </thead>
-        <tbody id="produits-body"></tbody>
-      </table>
+      <div style="overflow-x:auto;">
+        <table id="produits-table">
+          <thead>
+            <tr><th align="left">Nom</th><th align="left">Prix</th><th align="left">Catégorie</th><th align="left">Stock</th><th align="left">Image</th><th align="left">Description</th><th>Disponible</th><th></th></tr>
+          </thead>
+          <tbody id="produits-body"></tbody>
+        </table>
+      </div>
       <button id="add-produit">+ Ajouter un produit</button>
     </section>
 

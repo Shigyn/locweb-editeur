@@ -30,6 +30,21 @@ loginForm.addEventListener('submit', async (e) => {
   await afterLogin();
 });
 
+document.getElementById('forgot-password').addEventListener('click', async (e) => {
+  e.preventDefault();
+  errorEl.textContent = '';
+  const email = document.getElementById('email').value;
+  if (!email) {
+    errorEl.textContent = "Renseigne d'abord ton email ci-dessus, puis reclique sur ce lien.";
+    return;
+  }
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  errorEl.style.color = error ? '' : '#16a34a';
+  errorEl.textContent = error
+    ? "Erreur lors de l'envoi de l'email."
+    : `Email envoyé à ${email} si ce compte existe — suis le lien pour choisir un nouveau mot de passe.`;
+});
+
 document.getElementById('logout').addEventListener('click', async () => {
   await supabase.auth.signOut();
   location.reload();
@@ -63,10 +78,20 @@ async function afterLogin() {
   clientId = client.id;
   loginForm.style.display = 'none';
   app.style.display = 'block';
+  document.getElementById('site-name').textContent = `Site : ${client.nom_site}`;
 
   await loadTextes();
   await loadImages();
   await loadProduits();
+}
+
+// Rend une clé technique présentable quand aucune entrée manifest n'existe
+// pour elle (cas d'un nouveau client sans manifeste dédié).
+function prettifyKey(cle) {
+  return cle
+    .split('_')
+    .map((mot) => mot.charAt(0).toUpperCase() + mot.slice(1))
+    .join(' ');
 }
 
 async function loadTextes() {
@@ -95,7 +120,7 @@ async function loadTextes() {
     const meta = MANIFEST[item.cle_bloc];
     const groupe = meta?.groupe ?? 'Autres';
     if (!groupes.has(groupe)) groupes.set(groupe, []);
-    groupes.get(groupe).push({ ...item, label: meta?.label ?? item.cle_bloc });
+    groupes.get(groupe).push({ ...item, label: meta?.label ?? prettifyKey(item.cle_bloc) });
   });
 
   const groupesTries = [...groupes.keys()].sort(
@@ -154,7 +179,7 @@ async function loadImages() {
     const row = document.createElement('div');
     row.className = 'row';
     row.innerHTML = `
-      <label>${item.cle_bloc}</label>
+      <label>${MANIFEST[item.cle_bloc]?.label ?? prettifyKey(item.cle_bloc)}</label>
       <div style="display:flex;align-items:center;gap:0.6rem;">
         <img src="${item.valeur ?? ''}" alt="" style="height:44px;width:44px;object-fit:cover;border-radius:8px;background:#eee;border:1px solid var(--border);">
         <input type="file" accept="image/*" data-id="${item.id}">

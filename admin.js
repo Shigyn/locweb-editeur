@@ -260,6 +260,7 @@ async function loadProduits() {
         statusEl.textContent = 'Enregistrement…';
         const { error } = await supabase.from('produits').update({ image_url: url }).eq('id', p.id);
         statusEl.textContent = error ? 'Erreur lors de l\'enregistrement.' : 'Enregistré.';
+        if (!error) await syncProduitStripe(p.id);
       }
     });
   });
@@ -272,6 +273,9 @@ async function loadProduits() {
   });
 }
 
+// Champs qui doivent être répercutés sur le Product/Price Stripe correspondant
+const CHAMPS_SYNC_STRIPE = ['nom', 'prix', 'description', 'disponible'];
+
 async function saveProduit(input) {
   const id = input.dataset.id;
   const field = input.dataset.field;
@@ -279,6 +283,7 @@ async function saveProduit(input) {
   statusEl.textContent = 'Enregistrement…';
   const { error } = await supabase.from('produits').update({ [field]: value }).eq('id', id);
   statusEl.textContent = error ? 'Erreur lors de l\'enregistrement.' : 'Enregistré.';
+  if (!error && CHAMPS_SYNC_STRIPE.includes(field)) await syncProduitStripe(id);
 }
 
 async function deleteProduit(id) {
@@ -287,9 +292,30 @@ async function deleteProduit(id) {
 }
 
 document.getElementById('add-produit').addEventListener('click', async () => {
-  await supabase.from('produits').insert({ client_id: clientId, nom: 'Nouveau produit', prix: 0 });
+  const { data, error } = await supabase
+    .from('produits')
+    .insert({ client_id: clientId, nom: 'Nouveau produit', prix: 0 })
+    .select()
+    .single();
   await loadProduits();
+  if (!error && data) await syncProduitStripe(data.id);
 });
+
+// Crée/met à jour le Product+Price Stripe du produit, pour qu'il apparaisse
+// et reste à jour côté Stripe (n'affecte jamais le paiement lui-même, qui
+// utilise toujours le prix live de Supabase).
+async function syncProduitStripe(produitId) {
+  const { data: { session } } = await supabase.auth.getSession();
+  await fetch(`${SUPABASE_URL}/functions/v1/sync-produit-stripe`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ produit_id: produitId }),
+  }).catch((err) => console.warn('Synchro Stripe indisponible.', err));
+}
 
 // Reprend une session déjà active (évite de redemander le login à chaque rechargement)
 supabase.auth.getSession().then(({ data: { session } }) => {

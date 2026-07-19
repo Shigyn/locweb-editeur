@@ -83,6 +83,7 @@ async function afterLogin() {
   await loadTextes();
   await loadImages();
   await loadProduits();
+  await loadCommandes();
 }
 
 // Rend une clé technique présentable quand aucune entrée manifest n'existe
@@ -290,6 +291,99 @@ document.getElementById('add-produit').addEventListener('click', async () => {
   await supabase.from('produits').insert({ client_id: clientId, nom: 'Nouveau produit', prix: 0 });
   await loadProduits();
 });
+
+async function loadCommandes() {
+  const container = document.getElementById('commandes-list');
+  container.innerHTML = '';
+
+  const { data: commandes, error } = await supabase
+    .from('commandes')
+    .select('id, nom_client, email_client, telephone_client, adresse_livraison, total, commission, statut, date_creation')
+    .eq('client_id', clientId)
+    .order('date_creation', { ascending: false });
+
+  if (error) {
+    container.textContent = 'Erreur de chargement des commandes.';
+    return;
+  }
+
+  if (commandes.length === 0) {
+    container.textContent = 'Aucune commande pour le moment.';
+    return;
+  }
+
+  const { data: articles } = await supabase
+    .from('commande_articles')
+    .select('commande_id, nom, prix_unitaire, quantite')
+    .in('commande_id', commandes.map((c) => c.id));
+
+  commandes.forEach((c) => {
+    const card = document.createElement('div');
+    card.className = 'commande-card';
+    const mesArticles = (articles ?? []).filter((a) => a.commande_id === c.id);
+    const date = new Date(c.date_creation).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
+
+    card.innerHTML = `
+      <div class="commande-header">
+        <div>
+          <div class="commande-client">${c.nom_client || 'Client'}</div>
+          <div class="commande-date">${date} · ${c.email_client ?? ''} ${c.telephone_client ? '· ' + c.telephone_client : ''}</div>
+          <span class="commande-statut ${c.statut}">${libelleStatut(c.statut)}</span>
+        </div>
+        <div class="commande-montants">
+          <div class="commande-total">${Number(c.total).toFixed(2)}€</div>
+          <div class="commande-commission">dont ${Number(c.commission).toFixed(2)}€ commission LocWeb</div>
+        </div>
+      </div>
+      <div class="commande-articles">
+        ${mesArticles.map((a) => `<div>${a.quantite} × ${a.nom} — ${Number(a.prix_unitaire).toFixed(2)}€</div>`).join('') || 'Détail indisponible.'}
+      </div>
+      <div class="commande-actions">
+        ${c.statut === 'payee' ? `<button class="btn-rembourser" data-id="${c.id}">Rembourser</button>` : ''}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  container.querySelectorAll('.btn-rembourser').forEach((btn) => {
+    btn.addEventListener('click', () => rembourserCommande(btn));
+  });
+}
+
+function libelleStatut(statut) {
+  return { payee: 'Payée', remboursee: 'Remboursée', en_attente: 'En attente', annulee: 'Annulée' }[statut] ?? statut;
+}
+
+async function rembourserCommande(btn) {
+  if (!confirm('Rembourser cette commande ? Le client sera intégralement remboursé, y compris la commission LocWeb.')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Remboursement…';
+  statusEl.textContent = 'Remboursement en cours…';
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/refund-commande`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ commande_id: btn.dataset.id }),
+  });
+
+  const result = await res.json();
+  if (!res.ok) {
+    statusEl.textContent = result.error || 'Erreur lors du remboursement.';
+    btn.disabled = false;
+    btn.textContent = 'Rembourser';
+    return;
+  }
+
+  statusEl.textContent = 'Commande remboursée.';
+  await loadCommandes();
+}
 
 // Reprend une session déjà active (évite de redemander le login à chaque rechargement)
 supabase.auth.getSession().then(({ data: { session } }) => {

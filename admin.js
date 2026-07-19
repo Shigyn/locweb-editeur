@@ -123,6 +123,14 @@ async function loadTextes() {
     groupes.get(groupe).push({ ...item, label: meta?.label ?? prettifyKey(item.cle_bloc) });
   });
 
+  // À l'intérieur d'un groupe, respecte l'ordre d'apparition des clés dans
+  // le manifeste — qui suit lui-même l'ordre d'affichage haut→bas du site —
+  // plutôt que l'ordre arbitraire renvoyé par la base.
+  const ORDRE_CLES = Object.keys(MANIFEST);
+  groupes.forEach((items) => {
+    items.sort((a, b) => ORDRE_CLES.indexOf(a.cle_bloc) - ORDRE_CLES.indexOf(b.cle_bloc));
+  });
+
   const groupesTries = [...groupes.keys()].sort(
     (a, b) => GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b)
   );
@@ -227,30 +235,46 @@ async function loadProduits() {
     .select('id, nom, prix, description, image_url, stock, categorie, disponible')
     .eq('client_id', clientId);
 
-  const body = document.getElementById('produits-body');
-  body.innerHTML = '';
+  const container = document.getElementById('produits-list');
+  container.innerHTML = '';
 
-  if (error) return;
+  if (error) {
+    container.textContent = 'Erreur de chargement des produits.';
+    return;
+  }
+
+  if (data.length === 0) {
+    container.textContent = 'Aucun produit pour le moment.';
+    return;
+  }
 
   data.forEach((p) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input type="text" value="${p.nom ?? ''}" data-field="nom" data-id="${p.id}"></td>
-      <td><input type="number" step="0.01" value="${p.prix ?? ''}" data-field="prix" data-id="${p.id}"></td>
-      <td><input type="text" value="${p.categorie ?? ''}" data-field="categorie" data-id="${p.id}"></td>
-      <td><input type="number" value="${p.stock ?? ''}" data-field="stock" data-id="${p.id}"></td>
-      <td>
-        <img src="${p.image_url ?? ''}" alt="" style="height:32px;width:32px;object-fit:cover;border-radius:4px;background:#eee;vertical-align:middle;">
-        <input type="file" accept="image/*" data-id="${p.id}" style="width:110px;">
-      </td>
-      <td><input type="text" value="${p.description ?? ''}" data-field="description" data-id="${p.id}"></td>
-      <td style="text-align:center;"><input type="checkbox" data-field="disponible" data-id="${p.id}" ${p.disponible ? 'checked' : ''}></td>
-      <td><button data-delete="${p.id}">Supprimer</button></td>
+    const carte = document.createElement('div');
+    carte.className = 'produit-carte';
+    carte.innerHTML = `
+      <div class="produit-grille">
+        <div class="row"><label>Nom</label><input type="text" value="${p.nom ?? ''}" data-field="nom" data-id="${p.id}"></div>
+        <div class="row"><label>Prix</label><input type="number" step="0.01" value="${p.prix ?? ''}" data-field="prix" data-id="${p.id}"></div>
+        <div class="row"><label>Catégorie</label><input type="text" value="${p.categorie ?? ''}" data-field="categorie" data-id="${p.id}"></div>
+        <div class="row"><label>Stock</label><input type="number" value="${p.stock ?? ''}" data-field="stock" data-id="${p.id}"></div>
+        <div class="row produit-desc-row"><label>Description</label><textarea rows="2" data-field="description" data-id="${p.id}">${p.description ?? ''}</textarea></div>
+        <div class="row produit-desc-row">
+          <label>Photo</label>
+          <div class="produit-image-row">
+            <img src="${p.image_url ?? ''}" alt="">
+            <input type="file" accept="image/*" data-id="${p.id}">
+          </div>
+        </div>
+      </div>
+      <div class="produit-bas">
+        <label class="produit-dispo"><input type="checkbox" data-field="disponible" data-id="${p.id}" ${p.disponible ? 'checked' : ''}> Disponible à la vente</label>
+        <button class="btn-supprimer-produit" data-delete="${p.id}">Supprimer</button>
+      </div>
     `;
-    body.appendChild(tr);
+    container.appendChild(carte);
 
-    const fileInput = tr.querySelector('input[type=file]');
-    const preview = tr.querySelector('img');
+    const fileInput = carte.querySelector('input[type=file]');
+    const preview = carte.querySelector('img');
     fileInput.addEventListener('change', async () => {
       const file = fileInput.files[0];
       if (!file) return;
@@ -263,13 +287,11 @@ async function loadProduits() {
         if (!error) await syncProduitStripe(p.id);
       }
     });
-  });
 
-  body.querySelectorAll('input[data-field]').forEach((input) => {
-    input.addEventListener('change', () => saveProduit(input));
-  });
-  body.querySelectorAll('[data-delete]').forEach((btn) => {
-    btn.addEventListener('click', () => deleteProduit(btn.dataset.delete));
+    carte.querySelectorAll('input[data-field], textarea[data-field]').forEach((champ) => {
+      champ.addEventListener('change', () => saveProduit(champ));
+    });
+    carte.querySelector('[data-delete]').addEventListener('click', () => deleteProduit(p.id));
   });
 }
 

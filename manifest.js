@@ -53,7 +53,31 @@ export const MANIFEST = {
   faq_2_reponse: { label: 'FAQ 2 — réponse', groupe: 'FAQ' },
   faq_3_reponse: { label: 'FAQ 3 — réponse', groupe: 'FAQ' },
   faq_4_reponse: { label: 'FAQ 4 — réponse', groupe: 'FAQ' },
-  faq_5_reponse: { label: 'FAQ 5 — réponse', groupe: 'FAQ' }
+  faq_5_reponse: { label: 'FAQ 5 — réponse', groupe: 'FAQ' },
+
+  // Clés spécifiques à KSM Burger (site avec section "Pourquoi", "À propos",
+  // horaires détaillés) — groupes réutilisés quand le sens correspond
+  // (ex: "Pourquoi" ~ "Services"), nouveaux groupes sinon.
+  pourquoi_1_desc: { label: 'Argument 1 — description', groupe: 'Services' },
+  pourquoi_2_desc: { label: 'Argument 2 — description', groupe: 'Services' },
+  pourquoi_3_desc: { label: 'Argument 3 — description', groupe: 'Services' },
+
+  apropos_texte_1: { label: 'À propos — paragraphe 1', groupe: 'À propos' },
+  apropos_texte_2: { label: 'À propos — paragraphe 2', groupe: 'À propos' },
+  apropos_image: { label: 'À propos — photo', groupe: 'À propos' },
+
+  footer_description: { label: 'Footer — texte de présentation', groupe: 'Footer' },
+
+  horaires_lundi: { label: 'Horaires — lundi', groupe: 'Horaires' },
+  horaires_mardi: { label: 'Horaires — mardi', groupe: 'Horaires' },
+  horaires_mercredi: { label: 'Horaires — mercredi', groupe: 'Horaires' },
+  horaires_jeudi: { label: 'Horaires — jeudi', groupe: 'Horaires' },
+  horaires_vendredi: { label: 'Horaires — vendredi', groupe: 'Horaires' },
+  horaires_samedi: { label: 'Horaires — samedi', groupe: 'Horaires' },
+  horaires_dimanche: { label: 'Horaires — dimanche', groupe: 'Horaires' }
 };
 
-export const GROUP_ORDER = ['Hero', 'Services', 'Preuve sociale', 'Comment ça marche', 'Offre', 'FAQ', 'Autres'];
+export const GROUP_ORDER = [
+  'Hero', 'Services', 'À propos', 'Preuve sociale', 'Comment ça marche',
+  'Offre', 'FAQ', 'Horaires', 'Footer', 'Autres'
+];

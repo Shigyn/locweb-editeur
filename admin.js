@@ -5,7 +5,7 @@
 //   produits(id, client_id, nom, prix, description, image_url, stock, categorie)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
-import { MANIFEST, GROUP_ORDER } from './manifest.js';
+import { MANIFEST, GROUP_ORDER } from './manifest.js?v=2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

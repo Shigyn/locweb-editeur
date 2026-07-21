@@ -74,10 +74,33 @@ export const MANIFEST = {
   horaires_jeudi: { label: 'Horaires — jeudi', groupe: 'Horaires' },
   horaires_vendredi: { label: 'Horaires — vendredi', groupe: 'Horaires' },
   horaires_samedi: { label: 'Horaires — samedi', groupe: 'Horaires' },
-  horaires_dimanche: { label: 'Horaires — dimanche', groupe: 'Horaires' }
+  horaires_dimanche: { label: 'Horaires — dimanche', groupe: 'Horaires' },
+
+  // Clés spécifiques à AZROW (entreprise du bâtiment inclusive, Montpellier)
+  // Noms de clés préfixés/spécifiques pour éviter toute collision avec les clés
+  // génériques service_X_desc / stat_X_valeur déjà utilisées par le site LocWeb lui-même.
+  service_electricite_desc: { label: 'Électricité — description', groupe: 'Services' },
+  service_bati_ancien_desc: { label: 'Bâti ancien — description', groupe: 'Services' },
+  service_eco_construction_desc: { label: 'Éco-construction — description', groupe: 'Services' },
+  service_plomberie_desc: { label: 'Plomberie — description', groupe: 'Services' },
+  service_carrelage_desc: { label: 'Carrelage — description', groupe: 'Services' },
+  engagement_texte_1: { label: 'Engagement — paragraphe 1', groupe: 'Engagement' },
+  engagement_image_1: { label: 'Engagement — photo 1', groupe: 'Engagement' },
+  engagement_texte_2: { label: 'Engagement — paragraphe 2', groupe: 'Engagement' },
+  engagement_image_2: { label: 'Engagement — photo 2', groupe: 'Engagement' },
+  stat_metiers_valeur: { label: 'Chiffre clé — nb corps de métier', groupe: 'Preuve sociale' },
+  stat_metiers_label: { label: 'Chiffre clé — légende (métiers)', groupe: 'Preuve sociale' },
+  stat_ville_valeur: { label: 'Chiffre clé — ville', groupe: 'Preuve sociale' },
+  stat_ville_label: { label: 'Chiffre clé — légende (ville)', groupe: 'Preuve sociale' },
+  stat_inclusif_valeur: { label: 'Chiffre clé — taux inclusion', groupe: 'Preuve sociale' },
+  stat_inclusif_label: { label: 'Chiffre clé — légende (inclusion)', groupe: 'Preuve sociale' },
+  stat_devis_valeur: { label: 'Chiffre clé — devis', groupe: 'Preuve sociale' },
+  stat_devis_label: { label: 'Chiffre clé — légende (devis)', groupe: 'Preuve sociale' },
+  contact_telephone: { label: 'Téléphone de contact', groupe: 'Footer' },
+  contact_email: { label: 'Email de contact', groupe: 'Footer' }
 };
 
 export const GROUP_ORDER = [
-  'Hero', 'Services', 'À propos', 'Preuve sociale', 'Comment ça marche',
+  'Hero', 'Services', 'À propos', 'Engagement', 'Preuve sociale', 'Comment ça marche',
   'Offre', 'FAQ', 'Horaires', 'Footer', 'Autres'
 ];

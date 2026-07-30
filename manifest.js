@@ -6,37 +6,6 @@ export const MANIFEST = {
   hero_titre_ligne1: { label: 'Titre principal — ligne 1', groupe: 'Hero' },
   hero_titre_accent: { label: 'Titre principal — accroche', groupe: 'Hero' },
   hero_sous_titre: { label: 'Sous-titre', groupe: 'Hero' },
-  hero_form_titre: { label: 'Titre du formulaire', groupe: 'Hero' },
-
-  service_1_desc: { label: 'Site web professionnel — description', groupe: 'Services' },
-  service_2_desc: { label: 'Fiche Google Business — description', groupe: 'Services' },
-  service_3_desc: { label: 'Réseaux sociaux — description', groupe: 'Services' },
-  service_4_desc: { label: 'Supports print — description', groupe: 'Services' },
-  service_5_desc: { label: 'Logo & identité — description', groupe: 'Services' },
-  service_6_desc: { label: 'Avis Google — description', groupe: 'Services' },
-
-  stat_1_valeur: { label: 'Chiffre clé 1 — valeur', groupe: 'Preuve sociale' },
-  stat_1_label: { label: 'Chiffre clé 1 — légende', groupe: 'Preuve sociale' },
-  stat_2_valeur: { label: 'Chiffre clé 2 — valeur', groupe: 'Preuve sociale' },
-  stat_2_label: { label: 'Chiffre clé 2 — légende', groupe: 'Preuve sociale' },
-  stat_3_valeur: { label: 'Chiffre clé 3 — valeur', groupe: 'Preuve sociale' },
-  stat_3_label: { label: 'Chiffre clé 3 — légende', groupe: 'Preuve sociale' },
-  stat_4_valeur: { label: 'Chiffre clé 4 — valeur', groupe: 'Preuve sociale' },
-  stat_4_label: { label: 'Chiffre clé 4 — légende', groupe: 'Preuve sociale' },
-  temoin_1_texte: { label: 'Témoignage 1 — texte', groupe: 'Preuve sociale' },
-  temoin_1_nom: { label: 'Témoignage 1 — nom', groupe: 'Preuve sociale' },
-  temoin_1_role: { label: 'Témoignage 1 — métier / ville', groupe: 'Preuve sociale' },
-  temoin_2_texte: { label: 'Témoignage 2 — texte', groupe: 'Preuve sociale' },
-  temoin_2_nom: { label: 'Témoignage 2 — nom', groupe: 'Preuve sociale' },
-  temoin_2_role: { label: 'Témoignage 2 — métier / ville', groupe: 'Preuve sociale' },
-  temoin_3_texte: { label: 'Témoignage 3 — texte', groupe: 'Preuve sociale' },
-  temoin_3_nom: { label: 'Témoignage 3 — nom', groupe: 'Preuve sociale' },
-  temoin_3_role: { label: 'Témoignage 3 — métier / ville', groupe: 'Preuve sociale' },
-
-  etape_1_desc: { label: 'Étape 1 — description', groupe: 'Comment ça marche' },
-  etape_2_desc: { label: 'Étape 2 — description', groupe: 'Comment ça marche' },
-  etape_3_desc: { label: 'Étape 3 — description', groupe: 'Comment ça marche' },
-  etape_4_desc: { label: 'Étape 4 — description', groupe: 'Comment ça marche' },
 
   prix_valeur: { label: 'Prix — montant', groupe: 'Offre' },
   prix_frequence: { label: 'Prix — fréquence', groupe: 'Offre' },
@@ -48,12 +17,6 @@ export const MANIFEST = {
   prix_avantage_6: { label: 'Avantage 6', groupe: 'Offre' },
   prix_avantage_7: { label: 'Avantage 7', groupe: 'Offre' },
   prix_note: { label: 'Note en bas de l\'offre', groupe: 'Offre' },
-
-  faq_1_reponse: { label: 'FAQ 1 — réponse', groupe: 'FAQ' },
-  faq_2_reponse: { label: 'FAQ 2 — réponse', groupe: 'FAQ' },
-  faq_3_reponse: { label: 'FAQ 3 — réponse', groupe: 'FAQ' },
-  faq_4_reponse: { label: 'FAQ 4 — réponse', groupe: 'FAQ' },
-  faq_5_reponse: { label: 'FAQ 5 — réponse', groupe: 'FAQ' },
 
   // Clés spécifiques à KSM Burger (site avec section "Pourquoi", "À propos",
   // horaires détaillés) — groupes réutilisés quand le sens correspond
@@ -97,10 +60,20 @@ export const MANIFEST = {
   stat_devis_valeur: { label: 'Chiffre clé — devis', groupe: 'Preuve sociale' },
   stat_devis_label: { label: 'Chiffre clé — légende (devis)', groupe: 'Preuve sociale' },
   contact_telephone: { label: 'Téléphone de contact', groupe: 'Footer' },
-  contact_email: { label: 'Email de contact', groupe: 'Footer' }
+  contact_email: { label: 'Email de contact', groupe: 'Footer' },
+
+  // Clés spécifiques à Maison Verrier (site test premium tier 3, rénovation bâti ancien)
+  service_charpente_desc: { label: 'Charpente — description', groupe: 'Services' },
+  service_renovation_desc: { label: 'Rénovation bâti ancien — description', groupe: 'Services' },
+  service_toiture_desc: { label: 'Toiture — description', groupe: 'Services' },
+  service_maconnerie_desc: { label: 'Maçonnerie pierre — description', groupe: 'Services' },
+  service_menuiserie_desc: { label: 'Menuiserie sur mesure — description', groupe: 'Services' },
+  service_suivi_desc: { label: 'Suivi de chantier — description', groupe: 'Services' },
+  expertise_texte_1: { label: 'Expertise — paragraphe 1', groupe: 'Expertise' },
+  expertise_texte_2: { label: 'Expertise — paragraphe 2', groupe: 'Expertise' }
 };
 
 export const GROUP_ORDER = [
-  'Hero', 'Services', 'À propos', 'Engagement', 'Preuve sociale', 'Comment ça marche',
-  'Offre', 'FAQ', 'Horaires', 'Footer', 'Autres'
+  'Hero', 'Services', 'À propos', 'Engagement', 'Expertise', 'Preuve sociale',
+  'Offre', 'Horaires', 'Footer', 'Autres'
 ];

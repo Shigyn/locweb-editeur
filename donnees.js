@@ -11,6 +11,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 
 export const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const EDGE_FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 
 /* ---------- session et compte ---------- */
 

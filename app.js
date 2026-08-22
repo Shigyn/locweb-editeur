@@ -139,7 +139,7 @@ function squelette() {
 let jeton = 0;
 
 export async function router() {
-  const nom = (location.hash.replace(/^#\/?/, '') || 'accueil').split('/')[0];
+  const nom = (location.hash.replace(/^#\/?/, '') || 'accueil').split(/[/?]/)[0];
   const importer = VUES[nom] || VUES.accueil;
   const mien = ++jeton;
   squelette();

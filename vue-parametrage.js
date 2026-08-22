@@ -7,6 +7,12 @@
 
 import { h, vider, differer, souffler, depuis } from './outils.js';
 import * as D from './donnees.js';
+import { GOOGLE_OAUTH_CLIENT_ID } from './config.js';
+
+const SCOPES_GOOGLE = [
+  'https://www.googleapis.com/auth/business.manage',
+  'https://www.googleapis.com/auth/analytics.readonly',
+].join(' ');
 
 export async function rendre(page, etat) {
   const { client } = etat;
@@ -38,15 +44,26 @@ export async function rendre(page, etat) {
       h('label.champ', h('span', 'Facebook'), facebook),
       h('label.champ', h('span', 'Instagram'), instagram))));
 
+  /* ---------- retour d'une tentative de connexion Google ---------- */
+
+  const statutRetour = new URLSearchParams(location.hash.split('?')[1] || '').get('google');
+  if (statutRetour) {
+    const messages = {
+      connecte: ['Compte Google connecte.', 'bien'],
+      refuse: ["Connexion annulee — vous n'avez pas termine le consentement Google.", 'veille'],
+      session_expiree: ['Votre session a expire, reconnectez-vous puis reessayez.', 'alerte'],
+      erreur: ['La connexion a echoue. Reessayez, ou contactez-nous si ca persiste.', 'alerte'],
+    };
+    const [texte, ton] = messages[statutRetour] || messages.erreur;
+    setTimeout(() => souffler(texte, ton), 200);
+    history.replaceState(null, '', location.pathname + '#/parametrage');
+  }
+
   /* ---------- comptes ---------- */
 
   const corpsComptes = h('div.section-corps', { style: { paddingTop: '14px' } });
+  corpsComptes.append(carteGoogle(client, profil));
   corpsComptes.append(
-    carteCompte(client, profil, {
-      titre: 'Fiche Google Business',
-      aide: "Ouvrez votre fiche (celle qui s'affiche sur Google Maps), allez dans Parametres puis Gestionnaires, et invitez-nous — contactez-nous si vous n'avez pas notre adresse sous la main.",
-      champ: 'google_business_url', placeholder: 'Lien de votre fiche', accorde: 'acces_google_business',
-    }),
     carteCompte(client, profil, {
       titre: 'Google Ads (publicite)',
       aide: 'Donnez-nous votre identifiant client (10 chiffres, en haut a droite de votre compte Google Ads). On vous envoie une demande de liaison a accepter en un clic.',
@@ -71,6 +88,42 @@ export async function rendre(page, etat) {
   page.append(h('div.section',
     h('div.section-corps', { style: { paddingTop: '14px' } },
       h('button.bt.bt-nu', { onclick: () => { D.deconnexion().then(() => location.reload()); } }, 'Se deconnecter'))));
+
+  function carteGoogle(client, profil) {
+    const connecteGbp = profil.acces_google_business;
+    const connecteGa4 = profil.acces_ga4;
+    const tousConnectes = connecteGbp && connecteGa4;
+
+    const lignesEtat = h('div', { style: { display: 'grid', gap: '4px', marginTop: '8px' } },
+      ligneEtat('Fiche Google Business', connecteGbp),
+      ligneEtat('Google Analytics (GA4)', connecteGa4));
+
+    const bouton = h('button.bt.bt-vif', { onclick: async (e) => {
+      e.target.disabled = true;
+      const { data: { session } } = await D.sb.auth.getSession();
+      if (!session) { souffler('Session expiree, reconnectez-vous.', 'alerte'); e.target.disabled = false; return; }
+      const params = new URLSearchParams({
+        client_id: GOOGLE_OAUTH_CLIENT_ID,
+        redirect_uri: `${D.EDGE_FUNCTIONS_URL}/oauth-google-echange`,
+        response_type: 'code', access_type: 'offline', prompt: 'consent',
+        scope: SCOPES_GOOGLE, state: session.access_token,
+      });
+      location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+    } }, tousConnectes ? 'Reconnecter mon compte Google' : 'Se connecter avec Google');
+
+    return h('div.champ-inline',
+      h('label', 'Google Business + Analytics'),
+      h('p.aide', "Un seul clic connecte votre fiche Google Business et vos statistiques GA4 — LocWeb pourra afficher vos vraies performances ici. Aucun mot de passe ne nous est jamais communique."),
+      lignesEtat,
+      h('div', { style: { marginTop: '12px' } }, bouton));
+  }
+
+  function ligneEtat(libelle, valeur) {
+    return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '.86rem' } },
+      valeur
+        ? h('span', { style: { color: 'var(--vert)', fontWeight: '650' } }, `✓ ${libelle} — connecte ${depuis(valeur)}`)
+        : h('span', { style: { color: 'var(--sourdine)' } }, `${libelle} — pas encore connecte`));
+  }
 
   function carteCompte(client, profil, { titre, aide, champ, placeholder, accorde }) {
     const saisie = h('input', { type: 'text', placeholder, value: profil[champ] || '' });

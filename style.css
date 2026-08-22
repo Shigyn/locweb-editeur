@@ -115,6 +115,7 @@ select{ cursor: pointer; }
   position: fixed; inset: 0 auto 0 0; width: var(--rail); z-index: 40;
   background: var(--surface); border-right: 1px solid var(--trait);
   display: flex; flex-direction: column; padding: 20px 12px 14px;
+  overflow-y: auto;
 }
 .rail-marque{ padding: 0 10px 22px; margin-bottom: 0; }
 

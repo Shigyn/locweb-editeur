@@ -25,17 +25,25 @@ export async function rendre(page, etat, { charger }) {
   const nouvelles = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
   const taux = visites.length ? (demandes30.length / visites.length * 100) : 0;
 
+  // Quand GA4 est branche, il fait autorite sur le trafic : reafficher le
+  // compteur maison a cote donnerait deux chiffres contradictoires sur le
+  // meme ecran (GA4 a 39 visiteurs / compteur maison a 0). On ne garde
+  // alors que ce que GA4 ne couvre pas : les demandes recues.
+  const ga4Actif = Boolean(etat.profil?.acces_ga4);
+
   page.append(h('div.synthese',
-    mesure('Visites (30 j)', visites.length, 'tous appareils confondus'),
+    ga4Actif ? null : mesure('Visites (30 j)', visites.length, 'tous appareils confondus'),
     mesure('Demandes (30 j)', demandes30.length, 'formulaires soumis'),
     mesure('A traiter', nouvelles, nouvelles ? 'demandes sans reponse' : 'tout est traite'),
-    mesure('Taux de conversion', visites.length ? `${taux.toFixed(1)} %` : '—', 'visites -> demandes'),
+    ga4Actif ? null : mesure('Taux de conversion', visites.length ? `${taux.toFixed(1)} %` : '—', 'visites -> demandes'),
   ));
 
   if (!visites.length) {
-    page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
-      h('p', { style: { color: 'var(--sourdine)' } },
-        "Pas encore de visite enregistree. Vos statistiques apparaitront ici des que votre site aura recu du monde."))));
+    if (!ga4Actif) {
+      page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
+        h('p', { style: { color: 'var(--sourdine)' } },
+          "Pas encore de visite enregistree. Vos statistiques apparaitront ici des que votre site aura recu du monde."))));
+    }
     return;
   }
 
@@ -119,11 +127,6 @@ async function sectionGa4() {
           resultat.error === 'ID de propriete GA4 non renseigne.'
             ? "Renseignez l'ID de propriete GA4 dans Parametrage pour afficher vos vraies statistiques ici."
             : 'Donnees indisponibles pour le moment.'));
-        // TEMPORAIRE — affiche le detail exact renvoye par Google pour diagnostiquer.
-        if (resultat.detail_temporaire) {
-          zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.76rem', marginTop: '4px', fontFamily: 'monospace' } },
-            JSON.stringify(resultat.detail_temporaire)));
-        }
         return;
       }
       const serie = resultat.series || [];

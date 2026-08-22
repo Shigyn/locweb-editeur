@@ -14,31 +14,36 @@
    ------------------------------------------------------------------- */
 
 :root{
-  --fond:          #FAF8F3;
+  --fond:          #FAF9F6;
   --surface:       #FFFFFF;
-  --surface-creux: #F6F3EC;
-  --encre:         #1A1A1B;
-  --encre-douce:   #4C4C4E;
-  --sourdine:      #86837D;
-  --trait:         #E7E1D6;
-  --trait-fort:    #D3CCBE;
+  --surface-creux: #F5F3EE;
+  --encre:         #16161A;
+  --encre-douce:   #52525B;
+  --sourdine:      #8B8880;
+  --trait:         #EAE6DE;
+  --trait-fort:    #D8D2C7;
 
-  --accent:        #1F1D1A;   /* action principale : encre presque noire, pas de couleur de marque */
+  --accent:        #1A1A1E;   /* action principale : encre presque noire, pas de couleur de marque */
   --accent-fonce:  #000000;
-  --accent-voile:  rgba(31, 29, 26, .06);
+  --accent-voile:  rgba(26, 26, 30, .05);
 
   --vert:          #2F7D4E;
-  --vert-voile:    rgba(47, 125, 78, .11);
+  --vert-voile:    rgba(47, 125, 78, .10);
   --ambre:         #9A6B10;
-  --ambre-voile:   rgba(196, 138, 31, .14);
+  --ambre-voile:   rgba(196, 138, 31, .12);
   --alerte:        #B8331F;
-  --alerte-voile:  rgba(184, 51, 31, .10);
+  --alerte-voile:  rgba(184, 51, 31, .09);
 
-  --ombre: 0 1px 3px rgba(23,24,28,.06), 0 8px 24px rgba(23,24,28,.05);
-  --ombre-haute: 0 16px 44px rgba(23,24,28,.16);
+  /* Ombres en paliers : une carte au repos flotte a peine, un element
+     survole ou detache monte franchement. Un seul niveau partout donnait
+     un aspect "tout au meme plan" peu credible pour un outil paye. */
+  --ombre-fine:  0 1px 2px rgba(22,22,26,.05);
+  --ombre:       0 1px 2px rgba(22,22,26,.04), 0 4px 12px rgba(22,22,26,.045);
+  --ombre-haute: 0 12px 32px rgba(22,22,26,.13);
 
   --police: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --r: 12px;
+  --r-s: 8px;
 }
 
 *, *::before, *::after{ box-sizing: border-box; }
@@ -75,32 +80,40 @@ a{ color: inherit; }
 .connexion-boite > p{ color: var(--sourdine); margin-bottom: 24px; font-size: .92rem; }
 
 .champ{ display:block; margin-bottom: 14px; }
-.champ span{ display:block; font-size:.78rem; font-weight:600; color:var(--sourdine); margin-bottom:6px; }
+.champ span{ display:block; font-size:.8rem; font-weight:600; color:var(--encre-douce); margin-bottom:6px; }
 input[type=text], input[type=email], input[type=password], input[type=tel],
 input[type=number], textarea, select{
-  width:100%; background: var(--surface-creux); border:1px solid var(--trait);
-  border-radius: 9px; padding: 13px 14px; font-size: 1rem;
-  transition: border-color .15s, background-color .15s;
+  width:100%; background: var(--surface); border:1px solid var(--trait-fort);
+  border-radius: var(--r-s); padding: 11px 13px; font-size: .95rem;
+  transition: border-color .15s, box-shadow .15s;
 }
-input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--accent); background:var(--surface); }
+/* Anneau de focus discret plutot qu'un simple changement de bordure :
+   c'est ce qui distingue un champ "actif" d'un champ simplement survole. */
+input:focus, textarea:focus, select:focus{
+  outline:none; border-color:var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-voile);
+}
+input::placeholder, textarea::placeholder{ color: var(--sourdine); }
 textarea{ resize: vertical; min-height: 84px; line-height:1.5; }
 select{ cursor: pointer; }
 
 .bt{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  min-height: 48px; padding: 0 20px; border-radius: 10px;
-  font-size: 1rem; font-weight: 700; border: 1px solid transparent;
-  transition: background-color .15s, border-color .15s, transform .1s, opacity .15s;
+  min-height: 42px; padding: 0 18px; border-radius: var(--r-s);
+  font-size: .92rem; font-weight: 650; letter-spacing: -.005em;
+  border: 1px solid transparent; white-space: nowrap;
+  transition: background-color .14s, border-color .14s, box-shadow .14s, transform .1s, opacity .14s;
 }
 .bt:active{ transform: translateY(1px); }
-.bt[disabled]{ opacity:.45; pointer-events:none; }
-.bt-vif{ background: var(--accent); color:#fff; }
-.bt-vif:hover{ background: var(--accent-fonce); }
-.bt-plein{ background: var(--surface-creux); border-color: var(--trait); color: var(--encre); }
-.bt-plein:hover{ border-color: var(--trait-fort); }
-.bt-nu{ color: var(--encre-douce); min-height: 40px; padding: 0 12px; font-size:.92rem; }
+.bt[disabled]{ opacity:.4; pointer-events:none; }
+.bt-vif{ background: var(--accent); color:#fff; box-shadow: var(--ombre-fine); }
+.bt-vif:hover{ background: var(--accent-fonce); box-shadow: var(--ombre); }
+.bt-plein{ background: var(--surface); border-color: var(--trait-fort); color: var(--encre); box-shadow: var(--ombre-fine); }
+.bt-plein:hover{ background: var(--surface-creux); }
+.bt-nu{ color: var(--encre-douce); min-height: 38px; padding: 0 12px; font-size:.9rem; }
 .bt-nu:hover{ background: var(--surface-creux); color: var(--encre); }
-.bt-large{ width:100%; }
+.bt-mini{ min-height: 34px; padding: 0 14px; font-size: .86rem; }
+.bt-large{ width:100%; min-height: 46px; }
 
 .mot{ padding: 11px 14px; border-radius: 9px; font-size: .9rem; margin-top: 4px; }
 .mot[data-ton="alerte"]{ background:#FBEAE7; color:#B8331F; }
@@ -109,56 +122,77 @@ select{ cursor: pointer; }
 
 /* ---------- navigation ---------- */
 
-:root{ --rail: 216px; }
+:root{ --rail: 232px; }
 
 .rail{
   position: fixed; inset: 0 auto 0 0; width: var(--rail); z-index: 40;
   background: var(--surface); border-right: 1px solid var(--trait);
-  display: flex; flex-direction: column; padding: 20px 12px 14px;
+  display: flex; flex-direction: column; padding: 22px 14px 16px;
   overflow-y: auto;
 }
-.rail-marque{ padding: 0 10px 22px; margin-bottom: 0; }
+.rail-marque{ padding: 0 10px 26px; margin-bottom: 0; }
 
-.rail-nav{ display: flex; flex-direction: column; gap: 2px; }
+/* Intitule de groupe facon SaaS : minuscule, espace, discret — il
+   structure sans prendre la place des liens eux-memes. */
+.rail-titre{
+  font-size: .7rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--sourdine); padding: 0 12px 8px;
+}
+
+.rail-nav{ display: flex; flex-direction: column; gap: 1px; }
 .rail-nav a{
-  display: flex; align-items: center; gap: 12px;
-  min-height: 48px; padding: 0 12px; border-radius: 10px;
-  color: var(--encre-douce); text-decoration: none; font-weight: 600; font-size: .96rem;
-  transition: background-color .14s, color .14s;
+  display: flex; align-items: center; gap: 11px;
+  min-height: 40px; padding: 0 12px; border-radius: var(--r-s);
+  color: var(--encre-douce); text-decoration: none; font-weight: 550; font-size: .9rem;
+  letter-spacing: -.005em;
+  transition: background-color .12s, color .12s;
 }
 .rail-nav a:hover{ background: var(--surface-creux); color: var(--encre); }
-.rail-nav a[aria-current="page"]{ background: var(--surface-creux); color: var(--encre); }
+/* L'onglet actif se marque par un fond ET une graisse : sur un ecran
+   monochrome, le fond seul est trop faible pour se voir d'un coup d'oeil. */
+.rail-nav a[aria-current="page"]{ background: var(--surface-creux); color: var(--encre); font-weight: 650; }
 .rail-nav a[aria-current="page"] .ic{ color: var(--encre); }
 .rail-nav .pastille{
-  margin-left: auto; min-width: 20px; height: 20px; padding: 0 5px;
+  margin-left: auto; min-width: 19px; height: 19px; padding: 0 6px;
   display: grid; place-items: center; border-radius: 100px;
-  background: #B8331F; color: #fff; font-size: .74rem; font-weight: 700;
+  background: var(--alerte); color: #fff; font-size: .72rem; font-weight: 700;
 }
-.ic{ width: 19px; height: 19px; flex: none; color: var(--sourdine); }
-.rail-nav a[aria-current="page"] .ic{ color: inherit; }
+.ic{ width: 18px; height: 18px; flex: none; color: var(--sourdine); transition: color .12s; }
 
 .rail-pied{ margin-top: auto; padding-top: 14px; border-top: 1px solid var(--trait); }
 .rail-site{
-  padding: 12px 12px 4px; font-size: .82rem; color: var(--sourdine);
+  padding: 12px; margin: 8px 0 4px; border-radius: var(--r-s);
+  background: var(--surface-creux);
+  font-size: .8rem; color: var(--sourdine);
   display: flex; flex-direction: column; gap: 3px;
 }
-.rail-site span{ font-weight: 650; color: var(--encre); }
-.rail-site a{ color: var(--sourdine); text-decoration: underline; text-underline-offset: 2px; }
-.rail-pied > .bt{ width: calc(100% - 24px); margin: 6px 12px 0; }
+.rail-site span{ font-weight: 650; color: var(--encre); font-size: .86rem; }
+.rail-site a{ color: var(--sourdine); text-decoration: none; }
+.rail-site a:hover{ color: var(--encre); }
+.rail-pied > .bt{ width: 100%; margin-top: 4px; min-height: 40px; font-size: .88rem; }
 
 .zone{ margin-left: var(--rail); min-height: 100dvh; }
-.page{ max-width: 760px; margin: 0 auto; padding: clamp(22px,4vw,36px) clamp(16px,4vw,26px) 40px; }
+.page{ max-width: 880px; margin: 0 auto; padding: clamp(26px,4vw,40px) clamp(18px,4vw,32px) 48px; }
+
+/* ---------- titre de page ---------- */
+
+.page > h1{
+  font-size: 1.55rem; font-weight: 750; letter-spacing: -.025em;
+  margin-bottom: 22px;
+}
 
 /* ---------- carte de section ---------- */
 
 .section{
   background: var(--surface); border: 1px solid var(--trait); border-radius: var(--r);
-  box-shadow: var(--ombre); margin-bottom: 16px; overflow: hidden;
+  box-shadow: var(--ombre-fine); margin-bottom: 18px; overflow: hidden;
+  transition: box-shadow .18s;
 }
-.section-tete{ padding: 17px 20px; border-bottom: 1px solid var(--trait); }
-.section-tete h2{ font-size: 1.02rem; font-weight: 750; letter-spacing:-.01em; }
-.section-tete p{ color: var(--sourdine); font-size: .86rem; margin-top: 3px; }
-.section-corps{ padding: 6px 20px 18px; }
+.section:hover{ box-shadow: var(--ombre); }
+.section-tete{ padding: 16px 22px; border-bottom: 1px solid var(--trait); }
+.section-tete h2{ font-size: .98rem; font-weight: 700; letter-spacing:-.015em; }
+.section-tete p{ color: var(--sourdine); font-size: .85rem; margin-top: 2px; }
+.section-corps{ padding: 6px 22px 20px; }
 
 .champ-inline{ padding: 14px 0; border-bottom: 1px solid var(--trait); }
 .champ-inline:last-child{ border-bottom:0; }
@@ -218,42 +252,57 @@ select{ cursor: pointer; }
 
 .publication{
   position: fixed; left: var(--rail); right:0; bottom:0; z-index:30;
-  background: color-mix(in srgb, var(--surface) 95%, transparent); backdrop-filter: blur(10px);
-  border-top: 1px solid var(--trait); box-shadow: 0 -6px 20px rgba(0,0,0,.06);
-  padding: 12px clamp(16px,4vw,32px); display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--trait); box-shadow: 0 -4px 20px rgba(22,22,26,.05);
+  padding: 13px clamp(18px,4vw,32px); display:flex; align-items:center; gap:12px; flex-wrap:wrap;
 }
-.publication .texte{ font-size:.92rem; color: var(--encre-douce); }
+.publication .texte{ font-size:.9rem; color: var(--encre-douce); }
 .publication .texte b{ color: var(--encre); font-weight:700; }
 .publication .droite{ margin-left:auto; display:flex; gap:8px; }
 
 /* ---------- cartes de synthese (Accueil) ---------- */
 
-.synthese{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:20px; }
+.synthese{ display:grid; grid-template-columns: repeat(auto-fit,minmax(168px,1fr)); gap:12px; margin-bottom:20px; }
 .mesure{
   background: var(--surface); border:1px solid var(--trait); border-radius: var(--r);
-  padding: 16px 17px 14px; box-shadow: var(--ombre);
+  padding: 18px 18px 16px; box-shadow: var(--ombre-fine);
+  transition: box-shadow .16s, border-color .16s;
 }
-.mesure .val{ font-size:1.7rem; font-weight:700; letter-spacing:-.02em; }
-.mesure .etiq{ font-size:.84rem; color: var(--encre-douce); font-weight:600; margin-top:2px; }
-.mesure .sous{ font-size:.78rem; color: var(--sourdine); margin-top:2px; }
+.mesure:hover{ box-shadow: var(--ombre); border-color: var(--trait-fort); }
+/* Chiffre en chasse tabulaire : sans ca, une colonne de nombres danse
+   d'une ligne a l'autre selon les chiffres qui la composent. */
+.mesure .val{
+  font-size:1.75rem; font-weight:700; letter-spacing:-.03em; line-height:1.1;
+  font-variant-numeric: tabular-nums;
+}
+.mesure .etiq{ font-size:.85rem; color: var(--encre); font-weight:600; margin-top:5px; }
+.mesure .sous{ font-size:.78rem; color: var(--sourdine); margin-top:2px; line-height:1.4; }
 
 /* ---------- listes / tableaux simples ---------- */
 
-.liste-carte{ background: var(--surface); border:1px solid var(--trait); border-radius: var(--r); box-shadow: var(--ombre); overflow:hidden; margin-bottom:16px; }
-.ligne-liste{ display:flex; align-items:center; gap:14px; padding: 15px 20px; border-bottom:1px solid var(--trait); }
+.liste-carte{
+  background: var(--surface); border:1px solid var(--trait); border-radius: var(--r);
+  box-shadow: var(--ombre-fine); overflow:hidden; margin-bottom:18px;
+}
+.ligne-liste{
+  display:flex; align-items:center; gap:14px; padding: 15px 22px;
+  border-bottom:1px solid var(--trait); transition: background-color .12s;
+}
+.ligne-liste:hover{ background: var(--surface-creux); }
 .ligne-liste:last-child{ border-bottom:0; }
 .ligne-liste .principal{ flex:1; min-width:0; }
-.ligne-liste .principal strong{ display:block; font-size:.94rem; }
+.ligne-liste .principal strong{ display:block; font-size:.93rem; font-weight:650; }
 .ligne-liste .principal span{ display:block; font-size:.82rem; color: var(--sourdine); margin-top:2px; }
 
 .etat{
-  display:inline-flex; align-items:center; gap:5px; padding: 3px 10px 3px 7px; border-radius:100px;
-  font-size:.78rem; font-weight:650; background: var(--surface-creux); color: var(--encre-douce);
+  display:inline-flex; align-items:center; gap:6px; padding: 4px 11px 4px 8px; border-radius:100px;
+  font-size:.76rem; font-weight:650; letter-spacing:-.003em;
+  background: var(--surface-creux); color: var(--encre-douce);
 }
-.etat::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.etat::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
 .etat[data-ton="bien"]{ background: var(--vert-voile); color: var(--vert); }
 .etat[data-ton="veille"]{ background: var(--ambre-voile); color: var(--ambre); }
-.etat[data-ton="action"]{ background:#FBEAE7; color:#B8331F; }
+.etat[data-ton="action"]{ background: var(--alerte-voile); color: var(--alerte); }
 
 /* ---------- squelette et messages ---------- */
 

@@ -445,9 +445,180 @@ select{ cursor: pointer; }
   transition: opacity .2s cubic-bezier(.16,1,.3,1), transform .2s cubic-bezier(.16,1,.3,1), left .2s;
 }
 
+/* ---------- accueil : synthese narrative ---------- */
+
+.synthese-narrative{
+  background: var(--surface); border:1px solid var(--trait); border-radius:16px;
+  padding: 22px 24px; margin-bottom:18px; box-shadow: var(--ombre-fine);
+}
+.synthese-badge{
+  font-size:.68rem; font-weight:700; letter-spacing:.12em; color: var(--sourdine);
+  display:flex; align-items:center; gap:7px; margin-bottom:10px;
+}
+.synthese-badge::before{
+  content:''; width:7px; height:7px; border-radius:50%; background: var(--vert);
+}
+.synthese-titre{ font-size:1.28rem; font-weight:700; letter-spacing:-.025em; }
+.synthese-texte{ color: var(--encre-douce); font-size:.93rem; margin-top:6px; line-height:1.55; max-width:64ch; }
+.synthese-lien{
+  display:inline-block; margin-top:14px; font-size:.88rem; font-weight:600;
+  color: var(--encre); text-decoration:none;
+}
+.synthese-lien:hover{ text-decoration:underline; text-underline-offset:3px; }
+
+.titre-section{
+  font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color: var(--sourdine); margin: 28px 0 12px;
+}
+
+/* Invite : une carte qui propose une action manquante, sans faire
+   croire que la donnee existe deja. */
+.invite{
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  background: var(--surface); border:1px dashed var(--trait-fort); border-radius:16px;
+  padding: 20px 22px; margin-bottom:18px;
+}
+.invite-titre{ font-weight:650; font-size:.98rem; }
+.invite-texte{ color: var(--sourdine); font-size:.88rem; margin-top:3px; max-width:56ch; }
+.invite .bt{ margin-left:auto; }
+
+.kpi-haut{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.kpi-haut .badge-var{ margin-left:auto; }
+.kpi-sous{ font-size:.78rem; color: var(--sourdine); margin-top:2px; }
+.kpi-graphe{ margin-top:14px; opacity:.7; }
+
+/* ---------- taux de conversion ---------- */
+
+.conversion-tete{ display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+.conversion-etiq{ font-size:.85rem; color: var(--sourdine); }
+.conversion-val{ font-size:1.9rem; font-weight:700; letter-spacing:-.035em; font-variant-numeric: tabular-nums; }
+.conversion-aide{ margin-left:auto; font-size:.83rem; color: var(--sourdine); }
+.conversion-barre{ height:9px; border-radius:100px; background: var(--surface-creux); overflow:hidden; }
+.conversion-jauge{ height:100%; border-radius:100px; background: var(--accent); transition: width .5s var(--detente, ease); }
+.conversion-repere{ font-size:.8rem; color: var(--sourdine); margin-top:10px; }
+
+/* ---------- acquisition : appel a l'action ---------- */
+
+.appel-action{
+  background: var(--surface); border:1px solid var(--trait); border-radius:16px;
+  padding: 36px 28px; text-align:center; box-shadow: var(--ombre-fine);
+  display:flex; flex-direction:column; align-items:center;
+}
+.appel-icone{
+  width:52px; height:52px; border-radius:14px; margin-bottom:18px;
+  display:grid; place-items:center;
+  background: var(--accent); color:#fff;
+}
+.appel-icone svg{ width:24px; height:24px; }
+.appel-titre{ font-size:1.15rem; font-weight:700; letter-spacing:-.02em; }
+.appel-texte{ color: var(--sourdine); font-size:.92rem; margin:8px 0 20px; max-width:48ch; line-height:1.55; }
+
+/* ---------- methode en 4 etapes ---------- */
+
+.methode{ display:grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap:14px; }
+.methode-etape{
+  background: var(--surface); border:1px solid var(--trait); border-radius:14px;
+  padding: 20px; box-shadow: var(--ombre-fine);
+}
+.methode-num{
+  display:grid; place-items:center; width:28px; height:28px; border-radius:8px;
+  background: var(--surface-creux); color: var(--encre);
+  font-size:.82rem; font-weight:700; margin-bottom:12px;
+}
+.methode-titre{ font-size:.93rem; font-weight:650; letter-spacing:-.01em; }
+.methode-texte{ font-size:.84rem; color: var(--sourdine); margin-top:5px; line-height:1.5; }
+
+/* ---------- blocs d'information en ligne ---------- */
+
+.recap-ligne{ display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+.bloc-info{ background: var(--surface-creux); border-radius:12px; padding:14px 16px; }
+.bloc-info-etiq{ font-size:.75rem; color: var(--sourdine); font-weight:500; }
+.bloc-info-val{ font-size:.95rem; font-weight:650; margin-top:3px; letter-spacing:-.01em; }
+
+.champ-titre{ font-size:.85rem; font-weight:650; margin-bottom:10px; }
+
+/* Choix a selection unique : pastille radio, pas de case a cocher —
+   la forme dit a elle seule qu'un seul choix est possible. */
+.choix-radio{
+  width:20px; height:20px; border-radius:50%; flex:none;
+  border:1.5px solid var(--trait-fort); position:relative; transition: border-color .14s;
+}
+.choix-radio.actif{ border-color: var(--accent); border-width:6px; }
+
+/* ---------- mots-cles : puces et suggestions ---------- */
+
+.puces{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; min-height:34px; }
+.puce{
+  display:inline-flex; align-items:center; gap:7px;
+  background: var(--surface-creux); border:1px solid var(--trait);
+  border-radius:100px; padding:7px 8px 7px 14px; font-size:.87rem; font-weight:500;
+}
+.puce-x{
+  width:18px; height:18px; border-radius:50%; flex:none;
+  display:grid; place-items:center; font-size:.9rem; line-height:1;
+  color: var(--sourdine); transition: background-color .14s, color .14s;
+}
+.puce-x:hover{ background: var(--alerte-voile); color: var(--alerte); }
+
+.ajout-ligne{ display:flex; gap:10px; }
+.ajout-ligne input{ flex:1; }
+
+.suggestions{ display:flex; flex-wrap:wrap; gap:8px; }
+.suggestion{
+  background: var(--surface); border:1px dashed var(--trait-fort); border-radius:100px;
+  padding:7px 14px; font-size:.86rem; color: var(--encre-douce);
+  transition: border-color .14s, color .14s, background-color .14s;
+}
+.suggestion:hover{ border-style:solid; border-color: var(--accent); color: var(--encre); background: var(--surface-creux); }
+
+/* ---------- estimations ---------- */
+
+.estim-duo{ display:grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap:14px; }
+.estim{
+  background: var(--surface-creux); border-radius:14px; padding:24px 20px; text-align:center;
+}
+.estim-val{ font-size:2rem; font-weight:700; letter-spacing:-.04em; font-variant-numeric: tabular-nums; }
+.estim-etiq{ font-size:.84rem; color: var(--sourdine); margin-top:5px; }
+
+/* Note de prudence : c'est elle qui empeche une estimation d'etre lue
+   comme une promesse. Discrete mais jamais absente. */
+.note-prudence{
+  font-size:.82rem; color: var(--sourdine); line-height:1.55;
+  margin-top:18px; padding-left:14px; border-left:2px solid var(--trait-fort);
+}
+
+/* ---------- recapitulatif ---------- */
+
+.recap-tableau{
+  background: var(--surface); border:1px solid var(--trait); border-radius:14px; overflow:hidden;
+}
+.recap-tableau-ligne{
+  display:flex; justify-content:space-between; gap:16px;
+  padding:15px 20px; border-bottom:1px solid var(--trait); font-size:.93rem;
+}
+.recap-tableau-ligne:last-child{ border-bottom:0; }
+.recap-tableau-ligne span:last-child{ font-weight:600; font-variant-numeric: tabular-nums; }
+.recap-tableau-ligne.fort{ background: var(--surface-creux); font-weight:700; font-size:1rem; }
+
 /* ---------- onboarding (premiere connexion) ---------- */
 
-.onb{ max-width: 620px; margin: 0 auto; padding: clamp(24px,5vh,64px) 0 40px; }
+/* Pendant l'onboarding, le menu lateral et l'entete disparaissent : il
+   n'y a rien a piloter tant que l'espace n'est pas configure. */
+#espace.mode-onboarding .rail,
+#espace.mode-onboarding .entete{ display: none; }
+#espace.mode-onboarding .zone{ margin-left: 0; }
+#espace.mode-onboarding .page{ max-width: none; padding: 0; }
+#espace.mode-onboarding{ background: var(--fond); }
+
+.onb-barre{
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px clamp(18px,4vw,34px);
+  border-bottom: 1px solid var(--trait); background: var(--surface);
+}
+.onb-barre .marque{ margin-bottom: 0; font-size: 1.15rem; }
+.onb-barre .bt{ margin-left: auto; }
+
+.onb{ max-width: 620px; margin: 0 auto; padding: clamp(24px,5vh,64px) clamp(18px,4vw,24px) 48px; }
 .onb-compteur{
   font-size:.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
   color: var(--sourdine); margin-bottom:10px;

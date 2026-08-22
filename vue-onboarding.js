@@ -27,7 +27,7 @@ const ETAPES_PREPA = [
   'Preparation de votre espace',
 ];
 
-export async function rendre(page, etat, { router, rafraichirPastille }) {
+export async function rendre(page, etat, { terminer }) {
   const { client } = etat;
   const reponses = { ...(etat.profil || {}) };
   let etape = 1;
@@ -35,7 +35,48 @@ export async function rendre(page, etat, { router, rafraichirPastille }) {
 
   const hote = h('div.onb');
   vider(page);
-  page.append(hote);
+
+  // Barre fixe en haut : la marque rassure sur l'endroit ou on se
+  // trouve, et "Passer" laisse toujours une sortie — un questionnaire
+  // sans echappatoire, c'est la porte fermee au nez du client presse.
+  page.append(
+    h('div.onb-barre',
+      h('p.marque', { html: 'Loc<em>Web</em>' }),
+      h('button.bt.bt-nu', { onclick: passer }, 'Passer pour l\'instant')),
+    hote,
+  );
+
+  // "Passer" enregistre quand meme ce qui a deja ete saisi et marque
+  // l'onboarding comme vu : on ne le represente pas a chaque connexion,
+  // tout reste modifiable depuis Parametrage.
+  async function passer() {
+    try {
+      await D.majProfil(client.id, { ...champsProfil(), complete_le: new Date().toISOString() });
+      etat.profil = { ...(etat.profil || {}), complete_le: new Date().toISOString() };
+    } catch { souffler("Vos reponses n'ont pas pu etre enregistrees.", 'alerte'); }
+    await terminer();
+  }
+
+  function champsProfil() {
+    return {
+      secteur: reponses.secteur ?? null,
+      metier_precis: reponses.metier_precis ?? null,
+      localisation: reponses.localisation ?? null,
+      zone_intervention: reponses.zone_intervention ?? null,
+      nb_employes: reponses.nb_employes ?? null,
+      clients_par_mois: reponses.clients_par_mois ?? null,
+      panier_moyen: reponses.panier_moyen ?? null,
+      ca_mensuel: reponses.ca_mensuel ?? null,
+      objectif_ca: reponses.objectif_ca ?? null,
+      site_internet: reponses.site_internet ?? null,
+      reseaux: reponses.reseaux ?? null,
+      objectifs: reponses.objectifs ?? null,
+      deja_fait_pub: reponses.deja_fait_pub ?? null,
+      budget_pub_mensuel: reponses.budget_pub_mensuel ?? null,
+      utilise_google_ads: reponses.utilise_google_ads ?? null,
+      utilise_meta_ads: reponses.utilise_meta_ads ?? null,
+    };
+  }
 
   const ECRANS = [etapeEntreprise, etapeActivite, etapePresence, etapeObjectifs, etapeAcquisition];
 
@@ -228,47 +269,31 @@ export async function rendre(page, etat, { router, rafraichirPastille }) {
     lignes[0].classList.add('encours');
     try {
       await avecPlancher(D.majProfil(client.id, {
-        secteur: reponses.secteur ?? null,
-        metier_precis: reponses.metier_precis ?? null,
-        localisation: reponses.localisation ?? null,
-        zone_intervention: reponses.zone_intervention ?? null,
-        nb_employes: reponses.nb_employes ?? null,
-        clients_par_mois: reponses.clients_par_mois ?? null,
-        panier_moyen: reponses.panier_moyen ?? null,
-        ca_mensuel: reponses.ca_mensuel ?? null,
-        objectif_ca: reponses.objectif_ca ?? null,
-        site_internet: reponses.site_internet ?? null,
-        reseaux: reponses.reseaux ?? null,
-        objectifs: reponses.objectifs ?? null,
-        deja_fait_pub: reponses.deja_fait_pub ?? null,
-        budget_pub_mensuel: reponses.budget_pub_mensuel ?? null,
-        utilise_google_ads: reponses.utilise_google_ads ?? null,
-        utilise_meta_ads: reponses.utilise_meta_ads ?? null,
-        complete_le: new Date().toISOString(),
+        ...champsProfil(), complete_le: new Date().toISOString(),
       }));
-      terminer(lignes[0]);
-    } catch { echec = true; terminer(lignes[0], true); }
+      marquerLigne(lignes[0]);
+    } catch { echec = true; marquerLigne(lignes[0], true); }
 
     // 2. Relecture des connexions (vraie lecture en base)
     lignes[1].classList.add('encours');
     try {
       etat.profil = await avecPlancher(D.monProfil(client.id));
-      terminer(lignes[1]);
-    } catch { terminer(lignes[1], true); }
+      marquerLigne(lignes[1]);
+    } catch { marquerLigne(lignes[1], true); }
 
     // 3. Chargement reel du contenu editable
     lignes[2].classList.add('encours');
     try {
       await avecPlancher(D.lireContenu(client.id));
-      terminer(lignes[2]);
-    } catch { terminer(lignes[2], true); }
+      marquerLigne(lignes[2]);
+    } catch { marquerLigne(lignes[2], true); }
 
     // 4. Chargement reel des demandes (alimente la pastille du menu)
     lignes[3].classList.add('encours');
     try {
       await avecPlancher(D.listerDemandes(client.id));
-      terminer(lignes[3]);
-    } catch { terminer(lignes[3], true); }
+      marquerLigne(lignes[3]);
+    } catch { marquerLigne(lignes[3], true); }
 
     if (echec) {
       souffler("Certaines informations n'ont pas pu etre enregistrees.", 'alerte');
@@ -276,7 +301,7 @@ export async function rendre(page, etat, { router, rafraichirPastille }) {
     ecranFinal();
   }
 
-  function terminer(ligne, enErreur) {
+  function marquerLigne(ligne, enErreur) {
     ligne.classList.remove('encours');
     ligne.classList.add(enErreur ? 'echoue' : 'faite');
   }
@@ -292,7 +317,7 @@ export async function rendre(page, etat, { router, rafraichirPastille }) {
         `Le tableau de bord de ${client.nom_site || 'votre entreprise'} est configure et pret a l'emploi.`),
       h('button.bt.bt-vif', {
         style: { marginTop: '22px' },
-        onclick: async () => { location.hash = '#/accueil'; await router(); rafraichirPastille(); },
+        onclick: terminer,
       }, 'Acceder a mon tableau de bord →')));
   }
 

@@ -84,9 +84,23 @@ async function apresConnexion() {
 
 /* ---------- onboarding en 5 etapes, a la premiere connexion ---------- */
 
+// Plein ecran : pendant l'onboarding le menu lateral n'a aucun sens, on
+// n'a rien a piloter tant que l'espace n'est pas configure. La classe
+// sur #espace masque le rail et l'entete d'un seul geste, sans toucher
+// a la structure du document.
 async function rendreAccueilOnboarding() {
+  espace.classList.add('mode-onboarding');
   const module = await import('./vue-onboarding.js');
-  await module.rendre($('#page'), etat, { router, rafraichirPastille });
+  await module.rendre($('#page'), etat, {
+    router,
+    rafraichirPastille,
+    terminer: async () => {
+      espace.classList.remove('mode-onboarding');
+      location.hash = '#/accueil';
+      await router();
+      rafraichirPastille();
+    },
+  });
 }
 
 /* ---------- routage ---------- */

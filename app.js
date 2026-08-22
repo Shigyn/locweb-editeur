@@ -61,11 +61,17 @@ async function apresConnexion() {
 
   ecranConnexion.style.display = 'none';
   espace.style.display = 'block';
-  $('#nom-site').textContent = client.nom_site || 'votre site';
-  const lienSite = $('#lien-site');
+  const nom = client.nom_site || 'votre site';
+  $('#nom-site').textContent = nom;
+  $('#entete-nom').textContent = nom;
+  $('#entete-avatar').textContent = nom.trim().slice(0, 2).toUpperCase();
+
   if (client.domaine) {
-    lienSite.href = /^https?:\/\//.test(client.domaine) ? client.domaine : `https://${client.domaine}`;
-    lienSite.hidden = false;
+    const url = /^https?:\/\//.test(client.domaine) ? client.domaine : `https://${client.domaine}`;
+    for (const sel of ['#lien-site', '#entete-site']) {
+      const el = $(sel);
+      if (el) { el.href = url; el.hidden = false; }
+    }
   }
 
   if (!etat.profil || !etat.profil.complete_le) {

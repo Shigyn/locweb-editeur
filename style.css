@@ -41,7 +41,9 @@
   --ombre:       0 1px 2px rgba(22,22,26,.04), 0 4px 12px rgba(22,22,26,.045);
   --ombre-haute: 0 12px 32px rgba(22,22,26,.13);
 
-  --police: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Inter : la police de reference des tableaux de bord SaaS. Droite,
+     neutre, excellente en petites tailles et en chiffres tabulaires. */
+  --police: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --r: 12px;
   --r-s: 8px;
 }
@@ -148,10 +150,14 @@ select{ cursor: pointer; }
   transition: background-color .12s, color .12s;
 }
 .rail-nav a:hover{ background: var(--surface-creux); color: var(--encre); }
-/* L'onglet actif se marque par un fond ET une graisse : sur un ecran
-   monochrome, le fond seul est trop faible pour se voir d'un coup d'oeil. */
-.rail-nav a[aria-current="page"]{ background: var(--surface-creux); color: var(--encre); font-weight: 650; }
-.rail-nav a[aria-current="page"] .ic{ color: var(--encre); }
+/* L'onglet actif est une pilule pleine, contrastee : sur une palette
+   monochrome, un simple fond gris clair se remarque a peine. */
+.rail-nav a[aria-current="page"]{
+  background: var(--accent); color: #fff; font-weight: 650;
+  box-shadow: var(--ombre-fine);
+}
+.rail-nav a[aria-current="page"] .ic{ color: #fff; }
+.rail-nav a[aria-current="page"] .pastille{ background: #fff; color: var(--alerte); }
 .rail-nav .pastille{
   margin-left: auto; min-width: 19px; height: 19px; padding: 0 6px;
   display: grid; place-items: center; border-radius: 100px;
@@ -172,13 +178,39 @@ select{ cursor: pointer; }
 .rail-pied > .bt{ width: 100%; margin-top: 4px; min-height: 40px; font-size: .88rem; }
 
 .zone{ margin-left: var(--rail); min-height: 100dvh; }
-.page{ max-width: 880px; margin: 0 auto; padding: clamp(26px,4vw,40px) clamp(18px,4vw,32px) 48px; }
+
+/* ---------- entete haute ---------- */
+
+.entete{
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--fond) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--trait);
+  padding: 0 clamp(18px,3vw,34px); height: 64px;
+  display: flex; align-items: center; gap: 14px;
+}
+.entete-salut{ font-size: .95rem; color: var(--sourdine); }
+.entete-salut b{ color: var(--encre); font-weight: 650; }
+.entete-droite{ margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.entete-lien{
+  font-size: .86rem; font-weight: 600; color: var(--encre-douce); text-decoration: none;
+  padding: 8px 14px; border-radius: var(--r-s); border: 1px solid var(--trait-fort);
+  background: var(--surface); transition: background-color .14s;
+}
+.entete-lien:hover{ background: var(--surface-creux); }
+.entete-avatar{
+  width: 34px; height: 34px; border-radius: 50%; flex: none;
+  display: grid; place-items: center;
+  background: var(--accent); color: #fff; font-size: .8rem; font-weight: 700;
+}
+
+.page{ max-width: 1080px; margin: 0 auto; padding: clamp(22px,3vw,32px) clamp(18px,3vw,34px) 48px; }
 
 /* ---------- titre de page ---------- */
 
 .page > h1{
-  font-size: 1.55rem; font-weight: 750; letter-spacing: -.025em;
-  margin-bottom: 22px;
+  font-size: 1.4rem; font-weight: 700; letter-spacing: -.025em;
+  margin-bottom: 20px;
 }
 
 /* ---------- carte de section ---------- */
@@ -314,25 +346,47 @@ select{ cursor: pointer; }
 
 /* ---------- cartes KPI (Performances) ---------- */
 
+.grille-kpi{ display:grid; grid-template-columns: repeat(auto-fit,minmax(212px,1fr)); gap:16px; margin-bottom:20px; }
+.grille-duo{ display:grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+
 .kpi{
-  background: var(--surface); border:1px solid var(--trait); border-radius: var(--r);
-  padding: 18px 18px 14px; box-shadow: var(--ombre-fine);
+  background: var(--surface); border:1px solid var(--trait); border-radius:16px;
+  padding: 20px; box-shadow: var(--ombre-fine);
   transition: box-shadow .16s, border-color .16s;
   display:flex; flex-direction:column;
 }
 .kpi:hover{ box-shadow: var(--ombre); border-color: var(--trait-fort); }
+/* Icone en carre arrondi ajoure : le trait suffit a identifier la
+   metrique, un aplat de couleur n'ajouterait aucune information. */
 .kpi-icone{
-  width:38px; height:38px; border-radius:10px; margin-bottom:12px;
+  width:42px; height:42px; border-radius:12px; margin-bottom:16px;
   display:grid; place-items:center;
-  background: var(--surface-creux); color: var(--encre-douce);
+  border:1px solid var(--trait-fort); color: var(--encre);
 }
-.kpi-icone svg{ width:18px; height:18px; }
+.kpi-icone svg{ width:20px; height:20px; }
+.kpi-etiq{ font-size:.88rem; color: var(--sourdine); font-weight:500; }
 .kpi-val{
-  font-size:1.7rem; font-weight:700; letter-spacing:-.03em; line-height:1.1;
-  font-variant-numeric: tabular-nums;
+  font-size:1.85rem; font-weight:700; letter-spacing:-.035em; line-height:1.15;
+  font-variant-numeric: tabular-nums; margin-top:2px;
 }
-.kpi-etiq{ font-size:.85rem; color: var(--sourdine); margin-top:3px; }
-.kpi-graphe{ margin-top:12px; opacity:.75; }
+.kpi-pied{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin-top:14px; padding-top:14px; border-top:1px solid var(--trait);
+}
+.kpi-periode{ font-size:.8rem; color: var(--sourdine); }
+
+/* La variation est la seule information de cet ecran ou la couleur
+   porte du sens (progression / recul) — elle reste donc coloree malgre
+   la palette monochrome du reste. */
+.badge-var{
+  margin-left:auto; display:inline-flex; align-items:center; gap:4px;
+  padding: 4px 10px; border-radius:100px;
+  font-size:.8rem; font-weight:650; font-variant-numeric: tabular-nums;
+}
+.badge-var.hausse{ background: var(--vert-voile); color: var(--vert); }
+.badge-var.baisse{ background: var(--alerte-voile); color: var(--alerte); }
+.badge-var.neutre{ background: var(--surface-creux); color: var(--sourdine); }
+.badge-fleche{ font-size:.9rem; line-height:1; }
 
 /* ---------- cartes de synthese (Accueil) ---------- */
 

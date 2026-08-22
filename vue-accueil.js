@@ -36,9 +36,11 @@ export async function rendre(page, etat, { charger }) {
   const nouvelles = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
 
   vider(page);
+  // Le salut est deja dans l'entete haute — le repeter ici ferait dire
+  // deux fois la meme chose a deux centimetres d'ecart.
   page.append(
-    h('h1', `Bonjour, ${client.nom_site || 'bienvenue'}`),
-    h('p.sous-titre', "Voici votre espace. Tout se pilote depuis les sections ci-dessous."),
+    h('h1', 'Vue d\'ensemble'),
+    h('p.sous-titre', 'Tout se pilote depuis les sections ci-dessous.'),
   );
 
   // Une seule banniere, et seulement quand il y a vraiment quelque chose

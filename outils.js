@@ -122,6 +122,70 @@ export function grapheAires(valeurs, { hauteur = 64, couleur = 'var(--encre-douc
   });
 }
 
+/* Graphe complet : axe des valeurs a gauche, grille horizontale, labels
+   de dates dessous. Dessine en SVG sans librairie — une trentaine de
+   points ne justifie pas d'embarquer Chart.js et ses 200 Ko. */
+export function grapheComplet(valeurs, etiquettes, { hauteur = 220 } = {}) {
+  const L = 760, H = hauteur;
+  const gaucheAxe = 44, basAxe = 26, hautMarge = 12, droiteMarge = 12;
+  const aireL = L - gaucheAxe - droiteMarge;
+  const aireH = H - hautMarge - basAxe;
+
+  const brut = Math.max(1, ...valeurs);
+  const max = graduationHaute(brut);
+  const n = valeurs.length;
+  const x = (i) => gaucheAxe + (n <= 1 ? aireL / 2 : (i / (n - 1)) * aireL);
+  const y = (v) => hautMarge + aireH - (v / max) * aireH;
+
+  const NB_LIGNES = 4;
+  let grille = '';
+  for (let i = 0; i <= NB_LIGNES; i++) {
+    const v = (max / NB_LIGNES) * i;
+    const py = y(v);
+    grille += `<line x1="${gaucheAxe}" y1="${py.toFixed(1)}" x2="${L - droiteMarge}" y2="${py.toFixed(1)}" stroke="var(--trait)" stroke-width="1" />`;
+    grille += `<text x="${gaucheAxe - 10}" y="${(py + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--sourdine)">${abrege(v)}</text>`;
+  }
+
+  const points = valeurs.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const aire = `${gaucheAxe},${hautMarge + aireH} ${points} ${x(n - 1).toFixed(1)},${hautMarge + aireH}`;
+
+  // Un label sur deux au maximum : au-dela, ils se chevauchent et
+  // deviennent illisibles plutot qu'informatifs.
+  const pas = Math.max(1, Math.ceil(n / 8));
+  let labels = '';
+  etiquettes.forEach((e, i) => {
+    if (i % pas !== 0 && i !== n - 1) return;
+    labels += `<text x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--sourdine)">${e}</text>`;
+  });
+
+  const pastilles = valeurs.map((v, i) =>
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" fill="var(--surface)" stroke="var(--encre)" stroke-width="1.6" />`).join('');
+
+  return h('svg', {
+    viewBox: `0 0 ${L} ${H}`,
+    style: { width: '100%', height: 'auto', display: 'block', overflow: 'visible' },
+    html: `${grille}
+           <polyline points="${aire}" fill="var(--surface-creux)" stroke="none" />
+           <polyline points="${points}" fill="none" stroke="var(--encre)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+           ${n <= 32 ? pastilles : ''}
+           ${labels}`,
+  });
+}
+
+// Arrondit le maximum a une graduation lisible (10, 25, 50, 100...)
+// pour que l'axe affiche des nombres ronds au lieu de 37,4 / 74,8.
+function graduationHaute(v) {
+  const magnitude = Math.pow(10, Math.floor(Math.log10(v)));
+  const normalise = v / magnitude;
+  const palier = normalise <= 1 ? 1 : normalise <= 2 ? 2 : normalise <= 2.5 ? 2.5 : normalise <= 5 ? 5 : 10;
+  return palier * magnitude;
+}
+
+function abrege(v) {
+  if (v >= 1000) return (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + 'k';
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+}
+
 export const ETATS_DEMANDE = {
   nouvelle:     { libelle: 'Nouvelle',      ton: 'action' },
   vue:          { libelle: 'Vue',           ton: '' },

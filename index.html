@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -40,18 +40,52 @@
 <!-- ================= espace connecte ================= -->
 <div id="espace" style="display:none">
 
-  <header class="entete">
-    <p class="marque">Loc<em>Web</em></p>
-    <p class="site">Site : <strong id="nom-site">—</strong></p>
-    <div class="droite">
-      <a class="bt bt-plein" id="lien-site" href="#" target="_blank" rel="noopener noreferrer" hidden>Voir mon site</a>
+  <nav class="rail" aria-label="Navigation">
+    <p class="marque rail-marque">Loc<em>Web</em></p>
+    <div class="rail-nav">
+      <a href="#/accueil" data-route="accueil">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-5 3 3 5-7"/></svg>
+        Accueil
+      </a>
+      <a href="#/mon-site" data-route="mon-site">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>
+        Mon site
+      </a>
+      <a href="#/acquisition" data-route="acquisition">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>
+        Acquisition
+      </a>
+      <a href="#/activite" data-route="activite">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v12H8l-4 4V5Z"/></svg>
+        Mon activite
+        <b class="pastille" id="pastille-activite" hidden>0</b>
+      </a>
+    </div>
+
+    <div class="rail-pied">
+      <div class="rail-nav">
+        <a href="#/parametrage" data-route="parametrage">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+          Parametrage
+        </a>
+        <a href="#/aide" data-route="aide">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 1.6-2.3 3.5"/><path d="M12 17.5h.01"/></svg>
+          Aide
+        </a>
+      </div>
+      <div class="rail-site">
+        <span id="nom-site">—</span>
+        <a id="lien-site" href="#" target="_blank" rel="noopener noreferrer" hidden>Voir mon site &rarr;</a>
+      </div>
       <button class="bt bt-nu" id="bt-deconnexion">Se deconnecter</button>
     </div>
-  </header>
+  </nav>
 
-  <main id="page"></main>
+  <main class="zone">
+    <div class="page" id="page"></div>
+  </main>
 </div>
 
-<script type="module" src="admin.js?v=13"></script>
+<script type="module" src="app.js?v=2"></script>
 </body>
 </html>

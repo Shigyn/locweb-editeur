@@ -82,47 +82,11 @@ async function apresConnexion() {
   }
 }
 
-/* ---------- mini questionnaire, une fois apres la livraison ---------- */
+/* ---------- onboarding en 5 etapes, a la premiere connexion ---------- */
 
 async function rendreAccueilOnboarding() {
-  const page = $('#page');
-  vider(page);
-
-  const zone = h('input', { type: 'text', placeholder: 'ex : Beziers et 20 km alentour', value: etat.profil?.zone_intervention || '' });
-  const facebook = h('input', { type: 'text', placeholder: 'https://facebook.com/...', value: etat.profil?.reseaux?.facebook || '' });
-  const instagram = h('input', { type: 'text', placeholder: 'https://instagram.com/...', value: etat.profil?.reseaux?.instagram || '' });
-  const google = h('input', { type: 'text', placeholder: 'Lien de votre fiche Google', value: etat.profil?.google_business_url || '' });
-  const bouton = h('button.bt.bt-vif.bt-large', { type: 'submit' }, 'Valider et continuer');
-  const skip = h('button.bt.bt-nu', { type: 'button', onclick: async () => { await router(); rafraichirPastille(); } }, "Passer pour l'instant");
-
-  const form = h('form', {
-    onsubmit: async (e) => {
-      e.preventDefault();
-      bouton.disabled = true;
-      bouton.textContent = 'Enregistrement...';
-      try {
-        await D.majProfil(etat.client.id, {
-          zone_intervention: zone.value || null,
-          reseaux: { facebook: facebook.value || null, instagram: instagram.value || null },
-          google_business_url: google.value || null,
-          complete_le: new Date().toISOString(),
-        });
-      } catch { souffler('Enregistrement impossible.', 'alerte'); bouton.disabled = false; bouton.textContent = 'Valider et continuer'; return; }
-      etat.profil = { ...(etat.profil || {}), complete_le: new Date().toISOString() };
-      await router();
-      rafraichirPastille();
-    },
-  },
-    h('label.champ', h('span', "Ou intervenez-vous ?"), zone),
-    h('label.champ', h('span', 'Facebook (optionnel)'), facebook),
-    h('label.champ', h('span', 'Instagram (optionnel)'), instagram),
-    h('label.champ', h('span', 'Votre fiche Google (optionnel)'), google),
-    h('div', { style: { display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' } }, bouton, skip),
-  );
-
-  page.append(h('div.section',
-    h('div.section-tete', h('h2', 'Bienvenue !'), h('p', 'Quatre petites questions pour finir de configurer votre espace — deux minutes.')),
-    h('div.section-corps', { style: { paddingTop: '14px' } }, form)));
+  const module = await import('./vue-onboarding.js');
+  await module.rendre($('#page'), etat, { router, rafraichirPastille });
 }
 
 /* ---------- routage ---------- */

@@ -1,5 +1,5 @@
 // ===================================================================
-//  Mon site — contenu du site en brouillon/publication, produits,
+//  Mon editeur — contenu du site en brouillon/publication, produits,
 //  historique. Reprend le comportement de l'ancienne page unique, juste
 //  deplace ici : Profil et Comptes sont partis dans Parametrage.
 // ===================================================================
@@ -21,7 +21,7 @@ export async function rendre(page, etat, { charger }) {
   ]);
 
   vider(page);
-  page.append(h('h1', 'Mon site'));
+  page.append(h('h1', 'Mon editeur'));
 
   const textes = contenu.filter((l) => l.type === 'texte');
   const images = contenu.filter((l) => l.type === 'image');

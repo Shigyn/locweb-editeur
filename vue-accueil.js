@@ -14,7 +14,7 @@ const CARTES = [
     icone: '<path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-5 3 3 5-7"/>',
   },
   {
-    route: '#/mon-site', titre: 'Mon site',
+    route: '#/mon-site', titre: 'Mon editeur',
     texte: 'Modifiez vos horaires, vos textes et vos photos.',
     icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M7 6.5h.01M10 6.5h.01"/>',
   },

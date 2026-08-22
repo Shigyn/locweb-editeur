@@ -1,6 +1,6 @@
 // ===================================================================
 //  Espace client LocWeb — noyau : connexion, questionnaire d'accueil,
-//  routage entre les pages (Accueil, Mon site, Acquisition, Mon
+//  routage entre les pages (Accueil, Mon editeur, Acquisition, Mon
 //  activite, Parametrage, Aide).
 // ===================================================================
 

@@ -497,6 +497,32 @@ select{ cursor: pointer; }
 .conversion-jauge{ height:100%; border-radius:100px; background: var(--accent); transition: width .5s var(--detente, ease); }
 .conversion-repere{ font-size:.8rem; color: var(--sourdine); margin-top:10px; }
 
+/* ---------- mon editeur : sections depliables ---------- */
+
+.section-pliable{ overflow:hidden; }
+.section-resume{
+  display:flex; align-items:center; gap:14px; padding:16px 20px;
+  cursor:pointer; list-style:none; transition: background-color .14s;
+}
+.section-resume::-webkit-details-marker{ display:none; }
+.section-resume:hover{ background: var(--surface-creux); }
+.section-icone{
+  width:40px; height:40px; border-radius:11px; flex:none;
+  display:grid; place-items:center; border:1px solid var(--trait-fort); color: var(--encre);
+}
+.section-icone svg{ width:19px; height:19px; }
+.section-infos{ flex:1; min-width:0; }
+.section-nom{ display:block; font-size:.96rem; font-weight:650; letter-spacing:-.012em; }
+.section-desc{ display:block; font-size:.83rem; color: var(--sourdine); margin-top:2px; }
+.section-compte{ font-size:.82rem; color: var(--sourdine); white-space:nowrap; }
+.section-chevron{
+  color: var(--sourdine); font-size:1.4rem; line-height:1; flex:none;
+  transition: transform .2s;
+}
+.section-pliable[open] .section-chevron{ transform: rotate(90deg); }
+.section-pliable[open] .section-resume{ border-bottom:1px solid var(--trait); }
+.section-pliable .section-corps{ padding-top:6px; }
+
 /* ---------- acquisition : appel a l'action ---------- */
 
 .appel-action{

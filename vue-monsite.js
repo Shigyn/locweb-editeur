@@ -99,12 +99,51 @@ export async function rendre(page, etat, { charger }) {
   majBarre();
 }
 
+// Une icone et une phrase par section : le client reconnait la partie de
+// son site dont on parle sans avoir a deviner ce que "Footer" recouvre.
+const SECTIONS = {
+  Horaires: {
+    icone: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+    texte: 'Ouverture jour par jour',
+  },
+  Footer: {
+    icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h18"/>',
+    texte: 'Bas de page, mentions legales',
+  },
+  Autres: {
+    icone: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>',
+    texte: 'Autres contenus de votre site',
+  },
+};
+
 function sectionGroupe(client, groupe, lignesTexte, lignesImage, enAttente, majBarre) {
   const corps = h('div.section-corps');
   if (groupe === 'Horaires') lignesTexte.forEach((l) => corps.append(champHoraire(l, enAttente, majBarre)));
   else lignesTexte.forEach((l) => corps.append(champTexte(l, enAttente, majBarre)));
   lignesImage.forEach((l) => corps.append(champImage(client, l, enAttente, majBarre)));
-  return h('div.section', h('div.section-tete', h('h2', groupe)), corps);
+
+  const meta = SECTIONS[groupe] || SECTIONS.Autres;
+  const total = lignesTexte.length + lignesImage.length;
+  const modifies = [...lignesTexte, ...lignesImage].filter((l) => l.valeur_brouillon !== null).length;
+
+  // Depliable : la premiere section s'ouvre, les suivantes restent
+  // fermees. Tout ouvrir d'un coup noierait le client sous cinquante
+  // champs des l'arrivee sur la page.
+  const bloc = h('details.section.section-pliable', { open: groupe === 'Horaires' });
+  bloc.append(
+    h('summary.section-resume',
+      h('span.section-icone', h('svg', {
+        viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+        'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', html: meta.icone,
+      })),
+      h('span.section-infos',
+        h('span.section-nom', groupe),
+        h('span.section-desc', meta.texte)),
+      modifies ? h('span.etat', { 'data-ton': 'veille' }, `${modifies} modif.`) : null,
+      h('span.section-compte', `${total} champ${total > 1 ? 's' : ''}`),
+      h('span.section-chevron', { html: '&rsaquo;' })),
+    corps);
+  return bloc;
 }
 
 function champTexte(ligne, enAttente, majBarre) {

@@ -13,7 +13,7 @@ export async function rendre(page, etat, { charger, oublier }) {
   const campagnes = await charger('campagnes', () => D.listerCampagnes(client.id));
 
   vider(page);
-  page.append(h('h1', { style: { fontSize: '1.5rem', fontWeight: '750', marginBottom: '18px' } }, 'Acquisition'));
+  page.append(h('h1', 'Acquisition'));
 
   page.append(h('div.section',
     h('div.section-tete',

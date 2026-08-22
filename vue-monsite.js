@@ -21,7 +21,7 @@ export async function rendre(page, etat, { charger }) {
   ]);
 
   vider(page);
-  page.append(h('h1', { style: { fontSize: '1.5rem', fontWeight: '750', marginBottom: '18px' } }, 'Mon site'));
+  page.append(h('h1', 'Mon site'));
 
   const textes = contenu.filter((l) => l.type === 'texte');
   const images = contenu.filter((l) => l.type === 'image');

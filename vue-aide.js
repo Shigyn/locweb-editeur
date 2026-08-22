@@ -8,7 +8,7 @@ import { h, vider } from './outils.js';
 export async function rendre(page) {
   vider(page);
   page.append(
-    h('h1', { style: { fontSize: '1.5rem', fontWeight: '750', marginBottom: '18px' } }, 'Aide'),
+    h('h1', 'Aide'),
     h('div.section',
       h('div.section-tete', h('h2', 'Une question, un souci ?')),
       h('div.section-corps', { style: { paddingTop: '14px' } },

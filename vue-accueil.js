@@ -1,169 +1,69 @@
 // ===================================================================
-//  Accueil (= Performance) — les vrais chiffres de CE site uniquement.
-//  Rien n'est affiche tant qu'il n'y a pas de vraie donnee : pas de
-//  sparkline plate a zero pour faire joli.
+//  Accueil — le point d'entree. Pas un tableau de chiffres : une porte
+//  vers chaque section, plus les deux ou trois choses qui demandent
+//  vraiment une action aujourd'hui.
 // ===================================================================
 
-import { h, vider, nombre, grapheAires, jourDe, joursGlissants, souffler } from './outils.js';
+import { h, vider, nombre } from './outils.js';
 import * as D from './donnees.js';
+
+const CARTES = [
+  {
+    route: '#/performances', titre: 'Performances',
+    texte: 'Visiteurs, sessions et pages vues de votre site.',
+    icone: '<path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-5 3 3 5-7"/>',
+  },
+  {
+    route: '#/mon-site', titre: 'Mon site',
+    texte: 'Modifiez vos horaires, vos textes et vos photos.',
+    icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M7 6.5h.01M10 6.5h.01"/>',
+  },
+  {
+    route: '#/acquisition', titre: 'Acquisition',
+    texte: 'Vos campagnes publicitaires et vos demandes.',
+    icone: '<path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/>',
+  },
+  {
+    route: '#/activite', titre: 'Mon activite',
+    texte: 'Les demandes recues via votre site.',
+    icone: '<path d="M4 5h16v12H8l-4 4V5Z"/>',
+  },
+];
 
 export async function rendre(page, etat, { charger }) {
   const { client } = etat;
-
-  const [visites, demandes] = await Promise.all([
-    charger('visites', () => D.listerVisites(client.id, 30)),
-    charger('demandes', () => D.listerDemandes(client.id)),
-  ]);
+  const demandes = await charger('demandes', () => D.listerDemandes(client.id));
+  const nouvelles = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
 
   vider(page);
-  page.append(h('h1', { style: { fontSize: '1.5rem', fontWeight: '750', marginBottom: '18px' } }, 'Accueil'));
+  page.append(
+    h('h1', `Bonjour, ${client.nom_site || 'bienvenue'}`),
+    h('p.sous-titre', "Voici votre espace. Tout se pilote depuis les sections ci-dessous."),
+  );
 
-  if (etat.profil?.acces_ga4) page.append(await sectionGa4());
-
-  const limite = Date.now() - 30 * 864e5;
-  const demandes30 = demandes.filter((d) => new Date(d.date_creation) >= limite);
-  const nouvelles = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
-  const taux = visites.length ? (demandes30.length / visites.length * 100) : 0;
-
-  // Quand GA4 est branche, il fait autorite sur le trafic : reafficher le
-  // compteur maison a cote donnerait deux chiffres contradictoires sur le
-  // meme ecran (GA4 a 39 visiteurs / compteur maison a 0). On ne garde
-  // alors que ce que GA4 ne couvre pas : les demandes recues.
-  const ga4Actif = Boolean(etat.profil?.acces_ga4);
-
-  page.append(h('div.synthese',
-    ga4Actif ? null : mesure('Visites (30 j)', visites.length, 'tous appareils confondus'),
-    mesure('Demandes (30 j)', demandes30.length, 'formulaires soumis'),
-    mesure('A traiter', nouvelles, nouvelles ? 'demandes sans reponse' : 'tout est traite'),
-    ga4Actif ? null : mesure('Taux de conversion', visites.length ? `${taux.toFixed(1)} %` : '—', 'visites -> demandes'),
-  ));
-
-  if (!visites.length) {
-    if (!ga4Actif) {
-      page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
-        h('p', { style: { color: 'var(--sourdine)' } },
-          "Pas encore de visite enregistree. Vos statistiques apparaitront ici des que votre site aura recu du monde."))));
-    }
-    return;
+  // Une seule banniere, et seulement quand il y a vraiment quelque chose
+  // a faire — sinon l'ecran d'accueil devient du bruit qu'on apprend a
+  // ignorer.
+  if (nouvelles) {
+    page.append(h('a.banniere', { href: '#/activite' },
+      h('span.banniere-pastille', nombre(nouvelles)),
+      h('span',
+        h('strong', nouvelles > 1 ? `${nouvelles} nouvelles demandes` : 'Une nouvelle demande'),
+        h('span', { style: { display: 'block', fontSize: '.85rem', color: 'var(--sourdine)' } },
+          'Cliquez pour les consulter et y repondre.')),
+      h('span.banniere-fleche', { html: '&rarr;' })));
   }
 
-  /* ---------- tendance 30 jours ---------- */
-
-  const jours = joursGlissants(30);
-  const parJourV = new Map(jours.map((j) => [j, 0]));
-  for (const v of visites) { const j = jourDe(v.horodatage); if (parJourV.has(j)) parJourV.set(j, parJourV.get(j) + 1); }
-  const serie = jours.map((j) => parJourV.get(j));
-
-  page.append(h('div.section',
-    h('div.section-tete', h('h2', 'Visites — 30 derniers jours')),
-    h('div.section-corps', { style: { paddingTop: '14px' } }, grapheAires(serie, { hauteur: 90 }))));
-
-  /* ---------- provenance ---------- */
-
-  const parSource = new Map();
-  for (const v of visites) {
-    const s = classerSource(v.referent);
-    parSource.set(s, (parSource.get(s) || 0) + 1);
-  }
-  const lignesSource = [...parSource.entries()].sort((a, b) => b[1] - a[1]);
-  const max = lignesSource[0][1];
-
-  page.append(h('div.section',
-    h('div.section-tete', h('h2', 'D\'ou viennent vos visiteurs')),
-    h('div.section-corps', { style: { paddingTop: '14px' } }, h('div', { style: { display: 'grid', gap: '10px' } },
-      ...lignesSource.map(([source, n]) => h('div', {
-        style: { display: 'grid', gridTemplateColumns: '90px 1fr 44px', gap: '12px', alignItems: 'center' },
-      },
-        h('span', { style: { fontSize: '.86rem', fontWeight: '600' } }, source),
-        h('div', { style: { background: 'var(--surface-creux)', borderRadius: '100px', height: '8px', overflow: 'hidden' } },
-          h('div', { style: { background: 'var(--encre-douce)', height: '100%', width: `${(n / max * 100).toFixed(0)}%`, borderRadius: '100px' } })),
-        h('span', { style: { fontSize: '.82rem', textAlign: 'right', color: 'var(--sourdine)' } }, nombre(n))))))));
-}
-
-/* ---------- Google Analytics reel ---------- */
-
-const PERIODES = ['24h', '7j', '30j'];
-const METRIQUES = [
-  { cle: 'visiteurs', libelle: 'Visiteurs' },
-  { cle: 'sessions', libelle: 'Sessions' },
-  { cle: 'pages_vues', libelle: 'Pages vues' },
-  { cle: 'taux_engagement', libelle: "Taux d'engagement", pourcent: true },
-];
-
-async function sectionGa4() {
-  const corps = h('div.section-corps', { style: { paddingTop: '14px' } });
-  const onglets = h('div', { style: { display: 'flex', gap: '6px', marginBottom: '16px' } });
-  let periodeActive = '7j';
-
-  PERIODES.forEach((p) => {
-    const bt = h('button.bt', {
-      class: p === periodeActive ? 'bt bt-vif bt-mini' : 'bt bt-plein bt-mini',
-      onclick: async () => {
-        periodeActive = p;
-        [...onglets.children].forEach((b, i) => { b.className = PERIODES[i] === p ? 'bt bt-vif bt-mini' : 'bt bt-plein bt-mini'; });
-        await charger(p);
-      },
-    }, p);
-    onglets.append(bt);
+  const grille = h('div.grille-cartes');
+  CARTES.forEach((c) => {
+    grille.append(h('a.carte-menu', { href: c.route },
+      h('span.carte-icone', h('svg', {
+        viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+        'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        html: c.icone,
+      })),
+      h('span.carte-titre', c.titre),
+      h('span.carte-texte', c.texte)));
   });
-
-  const zoneMetriques = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '14px' } });
-  corps.append(onglets, zoneMetriques);
-
-  async function charger(periode) {
-    zoneMetriques.innerHTML = '';
-    zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.86rem' } }, 'Chargement...'));
-    try {
-      const { data: { session } } = await D.sb.auth.getSession();
-      const reponse = await fetch(`${D.EDGE_FUNCTIONS_URL}/ga4-donnees`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ periode }),
-      });
-      const resultat = await reponse.json();
-      zoneMetriques.innerHTML = '';
-      if (!reponse.ok) {
-        zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.86rem' } },
-          resultat.error === 'ID de propriete GA4 non renseigne.'
-            ? "Renseignez l'ID de propriete GA4 dans Parametrage pour afficher vos vraies statistiques ici."
-            : 'Donnees indisponibles pour le moment.'));
-        return;
-      }
-      const serie = resultat.series || [];
-      METRIQUES.forEach(({ cle, libelle, pourcent }) => {
-        const valeurs = serie.map((l) => l[cle] || 0);
-        const total = pourcent
-          ? (valeurs.reduce((s, v) => s + v, 0) / Math.max(1, valeurs.length) * 100).toFixed(1) + ' %'
-          : nombre(valeurs.reduce((s, v) => s + v, 0));
-        zoneMetriques.append(h('div', { style: { padding: '12px 14px', background: 'var(--surface-creux)', borderRadius: '10px' } },
-          h('p', { style: { fontSize: '1.3rem', fontWeight: '700' } }, total),
-          h('p', { style: { fontSize: '.8rem', color: 'var(--sourdine)', marginBottom: '8px' } }, libelle),
-          valeurs.length > 1 ? grapheAires(valeurs, { hauteur: 36 }) : null));
-      });
-    } catch {
-      zoneMetriques.innerHTML = '';
-      zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.86rem' } }, 'Donnees indisponibles pour le moment.'));
-      souffler('Impossible de recuperer les statistiques Google.', 'alerte');
-    }
-  }
-
-  await charger(periodeActive);
-
-  return h('div.section',
-    h('div.section-tete', h('h2', 'Google Analytics'), h('p', 'Vos vraies statistiques, via votre compte Google connecte.')),
-    corps);
-}
-
-function mesure(etiq, val, sous) {
-  return h('div.mesure', h('p.val', typeof val === 'number' ? nombre(val) : val), h('p.etiq', etiq), h('p.sous', sous));
-}
-
-function classerSource(referent) {
-  if (!referent) return 'Direct';
-  const r = referent.toLowerCase();
-  if (r.includes('google.')) return 'Google';
-  if (r.includes('facebook.com')) return 'Facebook';
-  if (r.includes('instagram.com')) return 'Instagram';
-  if (r.includes('bing.com')) return 'Bing';
-  return 'Autres';
+  page.append(grille);
 }

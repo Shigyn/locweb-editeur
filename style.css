@@ -260,6 +260,80 @@ select{ cursor: pointer; }
 .publication .texte b{ color: var(--encre); font-weight:700; }
 .publication .droite{ margin-left:auto; display:flex; gap:8px; }
 
+/* ---------- accueil : sous-titre, banniere, cartes de menu ---------- */
+
+.sous-titre{ color: var(--sourdine); font-size: .95rem; margin: -14px 0 24px; }
+
+.banniere{
+  display:flex; align-items:center; gap:14px; text-decoration:none;
+  background: var(--surface); border:1px solid var(--trait); border-radius: var(--r);
+  padding: 16px 20px; margin-bottom: 20px; box-shadow: var(--ombre-fine);
+  transition: box-shadow .16s, border-color .16s, transform .16s;
+}
+.banniere:hover{ box-shadow: var(--ombre); border-color: var(--trait-fort); transform: translateY(-1px); }
+.banniere-pastille{
+  min-width:32px; height:32px; padding:0 9px; flex:none;
+  display:grid; place-items:center; border-radius:100px;
+  background: var(--alerte); color:#fff; font-weight:700; font-size:.9rem;
+}
+.banniere strong{ font-size:.95rem; font-weight:650; }
+.banniere-fleche{ margin-left:auto; color: var(--sourdine); font-size:1.1rem; }
+
+.grille-cartes{ display:grid; grid-template-columns: repeat(auto-fit,minmax(232px,1fr)); gap:14px; }
+.carte-menu{
+  display:flex; flex-direction:column; text-decoration:none;
+  background: var(--surface); border:1px solid var(--trait); border-radius: var(--r);
+  padding: 22px 20px; box-shadow: var(--ombre-fine);
+  transition: box-shadow .16s, border-color .16s, transform .16s;
+}
+.carte-menu:hover{ box-shadow: var(--ombre); border-color: var(--trait-fort); transform: translateY(-2px); }
+/* Pastille ronde facon SaaS, mais en gris : la couleur ne porte aucune
+   information ici, elle ne servirait qu'a decorer. */
+.carte-icone{
+  width:44px; height:44px; border-radius:12px; margin-bottom:14px;
+  display:grid; place-items:center;
+  background: var(--surface-creux); color: var(--encre);
+}
+.carte-icone svg{ width:21px; height:21px; }
+.carte-titre{ font-size:1rem; font-weight:700; letter-spacing:-.015em; }
+.carte-texte{ font-size:.85rem; color: var(--sourdine); margin-top:4px; line-height:1.45; }
+
+/* ---------- onglets de periode ---------- */
+
+.barre-outils{ display:flex; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+.onglets-periode{
+  display:inline-flex; gap:2px; padding:3px;
+  background: var(--surface-creux); border:1px solid var(--trait); border-radius:10px;
+}
+.onglet{
+  padding: 7px 16px; border-radius: 7px; font-size:.88rem; font-weight:600;
+  color: var(--sourdine); transition: background-color .14s, color .14s, box-shadow .14s;
+}
+.onglet:hover{ color: var(--encre); }
+.onglet.actif{ background: var(--surface); color: var(--encre); box-shadow: var(--ombre-fine); }
+
+/* ---------- cartes KPI (Performances) ---------- */
+
+.kpi{
+  background: var(--surface); border:1px solid var(--trait); border-radius: var(--r);
+  padding: 18px 18px 14px; box-shadow: var(--ombre-fine);
+  transition: box-shadow .16s, border-color .16s;
+  display:flex; flex-direction:column;
+}
+.kpi:hover{ box-shadow: var(--ombre); border-color: var(--trait-fort); }
+.kpi-icone{
+  width:38px; height:38px; border-radius:10px; margin-bottom:12px;
+  display:grid; place-items:center;
+  background: var(--surface-creux); color: var(--encre-douce);
+}
+.kpi-icone svg{ width:18px; height:18px; }
+.kpi-val{
+  font-size:1.7rem; font-weight:700; letter-spacing:-.03em; line-height:1.1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-etiq{ font-size:.85rem; color: var(--sourdine); margin-top:3px; }
+.kpi-graphe{ margin-top:12px; opacity:.75; }
+
 /* ---------- cartes de synthese (Accueil) ---------- */
 
 .synthese{ display:grid; grid-template-columns: repeat(auto-fit,minmax(168px,1fr)); gap:12px; margin-bottom:20px; }

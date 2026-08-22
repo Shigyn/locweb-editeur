@@ -13,7 +13,7 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
   const demandes = await charger('demandes', () => D.listerDemandes(client.id));
 
   vider(page);
-  page.append(h('h1', { style: { fontSize: '1.5rem', fontWeight: '750', marginBottom: '18px' } }, 'Mon activite'));
+  page.append(h('h1', 'Mon activite'));
 
   if (!demandes.length) {
     page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },

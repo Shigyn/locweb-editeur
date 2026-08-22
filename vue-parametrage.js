@@ -19,7 +19,7 @@ export async function rendre(page, etat) {
   let profil = etat.profil || {};
 
   vider(page);
-  page.append(h('h1', { style: { fontSize: '1.5rem', fontWeight: '750', marginBottom: '18px' } }, 'Parametrage'));
+  page.append(h('h1', 'Parametrage'));
 
   /* ---------- profil ---------- */
 

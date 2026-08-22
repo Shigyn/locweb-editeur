@@ -123,7 +123,8 @@ async function rendreAccueilOnboarding() {
 
 const page = $('#page');
 const VUES = {
-  accueil:     () => import('./vue-accueil.js'),
+  accueil:      () => import('./vue-accueil.js'),
+  performances: () => import('./vue-performances.js'),
   'mon-site':  () => import('./vue-monsite.js'),
   acquisition: () => import('./vue-acquisition.js'),
   activite:    () => import('./vue-activite.js'),

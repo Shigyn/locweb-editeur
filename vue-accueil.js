@@ -119,6 +119,11 @@ async function sectionGa4() {
           resultat.error === 'ID de propriete GA4 non renseigne.'
             ? "Renseignez l'ID de propriete GA4 dans Parametrage pour afficher vos vraies statistiques ici."
             : 'Donnees indisponibles pour le moment.'));
+        // TEMPORAIRE — affiche le detail exact renvoye par Google pour diagnostiquer.
+        if (resultat.detail_temporaire) {
+          zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.76rem', marginTop: '4px', fontFamily: 'monospace' } },
+            JSON.stringify(resultat.detail_temporaire)));
+        }
         return;
       }
       const serie = resultat.series || [];

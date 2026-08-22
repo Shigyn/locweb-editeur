@@ -1,141 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LocWeb — Administration</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --accent: #E8281E;
-      --bg: #f7f6f3;
-      --card: #ffffff;
-      --border: rgba(0,0,0,.08);
-      --text: #111111;
-      --text-muted: #888888;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', system-ui, sans-serif;
-      max-width: 880px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-      background: var(--bg);
-      color: var(--text);
-    }
-    h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.01em; margin-bottom: 1.75rem; }
-
-    #login-form {
-      display: flex; flex-direction: column; gap: 0.75rem; max-width: 320px;
-      background: var(--card); padding: 1.75rem; border-radius: 12px; border: 1px solid var(--border);
-    }
-    input, textarea {
-      padding: 0.55rem 0.7rem; font-size: 0.92rem; border: 1px solid var(--border);
-      border-radius: 8px; font-family: inherit; background: #fff; color: var(--text);
-    }
-    input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,40,30,.12); }
-    button {
-      padding: 0.6rem 1.1rem; font-size: 0.9rem; font-weight: 700; cursor: pointer;
-      background: var(--accent); color: #fff; border: none; border-radius: 10px; transition: opacity .15s;
-    }
-    button:hover { opacity: .88; }
-    #logout { background: transparent; color: var(--text-muted); border: 1px solid var(--border); margin-top: 2rem; }
-    #logout:hover { background: #fff; color: var(--text); }
-
-    #app { display: none; }
-    nav { display: flex; gap: 0.5rem; margin-bottom: 1.75rem; }
-    nav button {
-      background: transparent; color: var(--text-muted); border: 1px solid var(--border);
-      padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;
-    }
-    nav button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    details.groupe {
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      margin-bottom: 0.85rem; overflow: hidden;
-    }
-    details.groupe summary {
-      cursor: pointer; padding: 0.9rem 1.1rem; font-weight: 700; font-size: 0.92rem;
-      list-style: none; display: flex; align-items: center; justify-content: space-between;
-    }
-    details.groupe summary::-webkit-details-marker { display: none; }
-    details.groupe summary::after { content: '+'; color: var(--text-muted); font-weight: 400; }
-    details.groupe[open] summary::after { content: '−'; }
-    details.groupe summary:hover { background: #fafafa; }
-    .groupe-body { padding: 0 1.1rem 1.1rem; display: flex; flex-direction: column; gap: 0.75rem; }
-
-    .row { display: flex; flex-direction: column; gap: 0.3rem; }
-    .row label { font-size: 0.76rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
-    .row input, .row textarea { width: 100%; }
-
-    #status { font-size: 0.82rem; color: var(--text-muted); margin-top: 1rem; min-height: 1.2em; }
-    #error { color: #b00020; font-size: 0.85rem; }
-
-    .produit-carte {
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      padding: 1.1rem; margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.85rem;
-    }
-    .produit-grille {
-      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.75rem;
-    }
-    .produit-grille .row { grid-column: span 1; }
-    .produit-desc-row { grid-column: 1 / -1; }
-    .produit-image-row { display: flex; align-items: center; gap: 0.7rem; }
-    .produit-image-row img {
-      height: 52px; width: 52px; object-fit: cover; border-radius: 8px;
-      background: #eee; border: 1px solid var(--border); flex-shrink: 0;
-    }
-    .produit-bas { display: flex; align-items: center; justify-content: space-between; padding-top: 0.6rem; border-top: 1px solid var(--border); }
-    .produit-dispo { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); }
-    .btn-supprimer-produit { background: transparent; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.82rem; padding: 0.4rem 0.8rem; }
-    .btn-supprimer-produit:hover { background: #fef2f2; opacity: 1; }
-    @media (max-width: 640px) {
-      .produit-grille { grid-template-columns: 1fr 1fr; }
-    }
-    #add-produit { margin-top: 0.5rem; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Mon espace LocWeb</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1">
 </head>
 <body>
 
-  <h1>Loc<span style="color:var(--accent);">Web</span> — Administration</h1>
+<!-- ================= connexion ================= -->
+<section class="connexion" id="ecran-connexion">
+  <div class="connexion-boite">
+    <p class="marque">Loc<em>Web</em></p>
+    <p>Votre espace pour gerer votre site.</p>
 
-  <form id="login-form">
-    <input type="email" id="email" placeholder="Email" autocomplete="username" required>
-    <input type="password" id="password" placeholder="Mot de passe" autocomplete="current-password" required>
-    <button type="submit">Se connecter</button>
-    <a href="#" id="forgot-password" style="font-size:0.82rem;color:var(--text-muted);text-decoration:underline;">Mot de passe oublié ?</a>
-    <p id="error"></p>
-  </form>
+    <form id="form-connexion" novalidate>
+      <label class="champ">
+        <span>Adresse e-mail</span>
+        <input type="email" id="ident-email" autocomplete="username" required>
+      </label>
+      <label class="champ">
+        <span>Mot de passe</span>
+        <input type="password" id="ident-mdp" autocomplete="current-password" required>
+      </label>
+      <p class="mot" data-ton="alerte" id="connexion-erreur"></p>
+      <button class="bt bt-vif bt-large" type="submit" id="bt-connexion">Se connecter</button>
+    </form>
 
-  <div id="app">
-    <p id="site-name" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;"></p>
-    <nav>
-      <button data-panel="textes" class="active">Textes</button>
-      <button data-panel="images">Images</button>
-      <button data-panel="produits">Produits / tarifs</button>
-    </nav>
-
-    <section id="panel-textes" class="panel active">
-      <div id="textes-list"></div>
-    </section>
-
-    <section id="panel-images" class="panel">
-      <div id="images-list"></div>
-    </section>
-
-    <section id="panel-produits" class="panel">
-      <div id="produits-list"></div>
-      <button id="add-produit">+ Ajouter un produit</button>
-    </section>
-
-    <p id="status"></p>
-    <button id="logout">Se déconnecter</button>
+    <p style="margin-top:14px;text-align:center">
+      <button class="bt bt-nu" id="bt-oubli" type="button">Mot de passe oublie</button>
+    </p>
   </div>
+</section>
 
-  <script type="module" src="admin.js?v=10"></script>
+<!-- ================= espace connecte ================= -->
+<div id="espace" style="display:none">
+
+  <header class="entete">
+    <p class="marque">Loc<em>Web</em></p>
+    <p class="site">Site : <strong id="nom-site">—</strong></p>
+    <div class="droite">
+      <a class="bt bt-plein" id="lien-site" href="#" target="_blank" rel="noopener noreferrer" hidden>Voir mon site</a>
+      <button class="bt bt-nu" id="bt-deconnexion">Se deconnecter</button>
+    </div>
+  </header>
+
+  <main id="page"></main>
+</div>
+
+<script type="module" src="admin.js?v=13"></script>
 </body>
 </html>

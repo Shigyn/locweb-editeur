@@ -4,7 +4,7 @@
 //  sparkline plate a zero pour faire joli.
 // ===================================================================
 
-import { h, vider, nombre, grapheAires, jourDe, joursGlissants } from './outils.js';
+import { h, vider, nombre, grapheAires, jourDe, joursGlissants, souffler } from './outils.js';
 import * as D from './donnees.js';
 
 export async function rendre(page, etat, { charger }) {
@@ -17,6 +17,8 @@ export async function rendre(page, etat, { charger }) {
 
   vider(page);
   page.append(h('h1', { style: { fontSize: '1.5rem', fontWeight: '750', marginBottom: '18px' } }, 'Accueil'));
+
+  if (etat.profil?.acces_ga4) page.append(await sectionGa4());
 
   const limite = Date.now() - 30 * 864e5;
   const demandes30 = demandes.filter((d) => new Date(d.date_creation) >= limite);
@@ -68,6 +70,80 @@ export async function rendre(page, etat, { charger }) {
         h('div', { style: { background: 'var(--surface-creux)', borderRadius: '100px', height: '8px', overflow: 'hidden' } },
           h('div', { style: { background: 'var(--encre-douce)', height: '100%', width: `${(n / max * 100).toFixed(0)}%`, borderRadius: '100px' } })),
         h('span', { style: { fontSize: '.82rem', textAlign: 'right', color: 'var(--sourdine)' } }, nombre(n))))))));
+}
+
+/* ---------- Google Analytics reel ---------- */
+
+const PERIODES = ['24h', '7j', '30j'];
+const METRIQUES = [
+  { cle: 'visiteurs', libelle: 'Visiteurs' },
+  { cle: 'sessions', libelle: 'Sessions' },
+  { cle: 'pages_vues', libelle: 'Pages vues' },
+  { cle: 'taux_engagement', libelle: "Taux d'engagement", pourcent: true },
+];
+
+async function sectionGa4() {
+  const corps = h('div.section-corps', { style: { paddingTop: '14px' } });
+  const onglets = h('div', { style: { display: 'flex', gap: '6px', marginBottom: '16px' } });
+  let periodeActive = '7j';
+
+  PERIODES.forEach((p) => {
+    const bt = h('button.bt', {
+      class: p === periodeActive ? 'bt bt-vif bt-mini' : 'bt bt-plein bt-mini',
+      onclick: async () => {
+        periodeActive = p;
+        [...onglets.children].forEach((b, i) => { b.className = PERIODES[i] === p ? 'bt bt-vif bt-mini' : 'bt bt-plein bt-mini'; });
+        await charger(p);
+      },
+    }, p);
+    onglets.append(bt);
+  });
+
+  const zoneMetriques = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '14px' } });
+  corps.append(onglets, zoneMetriques);
+
+  async function charger(periode) {
+    zoneMetriques.innerHTML = '';
+    zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.86rem' } }, 'Chargement...'));
+    try {
+      const { data: { session } } = await D.sb.auth.getSession();
+      const reponse = await fetch(`${D.EDGE_FUNCTIONS_URL}/ga4-donnees`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ periode }),
+      });
+      const resultat = await reponse.json();
+      zoneMetriques.innerHTML = '';
+      if (!reponse.ok) {
+        zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.86rem' } },
+          resultat.error === 'ID de propriete GA4 non renseigne.'
+            ? "Renseignez l'ID de propriete GA4 dans Parametrage pour afficher vos vraies statistiques ici."
+            : 'Donnees indisponibles pour le moment.'));
+        return;
+      }
+      const serie = resultat.series || [];
+      METRIQUES.forEach(({ cle, libelle, pourcent }) => {
+        const valeurs = serie.map((l) => l[cle] || 0);
+        const total = pourcent
+          ? (valeurs.reduce((s, v) => s + v, 0) / Math.max(1, valeurs.length) * 100).toFixed(1) + ' %'
+          : nombre(valeurs.reduce((s, v) => s + v, 0));
+        zoneMetriques.append(h('div', { style: { padding: '12px 14px', background: 'var(--surface-creux)', borderRadius: '10px' } },
+          h('p', { style: { fontSize: '1.3rem', fontWeight: '700' } }, total),
+          h('p', { style: { fontSize: '.8rem', color: 'var(--sourdine)', marginBottom: '8px' } }, libelle),
+          valeurs.length > 1 ? grapheAires(valeurs, { hauteur: 36 }) : null));
+      });
+    } catch {
+      zoneMetriques.innerHTML = '';
+      zoneMetriques.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.86rem' } }, 'Donnees indisponibles pour le moment.'));
+      souffler('Impossible de recuperer les statistiques Google.', 'alerte');
+    }
+  }
+
+  await charger(periodeActive);
+
+  return h('div.section',
+    h('div.section-tete', h('h2', 'Google Analytics'), h('p', 'Vos vraies statistiques, via votre compte Google connecte.')),
+    corps);
 }
 
 function mesure(etiq, val, sous) {

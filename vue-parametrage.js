@@ -111,11 +111,23 @@ export async function rendre(page, etat) {
       location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
     } }, tousConnectes ? 'Reconnecter mon compte Google' : 'Se connecter avec Google');
 
+    const proprieteGa4 = h('input', {
+      type: 'text', placeholder: 'ID de propriete GA4 (ex : 123456789)', value: profil.ga4_property_id || '',
+      style: { marginTop: '10px' },
+    });
+    const sauverPropriete = differer(async () => {
+      try { await D.majProfil(client.id, { ga4_property_id: proprieteGa4.value || null }); profil.ga4_property_id = proprieteGa4.value || null; souffler('Enregistre.', 'bien'); }
+      catch { souffler('Enregistrement impossible.', 'alerte'); }
+    });
+    proprieteGa4.addEventListener('input', sauverPropriete);
+
     return h('div.champ-inline',
       h('label', 'Google Business + Analytics'),
       h('p.aide', "Un seul clic connecte votre fiche Google Business et vos statistiques GA4 — LocWeb pourra afficher vos vraies performances ici. Aucun mot de passe ne nous est jamais communique."),
       lignesEtat,
-      h('div', { style: { marginTop: '12px' } }, bouton));
+      h('div', { style: { marginTop: '12px' } }, bouton),
+      h('p.aide', { style: { marginTop: '12px' } }, "ID de propriete GA4 (different du code G-XXXXX) — dans GA4 : Admin -> Parametres de la propriete."),
+      proprieteGa4);
   }
 
   function ligneEtat(libelle, valeur) {

@@ -1406,3 +1406,13 @@ a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
 .suivi-ads:last-child{ border-bottom: 0; }
 .suivi-ads-nom{ font-size: .95rem; font-weight: 650; }
 .suivi-ads-sous{ font-size: .82rem; color: var(--sourdine); margin-top: 2px; }
+
+/* Avertissement, pas erreur : le client peut continuer. D'ou l'ambre
+   et le liseré plutot qu'un encadré rouge, qui ferait croire a un refus. */
+.avertissement{
+  display:flex; gap:10px; margin-top:12px; padding:11px 14px;
+  border-left:3px solid var(--ambre); border-radius:0 8px 8px 0;
+  background: var(--surface-creux);
+  font-size:.87rem; color: var(--encre-douce); line-height:1.55;
+}
+.avertissement[hidden]{ display:none; }

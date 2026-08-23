@@ -14,6 +14,13 @@
 import { h, vider, euros, depuis, pastilleEtat, ETATS_CAMPAGNE, souffler, nombre } from './outils.js';
 import * as D from './donnees.js';
 
+/* En dessous de ce budget hebdomadaire, une campagne locale ne sort
+   pas assez souvent pour produire quoi que ce soit de mesurable — et
+   la gestion coute alors plus cher que la publicite elle-meme. On ne
+   bloque pas : c'est l'argent du client. On le dit, une fois, et on le
+   laisse decider. */
+const BUDGET_FAIBLE = 35;
+
 const OBJECTIFS = [
   { cle: 'appels', libelle: "Plus d'appels" },
   { cle: 'devis',  libelle: 'Plus de demandes de devis' },
@@ -167,9 +174,16 @@ export async function rendre(page, etat, { charger, oublier }) {
       corps.append(choix);
 
       const budget = h('input', { type: 'number', min: '10', step: '10', value: reponses.budget_hebdo });
-      budget.addEventListener('input', () => { reponses.budget_hebdo = Number(budget.value) || 0; });
+      const alerte = h('p.avertissement', { hidden: true },
+        `En dessous de ${BUDGET_FAIBLE} EUR par semaine, votre annonce sort trop rarement pour donner des résultats visibles. Vous pouvez continuer, mais nous préférons vous le dire avant.`);
+      const verifier = () => { alerte.hidden = !(reponses.budget_hebdo && reponses.budget_hebdo < BUDGET_FAIBLE); };
+      budget.addEventListener('input', () => {
+        reponses.budget_hebdo = Number(budget.value) || 0;
+        verifier();
+      });
+      verifier();
       corps.append(h('label.champ', { style: { marginTop: '22px' } },
-        h('span', 'Votre budget (EUR / semaine)'), budget));
+        h('span', 'Votre budget (EUR / semaine)'), budget), alerte);
 
       return {
         titre: 'Votre campagne',
@@ -331,6 +345,8 @@ export async function rendre(page, etat, { charger, oublier }) {
       plus.addEventListener('click', () => bouger(PAS));
 
       const parSemaine = h('p.aide', { style: { marginTop: '10px' } });
+      const alerte = h('p.avertissement', { hidden: true },
+        `En dessous de ${BUDGET_FAIBLE} EUR par semaine, votre annonce sort trop rarement pour donner des résultats visibles.`);
 
       function peindre() {
         const b = reponses.budget_hebdo || 0;
@@ -339,6 +355,7 @@ export async function rendre(page, etat, { charger, oublier }) {
         moins.disabled = b <= MINI;
         parSemaine.textContent =
           `Soit ${nombre(b)} EUR par semaine. Ajustable à tout moment, même après le lancement.`;
+        alerte.hidden = !(b && b < BUDGET_FAIBLE);
 
         vider(tableau);
         tableau.append(
@@ -350,7 +367,7 @@ export async function rendre(page, etat, { charger, oublier }) {
       peindre();
       corps.append(tableau);
 
-      corps.append(parSemaine);
+      corps.append(parSemaine, alerte);
 
       corps.append(h('p.note-prudence',
         "Aucun paiement n'est effectué depuis cette page. Après validation, nous vous recontactons pour finaliser la mise en place de la campagne dans Google Ads."));

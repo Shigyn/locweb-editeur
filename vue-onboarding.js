@@ -20,6 +20,50 @@ const OBJECTIFS = [
   { cle: 'avis',   libelle: "Plus d'avis Google",        icone: '<path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9Z"/>' },
 ];
 
+// Quatre familles, pas douze : le but est de trier en un coup d'oeil,
+// pas de faire une nomenclature INSEE. Le champ metier juste en dessous
+// recupere la precision. L'exemple propose s'adapte au secteur choisi —
+// "ex : Pizzeria" parle plus a un restaurateur que "ex : Plombier".
+const SECTEURS = [
+  {
+    cle: 'artisan',
+    libelle: 'Artisan',
+    exemple: 'ex : Plombier chauffagiste',
+    icone: '<path d="M4 16a8 8 0 0 1 16 0"/><path d="M2 16h20"/><path d="M10 8V4.5A1.5 1.5 0 0 1 11.5 3h1A1.5 1.5 0 0 1 14 4.5V8"/>',
+  },
+  {
+    cle: 'independant',
+    libelle: 'Indépendant',
+    exemple: 'ex : Coach sportif, photographe',
+    icone: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/>',
+  },
+  {
+    cle: 'restaurateur',
+    libelle: 'Restaurateur',
+    exemple: 'ex : Pizzeria, brasserie',
+    icone: '<path d="M6 3v7a2 2 0 0 0 4 0V3"/><path d="M8 10v11"/><path d="M17.5 3c-1.4 2-2 4-2 6 0 1.4.7 2 2 2v10"/>',
+  },
+  {
+    cle: 'autre',
+    libelle: 'Autre',
+    exemple: 'ex : Votre activité',
+    icone: '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1.1" fill="currentColor" stroke="none"/>',
+  },
+];
+
+// Des paliers, pas un champ libre : ce qui compte pour cibler une
+// campagne, c'est l'ordre de grandeur.
+const DISTANCES = [
+  'Sur place uniquement',
+  "Jusqu'à 5 km",
+  "Jusqu'à 10 km",
+  "Jusqu'à 20 km",
+  "Jusqu'à 30 km",
+  "Jusqu'à 50 km",
+  'Plus de 50 km',
+  'Toute la France',
+];
+
 const CANAUX = [
   { cle: 'bouche',   libelle: 'Bouche a oreille',  icone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>' },
   { cle: 'google',   libelle: 'Recherche Google',  icone: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>' },
@@ -50,8 +94,9 @@ export async function rendre(page, etat, { terminer }) {
   // sans echappatoire, c'est la porte fermee au nez du client presse.
   page.append(
     h('div.onb-barre',
-      h('p.marque', { html: 'Loc<em>Web</em>' }),
-      h('button.bt.bt-nu', { onclick: passer }, 'Passer pour l\'instant')),
+      h('div.onb-barre-dedans',
+        h('p.marque', { html: 'Loc<em>Web</em>' }),
+        h('button.bt.bt-nu', { onclick: passer }, 'Passer pour l\'instant'))),
     hote,
   );
 
@@ -68,6 +113,7 @@ export async function rendre(page, etat, { terminer }) {
 
   function champsProfil() {
     return {
+      secteur: reponses.secteur ?? null,
       metier_precis: reponses.metier_precis ?? null,
       localisation: reponses.localisation ?? null,
       zone_intervention: reponses.zone_intervention ?? null,
@@ -107,12 +153,78 @@ export async function rendre(page, etat, { terminer }) {
   /* ---------- etape 1 : le metier ---------- */
 
   function etapeMetier() {
+    const saisieMetier = h('input', {
+      type: 'text',
+      placeholder: exempleMetier(),
+      value: reponses.metier_precis ?? '',
+    });
+    saisieMetier.addEventListener('input', () => {
+      reponses.metier_precis = saisieMetier.value || null;
+    });
+
+    const cartes = cartesUniques(SECTEURS, 'secteur', (choisi) => {
+      // Le placeholder suit le secteur, mais on ne touche jamais a ce
+      // que le client a deja tape : ce serait effacer son travail.
+      saisieMetier.placeholder = choisi ? choisi.exemple : exempleMetier();
+      if (!saisieMetier.value) saisieMetier.focus();
+    });
+
     return {
       titre: h('h1', 'Quel est votre métier ?'),
       sous: "Cela nous sert à proposer les bons mots-clés pour vos campagnes.",
-      corps: h('div.onb-grille',
-        champ('Votre métier', 'metier_precis', 'ex : Plombier chauffagiste')),
+      corps: h('div',
+        cartes,
+        h('label.champ', { style: { marginTop: '20px', marginBottom: '0' } },
+          h('span', 'Votre métier, en un mot'),
+          saisieMetier)),
     };
+  }
+
+  function exempleMetier() {
+    const choisi = SECTEURS.find((s) => s.cle === reponses.secteur);
+    return choisi ? choisi.exemple : 'ex : Plombier chauffagiste';
+  }
+
+  /* Cartes a choix UNIQUE. Volontairement separe de cartesCochables :
+     un choix unique se re-clique pour se deselectionner, et la semantique
+     ARIA n'est pas la meme (radio, pas case a cocher). Fusionner les deux
+     donnerait une fonction a rallonge pleine de si. */
+  function cartesUniques(liste, cle, surChoix) {
+    const grille = h('div.onb-choix', { role: 'radiogroup' });
+    const cartes = new Map();
+
+    function peindre() {
+      cartes.forEach((carte, valeur) => {
+        const actif = reponses[cle] === valeur;
+        carte.className = actif ? 'choix actif' : 'choix';
+        carte.setAttribute('aria-checked', String(actif));
+        carte.querySelector('.choix-case').innerHTML = actif ? '&check;' : '';
+      });
+    }
+
+    liste.forEach((o) => {
+      const carte = h('button.choix', {
+        type: 'button', role: 'radio',
+        onclick: () => {
+          // Re-cliquer sur le choix courant l'annule : sans ca, un clic
+          // par erreur sur "Restaurateur" serait impossible a defaire.
+          reponses[cle] = reponses[cle] === o.cle ? null : o.cle;
+          peindre();
+          surChoix?.(SECTEURS.find((s) => s.cle === reponses[cle]) || null);
+        },
+      },
+        h('span.choix-icone', h('svg', {
+          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+          'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', html: o.icone,
+        })),
+        h('span.choix-texte', o.libelle),
+        h('span.choix-case'));
+      cartes.set(o.cle, carte);
+      grille.append(carte);
+    });
+
+    peindre();
+    return grille;
   }
 
   /* ---------- etape 2 : la zone ---------- */
@@ -122,25 +234,43 @@ export async function rendre(page, etat, { terminer }) {
       titre: h('h1', 'Ou intervenez-vous ?'),
       sous: 'Votre ville et le rayon autour duquel vous vous déplacez.',
       corps: h('div.onb-grille',
-        champ('Votre ville', 'localisation', 'ex : Béziers'),
-        champ("Jusqu'à quelle distance", 'zone_intervention', 'ex : 30 km autour')),
+        champ('Votre ville', 'localisation', 'Nom de votre ville'),
+        listeDeroulante("Jusqu'à quelle distance", 'zone_intervention', DISTANCES)),
     };
   }
 
   /* ---------- etape 3 : presence en ligne ---------- */
 
   function etapePresence() {
-    const corps = h('div.onb-grille',
-      champReseau('Facebook', 'facebook'),
-      champReseau('Instagram', 'instagram'));
+    const corps = h('div',
+      h('div.onb-grille',
+        champReseau('Facebook', 'facebook'),
+        champReseau('Instagram', 'instagram')));
 
-    corps.append(
-      ligneConnexion('Google Business Profile', reponses.acces_google_business),
-      ligneConnexion('Google Analytics', reponses.acces_ga4));
+    // Volontairement AUCUN bouton de connexion ici. Le consentement
+    // Google est une redirection vers un autre site : declenchee au
+    // milieu du questionnaire, elle en ejecte le client, qui revient
+    // sur un formulaire vide sans comprendre ce qui s'est passe. La
+    // connexion se fait apres, depuis Parametrage, ou l'aller-retour
+    // ne fait rien perdre.
+    const dejaConnecte = reponses.acces_google_business || reponses.acces_ga4;
+    corps.append(h('div.onb-apres',
+      h('span.onb-apres-icone', h('svg', {
+        viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+        'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        html: dejaConnecte
+          ? '<path d="M20 6 9 17l-5-5"/>'
+          : '<circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/>',
+      })),
+      h('div',
+        h('b', dejaConnecte ? 'Vos comptes Google sont connectés' : 'Et vos statistiques Google ?'),
+        h('p', dejaConnecte
+          ? 'Rien à faire ici, vos chiffres remonteront automatiquement.'
+          : "Fiche Google et Analytics se connectent en un clic depuis Paramétrage, une fois le questionnaire terminé. On vous y emmènera."))));
 
     return {
-      titre: h('h1', 'Vos réseaux et comptes Google'),
-      sous: 'Tout est facultatif — vous pourrez connecter vos comptes plus tard depuis Paramétrage.',
+      titre: h('h1', 'Vos réseaux sociaux'),
+      sous: 'Facultatif. Ils apparaîtront dans le pied de page de votre site.',
       corps,
     };
   }
@@ -208,6 +338,21 @@ export async function rendre(page, etat, { terminer }) {
     return h('label.champ', h('span', libelle), saisie);
   }
 
+  /* Une liste fermee vaut mieux qu'un champ libre quand la reponse sert
+     ensuite a cibler : "30km", "30 km", "trente kilometres" et "dept 34"
+     sont quatre facons d'ecrire la meme chose, et aucune n'est
+     exploitable automatiquement. */
+  function listeDeroulante(libelle, cle, options) {
+    const saisie = h('select',
+      h('option', { value: '' }, 'Choisir...'),
+      ...options.map((o) => h('option', { value: o }, o)));
+    saisie.value = reponses[cle] || '';
+    saisie.addEventListener('change', () => {
+      reponses[cle] = saisie.value || null;
+    });
+    return h('label.champ', h('span', libelle), saisie);
+  }
+
   function champReseau(libelle, cle) {
     const saisie = h('input', { type: 'text', placeholder: `https://${cle}.com/...`, value: reponses.reseaux?.[cle] || '' });
     saisie.addEventListener('input', () => {
@@ -231,14 +376,6 @@ export async function rendre(page, etat, { terminer }) {
     return h('div.onb-bascule',
       h('div', h('p.onb-bascule-titre', libelle), aide ? h('p.onb-bascule-aide', aide) : null),
       bouton);
-  }
-
-  function ligneConnexion(libelle, connecte) {
-    return h('div.onb-connexion',
-      h('span.onb-connexion-nom', libelle),
-      connecte
-        ? h('span.etat', { 'data-ton': 'bien' }, 'Connecté')
-        : h('a.bt.bt-plein.bt-mini', { href: '#/parametrage' }, '+ Connecter'));
   }
 
   /* ---------- ecran de preparation ---------- */
@@ -320,15 +457,33 @@ export async function rendre(page, etat, { terminer }) {
 
   function ecranFinal() {
     vider(hote);
+
+    // L'etape 4 annonce qu'on emmenera le client connecter Google : on
+    // tient parole ici. Sans ca la phrase serait un mensonge, et le
+    // client se retrouverait avec un tableau de bord vide sans savoir
+    // qu'il lui manque une connexion.
+    const restentComptes = !reponses.acces_ga4 || !reponses.acces_google_business;
+
+    const allerA = async (hash) => {
+      await terminer();
+      location.hash = hash;
+    };
+
     hote.append(h('div.prepa',
       h('span.prepa-coche', { html: '&check;' }),
       h('h1', 'Votre espace est prêt'),
       h('p.onb-sous', { style: { textAlign: 'center' } },
-        `Le tableau de bord de ${client.nom_site || 'votre entreprise'} est configuré et prêt à l'emploi.`),
-      h('button.bt.bt-vif', {
-        style: { marginTop: '22px' },
-        onclick: terminer,
-      }, 'Accéder à mon tableau de bord →')));
+        restentComptes
+          ? "Dernière chose : connectez Google pour voir vos visites et vos appels. C'est un clic, et c'est ce qui remplit votre tableau de bord."
+          : `Le tableau de bord de ${client.nom_site || 'votre entreprise'} est configuré et prêt à l'emploi.`),
+      h('div.prepa-boutons',
+        restentComptes
+          ? h('button.bt.bt-vif', { onclick: () => allerA('#/parametrage') }, 'Connecter Google →')
+          : null,
+        h('button', {
+          class: restentComptes ? 'bt bt-nu' : 'bt bt-vif',
+          onclick: terminer,
+        }, restentComptes ? 'Plus tard' : 'Accéder à mon tableau de bord →'))));
   }
 
   afficher();

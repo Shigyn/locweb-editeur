@@ -843,13 +843,40 @@ button.entete-avatar{ cursor:pointer; border:0; }
 #espace.mode-onboarding .page{ max-width: none; padding: 0; }
 #espace.mode-onboarding{ background: var(--fond); }
 
+/* Collant : sur un ecran de telephone, les cartes de l'etape 5 poussent
+   le bandeau hors de vue et le client perd le repere de ou il est — et
+   la seule sortie du questionnaire avec. */
 .onb-barre{
-  display: flex; align-items: center; gap: 14px;
-  padding: 18px clamp(18px,4vw,34px);
+  position: sticky; top: 0; z-index: 20;
   border-bottom: 1px solid var(--trait); background: var(--surface);
+}
+/* Le contenu du bandeau suit la meme colonne que le questionnaire :
+   une marque plaquee tout a gauche d'un ecran large, au-dessus d'un
+   texte centre, donne une page mal montee. */
+.onb-barre-dedans{
+  display: flex; align-items: center; gap: 14px;
+  max-width: 620px; margin: 0 auto;
+  padding: 16px clamp(18px,4vw,24px);
 }
 .onb-barre .marque{ margin-bottom: 0; font-size: 1.15rem; }
 .onb-barre .bt{ margin-left: auto; }
+
+/* Ce qui se fera apres le questionnaire : une explication, pas une
+   action — d'ou l'absence de bouton. */
+.onb-apres{
+  display: flex; align-items: flex-start; gap: 14px; margin-top: 20px;
+  padding: 16px 18px; border-radius: 14px;
+  background: var(--surface-creux); border: 1px dashed var(--trait-fort);
+}
+.onb-apres-icone{
+  width: 34px; height: 34px; border-radius: 10px; flex: none;
+  display: grid; place-items: center;
+  background: var(--surface); border: 1px solid var(--trait-fort);
+  color: var(--encre-douce);
+}
+.onb-apres-icone svg{ width: 17px; height: 17px; }
+.onb-apres b{ display: block; font-size: .93rem; font-weight: 650; }
+.onb-apres p{ font-size: .87rem; color: var(--sourdine); line-height: 1.55; margin-top: 4px; }
 
 .onb{ max-width: 620px; margin: 0 auto; padding: clamp(24px,5vh,64px) clamp(18px,4vw,24px) 48px; }
 .onb-compteur{
@@ -1263,4 +1290,13 @@ kbd{
   display:flex; align-items:center; justify-content:center;
   background: var(--surface-creux); border:1px solid var(--trait);
   font-size:.72rem; font-weight:700; color: var(--encre);
+}
+
+/* Choix unique : la pastille est ronde. Un carre veut dire "plusieurs
+   reponses possibles" — le detail est minuscule mais c'est ce qui evite
+   au client de cliquer partout en croyant tout pouvoir cocher. */
+[role="radiogroup"] .choix-case{ border-radius:50%; }
+
+.prepa-boutons{
+  display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:22px;
 }

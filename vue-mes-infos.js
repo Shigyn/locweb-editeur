@@ -38,9 +38,17 @@ export async function rendre(page, etat) {
 
   function groupe(titre, aide, champs) {
     const grille = h('div.onb-grille');
-    champs.forEach(({ cle, libelle, type, indice }) => {
-      const saisie = h('input', { type, value: profil[cle] || '', placeholder: indice || '' });
-      saisie.addEventListener('input', differer(async () => {
+    champs.forEach(({ cle, libelle, type, indice, options }) => {
+      // Un secteur est une liste fermee : une liste deroulante evite les
+      // fautes de frappe qui rendraient le champ inexploitable ensuite.
+      const saisie = type === 'choix'
+        ? h('select', { value: profil[cle] || '' },
+            h('option', { value: '' }, 'Non renseigné'),
+            ...options.map((o) => h('option', { value: o.valeur }, o.libelle)))
+        : h('input', { type, value: profil[cle] || '', placeholder: indice || '' });
+      if (type === 'choix') saisie.value = profil[cle] || '';
+
+      saisie.addEventListener(type === 'choix' ? 'change' : 'input', differer(async () => {
         const valeur = saisie.value.trim() || null;
         const { ok } = await D.majProfilTolerant(client.id, { [cle]: valeur });
         if (!ok) { souffler('Enregistrement impossible.', 'alerte'); return; }

@@ -25,9 +25,24 @@ export const champsProfil = {
   // completer plus tard, il doit retrouver ses reponses, pas un second
   // jeu de champs vides a cote.
   activite: [
+    { cle: 'secteur', libelle: 'Votre secteur', type: 'choix', options: [
+      { valeur: 'artisan',      libelle: 'Artisan' },
+      { valeur: 'independant',  libelle: 'Indépendant' },
+      { valeur: 'restaurateur', libelle: 'Restaurateur' },
+      { valeur: 'autre',        libelle: 'Autre' },
+    ] },
     { cle: 'metier_precis',     libelle: 'Votre métier',        type: 'text', indice: 'Plombier, coiffeur, restaurateur...' },
-    { cle: 'localisation',      libelle: 'Votre ville',         type: 'text', indice: 'Béziers' },
-    { cle: 'zone_intervention', libelle: "Zone d'intervention", type: 'text', indice: 'Béziers et 20 km autour' },
+    { cle: 'localisation',      libelle: 'Votre ville',         type: 'text', indice: 'Nom de votre ville' },
+    { cle: 'zone_intervention', libelle: "Zone d'intervention", type: 'choix', options: [
+      { valeur: 'Sur place uniquement', libelle: 'Sur place uniquement' },
+      { valeur: "Jusqu'à 5 km",  libelle: "Jusqu'à 5 km" },
+      { valeur: "Jusqu'à 10 km", libelle: "Jusqu'à 10 km" },
+      { valeur: "Jusqu'à 20 km", libelle: "Jusqu'à 20 km" },
+      { valeur: "Jusqu'à 30 km", libelle: "Jusqu'à 30 km" },
+      { valeur: "Jusqu'à 50 km", libelle: "Jusqu'à 50 km" },
+      { valeur: 'Plus de 50 km', libelle: 'Plus de 50 km' },
+      { valeur: 'Toute la France', libelle: 'Toute la France' },
+    ] },
   ],
 };
 

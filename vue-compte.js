@@ -341,9 +341,17 @@ export async function rendre(page, etat) {
       }
 
       if (!zoneChoix.children.length) {
+        // Quand Google refuse, on montre POURQUOI. "Aucune propriete
+        // trouvee" laisse croire que le compte est vide, alors que
+        // neuf fois sur dix c'est une API a activer cote Google Cloud.
+        const detail = comptes.soucis
+          ? Object.entries(comptes.soucis).map(([quoi, message]) => `${quoi} : ${message}`).join(' — ')
+          : null;
         zoneChoix.append(
           h('p.aide', { style: { marginBottom: '10px' } },
-            "Aucune propriété ni fiche trouvée sur ce compte Google. Vous pouvez saisir les identifiants à la main."),
+            detail
+              ? `Google a refusé la liste. ${detail}`
+              : "Aucune propriété ni fiche trouvée sur ce compte Google."),
           champsManuels());
       }
     }

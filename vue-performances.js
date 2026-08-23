@@ -19,24 +19,56 @@ const PERIODES = [
   { cle: '30j', libelle: '30 jours', compare: 'les 30 jours précédents' },
 ];
 
+/* Duree moyenne et taux d'engagement sont partis : ce sont des mesures
+   de marketeur. Un artisan qui lit "1 min 32" ne fera rien de different
+   le lendemain. A leur place, deux chiffres qui parlent d'argent — les
+   demandes recues et les appels depuis la fiche Google — injectes par
+   l'appelant, car ils ne viennent pas de GA4. */
 const METRIQUES = [
-  { cle: 'visiteurs',       libelle: 'Visiteurs',         icone: 'personnes' },
-  { cle: 'pages_vues',      libelle: 'Pages vues',        icone: 'page' },
-  { cle: 'duree_moyenne',   libelle: 'Durée moyenne',     icone: 'horloge', duree: true },
-  { cle: 'taux_engagement', libelle: "Taux d'engagement", icone: 'cible',   pourcent: true },
+  { cle: 'visiteurs',  libelle: 'Visiteurs',  icone: 'personnes' },
+  { cle: 'pages_vues', libelle: 'Pages vues', icone: 'page' },
 ];
 
 const ICONES = {
   personnes: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.3 2.9-5.8 6.5-5.8s6.5 2.5 6.5 5.8"/><circle cx="17.5" cy="7.5" r="2.4"/><path d="M16 13.6c2.6.5 4.5 2.7 4.5 5.6"/>',
   page:      '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
   horloge:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  message:   '<path d="M4 5h16v12H8l-4 4V5Z"/>',
+  telephone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
   cible:     '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8" fill="currentColor" stroke="none"/>',
+};
+
+/* Les libelles de Google, traduits. "Organic Search" ne veut rien dire
+   pour un artisan ; "Recherche Google" si. */
+const CANAUX = {
+  'Organic Search': 'Recherche Google',
+  'Direct': 'Adresse tapée ou favori',
+  'Organic Social': 'Réseaux sociaux',
+  'Paid Search': 'Publicité Google',
+  'Paid Social': 'Publicité réseaux',
+  'Referral': 'Depuis un autre site',
+  'Email': 'E-mail',
+  'Organic Video': 'Vidéo',
+  'Display': 'Bannières',
+  'Unassigned': 'Origine inconnue',
 };
 
 const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const APPAREILS = { mobile: 'Téléphone', desktop: 'Ordinateur', tablet: 'Tablette' };
 
-export async function rendre(page, etat) {
+export async function rendre(page, etat, { charger: cache } = {}) {
+  const { client } = etat;
+
+  // Chargees une fois pour toute la page : la rangee de chiffres du haut
+  // en a besoin a chaque changement de periode, et rien ne justifie de
+  // les redemander a chaque clic d'onglet.
+  // `cache` et non `charger` : une fonction locale `charger(periode)`
+  // existe plus bas, et une declaration de fonction masque un parametre
+  // du meme nom. Le bug etait silencieux — la liste revenait vide.
+  const demandes = await (cache
+    ? cache('demandes', () => D.listerDemandes(client.id))
+    : D.listerDemandes(client.id)).catch(() => []);
+
   vider(page);
   page.append(h('h1', 'Statistiques'));
 
@@ -69,6 +101,14 @@ export async function rendre(page, etat) {
     h('button.bt.bt-nu.bt-mini', { onclick: () => window.print() }, 'Imprimer'));
 
   page.append(h('div.barre-outils', onglets, outils), zone);
+
+  // Les demandes de la periode affichee, pas le total historique :
+  // sinon le chiffre ne bougerait jamais d'un onglet a l'autre.
+  function demandesSur(periode) {
+    const jours = { '24h': 1, '7j': 7, '30j': 30 }[periode.cle] ?? 30;
+    const depuisDate = Date.now() - jours * 864e5;
+    return demandes.filter((d) => new Date(d.date_creation).getTime() >= depuisDate).length;
+  }
 
   async function charger(periode) {
     // Le squelette reprend exactement la structure et les hauteurs du
@@ -141,6 +181,11 @@ export async function rendre(page, etat) {
         etiquette,
         h('p.kpi-sous', `vs ${periode.compare}`)));
     });
+    // Les demandes ne sortent pas de GA4 mais de la base : c'est
+    // pourtant le chiffre que le client cherche en premier. Les appels,
+    // eux, restent dans le bloc "fiche Google" plus bas — les afficher
+    // ici aussi, ce serait la meme donnee deux fois sur un ecran.
+    grille.append(carteSimple('message', 'Demandes reçues', nombre(demandesSur(periode)), 'demandes'));
     site.corps.append(grille);
 
     /* ---------- un seul graphique dans le temps ---------- */
@@ -164,6 +209,11 @@ export async function rendre(page, etat) {
     if (rep.appareils?.length) {
       duo.append(carteCamembert('Téléphone ou ordinateur', 'appareils',
         rep.appareils.map((a) => ({ nom: APPAREILS[a.cle] || a.cle, valeur: a.valeur }))));
+    }
+    if (rep.sources?.length) {
+      duo.append(carteCamembert('Par où ils arrivent', 'sources',
+        rep.sources.filter((x) => x.cle && x.cle !== '(not set)')
+          .map((x) => ({ nom: CANAUX[x.cle] || x.cle, valeur: x.valeur }))));
     }
     if (rep.villes?.length) {
       duo.append(carteCamembert("D'où viennent vos visiteurs", 'villes',
@@ -364,6 +414,19 @@ function formaterDuree(secondes) {
 function formaterJour(brut) {
   if (!brut || brut.length !== 8) return brut || '';
   return `${brut.slice(6, 8)}/${brut.slice(4, 6)}`;
+}
+
+/* Une carte sans variation ni sparkline : les demandes et les appels
+   n'ont pas d'historique jour par jour a ce stade. */
+function carteSimple(icone, libelle, valeur, cleAide) {
+  return h('div.kpi',
+    h('div.kpi-haut', h('span.kpi-icone', h('svg', {
+      viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+      'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      html: ICONES[icone] || '',
+    }))),
+    h('p.kpi-val', valeur),
+    avecAide(h('p.kpi-etiq', libelle), EXPLICATIONS[cleAide]));
 }
 
 function carteVide(titre, texte, action) {

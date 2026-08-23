@@ -341,6 +341,7 @@ export function sectionPliable({ titre, sous, resume, icone, ouvert = false }) {
 }
 
 export const EXPLICATIONS = {
+  sources: "Par quel chemin vos visiteurs sont arrivés : une recherche Google, un lien sur un réseau social, ou votre adresse tapée directement. C'est ce qui dit sur quel levier appuyer.",
   appels: "Personnes ayant appuyé sur Appeler depuis votre fiche Google. Ces appels ne passent pas par votre site.",
   visiteurs: "Nombre de personnes différentes venues sur votre site. Une même personne qui revient trois fois compte pour une.",
   sessions: "Nombre de visites au total. Si un visiteur revient le lendemain, cela fait deux sessions.",

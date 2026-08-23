@@ -164,6 +164,10 @@ export async function rendre(page, etat, { charger: cache } = {}) {
     const totaux = r.totaux || {};
     const variations = r.variations || {};
     const rep = r.repartitions || {};
+    // Google refuse le lot entier des qu'une requete est invalide : les
+    // six repartitions disparaissent alors d'un coup. On le dit plutot
+    // que de laisser une page a moitie vide sans explication.
+    if (r.repartitions_erreur) console.error('Répartitions GA4 refusées :', r.repartitions_erreur);
     vider(zone);
 
     /* ---------- cartes KPI ---------- */
@@ -286,6 +290,11 @@ export async function rendre(page, etat, { charger: cache } = {}) {
         ordre.map((n) => ({ nom: JOURS_SEMAINE[n], valeur: parJour.get(n) || 0 }))));
     }
     if (duo2.children.length) site.corps.append(duo2);
+
+    if (r.repartitions_erreur) {
+      site.corps.append(carteVide('Détails indisponibles',
+        "Les chiffres principaux sont à jour ; le détail par appareil, ville et source n'a pas pu être chargé."));
+    }
 
     if (!serie.length) {
       site.corps.append(carteVide('Aucune donnée sur cette période',

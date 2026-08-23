@@ -63,6 +63,9 @@ const CONTACTS = {
   clic_reseau_social: 'Clics vers vos réseaux',
 };
 
+/* GA4 dit "new" et "returning" ; on parle francais. */
+const FIDELITE = { new: 'Première visite', returning: 'Déjà venus' };
+
 const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const APPAREILS = { mobile: 'Téléphone', desktop: 'Ordinateur', tablet: 'Tablette' };
 
@@ -196,6 +199,15 @@ export async function rendre(page, etat, { charger: cache } = {}) {
     // eux, restent dans le bloc "fiche Google" plus bas — les afficher
     // ici aussi, ce serait la meme donnee deux fois sur un ecran.
     grille.append(carteSimple('message', 'Demandes reçues', nombre(demandesSur(periode)), 'demandes'));
+
+    // L'appel depuis le site est l'action qui compte chez un artisan,
+    // et elle merite sa place a cote des visiteurs — pas seulement une
+    // ligne dans une liste plus bas.
+    const appelsSite = (rep.contacts || []).find((c) => c.cle === 'appel_telephone')?.valeur;
+    if (appelsSite !== undefined) {
+      grille.append(carteSimple('telephone', 'Appels depuis le site', nombre(appelsSite), 'contacts'));
+    }
+
     site.corps.append(grille);
 
     /* ---------- un seul graphique dans le temps ---------- */
@@ -244,6 +256,21 @@ export async function rendre(page, etat, { charger: cache } = {}) {
         site.corps.append(carteRepartition('Ce que font vos visiteurs', 'contacts', lignes));
       }
     }
+
+    const duoFid = h('div.grille-duo');
+    if (rep.fidelite?.length) {
+      duoFid.append(carteCamembert('Nouveaux ou habitués', 'fidelite',
+        rep.fidelite
+          .filter((f) => f.cle && f.cle !== '(not set)')
+          .map((f) => ({ nom: FIDELITE[f.cle] || f.cle, valeur: f.valeur }))));
+    }
+    if (rep.sources_detail?.length) {
+      duoFid.append(carteRepartition('Le détail des sources', 'sources_detail',
+        rep.sources_detail
+          .filter((x) => x.cle && x.cle !== '(not set)')
+          .map((x) => ({ nom: x.cle === '(direct)' ? 'Accès direct' : x.cle, valeur: x.valeur }))));
+    }
+    if (duoFid.children.length) site.corps.append(duoFid);
 
     const duo2 = h('div.grille-duo');
     if (rep.pages?.length) {

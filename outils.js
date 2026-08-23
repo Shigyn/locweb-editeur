@@ -247,7 +247,7 @@ export function camembert(entrees, { taille = 132, trou = 0.62 } = {}) {
    points ne justifie pas d'embarquer Chart.js et ses 200 Ko. */
 export function grapheComplet(valeurs, etiquettes, { hauteur = 220 } = {}) {
   const L = 760, H = hauteur;
-  const gaucheAxe = 44, basAxe = 26, hautMarge = 12, droiteMarge = 12;
+  const gaucheAxe = 46, basAxe = 28, hautMarge = 14, droiteMarge = 14;
   const aireL = L - gaucheAxe - droiteMarge;
   const aireH = H - hautMarge - basAxe;
 
@@ -257,37 +257,66 @@ export function grapheComplet(valeurs, etiquettes, { hauteur = 220 } = {}) {
   const x = (i) => gaucheAxe + (n <= 1 ? aireL / 2 : (i / (n - 1)) * aireL);
   const y = (v) => hautMarge + aireH - (v / max) * aireH;
 
+  // Identifiant unique par graphe : deux graphes sur la meme page
+  // partageraient sinon le meme degrade, et le second effacerait le
+  // premier.
+  const id = `g${Math.random().toString(36).slice(2, 8)}`;
+
   const NB_LIGNES = 4;
   let grille = '';
   for (let i = 0; i <= NB_LIGNES; i++) {
     const v = (max / NB_LIGNES) * i;
     const py = y(v);
-    grille += `<line x1="${gaucheAxe}" y1="${py.toFixed(1)}" x2="${L - droiteMarge}" y2="${py.toFixed(1)}" stroke="var(--trait)" stroke-width="1" />`;
-    grille += `<text x="${gaucheAxe - 10}" y="${(py + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--sourdine)">${abrege(v)}</text>`;
+    // Pointilles plutot que traits pleins : la grille doit se lire sans
+    // jamais entrer en concurrence avec la courbe.
+    grille += `<line x1="${gaucheAxe}" y1="${py.toFixed(1)}" x2="${L - droiteMarge}" y2="${py.toFixed(1)}"
+      stroke="var(--trait)" stroke-width="1" stroke-dasharray="2 5" />`;
+    grille += `<text x="${gaucheAxe - 12}" y="${(py + 4).toFixed(1)}" text-anchor="end"
+      font-size="10.5" font-weight="600" letter-spacing=".04em"
+      style="font-variant-numeric:tabular-nums" fill="var(--sourdine)">${abrege(v)}</text>`;
   }
 
   const points = valeurs.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
   const aire = `${gaucheAxe},${hautMarge + aireH} ${points} ${x(n - 1).toFixed(1)},${hautMarge + aireH}`;
 
-  // Un label sur deux au maximum : au-dela, ils se chevauchent et
-  // deviennent illisibles plutot qu'informatifs.
   const pas = Math.max(1, Math.ceil(n / 8));
   let labels = '';
   etiquettes.forEach((e, i) => {
     if (i % pas !== 0 && i !== n - 1) return;
-    labels += `<text x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--sourdine)">${e}</text>`;
+    labels += `<text x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle"
+      font-size="10.5" font-weight="600" letter-spacing=".04em"
+      style="font-variant-numeric:tabular-nums" fill="var(--sourdine)">${e}</text>`;
   });
 
-  const pastilles = valeurs.map((v, i) =>
-    `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" fill="var(--surface)" stroke="var(--encre)" stroke-width="1.6" />`).join('');
+  // Les points intermediaires restent discrets ; le dernier est marque,
+  // parce que c'est celui qu'on cherche — la valeur d'aujourd'hui.
+  const dernier = n - 1;
+  const pastilles = valeurs.map((v, i) => (i === dernier ? '' :
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5"
+      fill="var(--surface)" stroke="var(--encre)" stroke-width="1.5" />`)).join('');
+
+  const marqueFin = n
+    ? `<circle cx="${x(dernier).toFixed(1)}" cy="${y(valeurs[dernier]).toFixed(1)}" r="7"
+         fill="var(--accent)" opacity=".14" />
+       <circle cx="${x(dernier).toFixed(1)}" cy="${y(valeurs[dernier]).toFixed(1)}" r="3.5"
+         fill="var(--accent)" stroke="var(--surface)" stroke-width="2" />`
+    : '';
 
   return h('svg', {
     viewBox: `0 0 ${L} ${H}`,
     style: { width: '100%', height: 'auto', display: 'block', overflow: 'visible' },
-    html: `${grille}
-           <polyline points="${aire}" fill="var(--surface-creux)" stroke="none" />
-           <polyline points="${points}" fill="none" stroke="var(--encre)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+    html: `<defs>
+             <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+               <stop offset="0%" stop-color="var(--encre)" stop-opacity=".14" />
+               <stop offset="100%" stop-color="var(--encre)" stop-opacity="0" />
+             </linearGradient>
+           </defs>
+           ${grille}
+           <polyline points="${aire}" fill="url(#${id})" stroke="none" />
+           <polyline points="${points}" fill="none" stroke="var(--encre)" stroke-width="2"
+             stroke-linejoin="round" stroke-linecap="round" />
            ${n <= 32 ? pastilles : ''}
+           ${marqueFin}
            ${labels}`,
   });
 }
@@ -341,6 +370,8 @@ export function sectionPliable({ titre, sous, resume, icone, ouvert = false }) {
 }
 
 export const EXPLICATIONS = {
+  sources_detail: "Le détail sous le canal : quel réseau social exactement, ou quel site vous a fait un lien.",
+  fidelite: "Part de visiteurs qui viennent pour la première fois. Chez un restaurant, des habitués qui reviennent est bon signe ; chez un artisan, c'est normal de n'avoir que des nouveaux.",
   contacts: "Les gestes qui menent a un client : appuyer sur votre numero, demander l'itineraire, envoyer le formulaire. Un appel depuis le site n'apparait nulle part ailleurs.",
   sources: "Par quel chemin vos visiteurs sont arrivés : une recherche Google, un lien sur un réseau social, ou votre adresse tapée directement. C'est ce qui dit sur quel levier appuyer.",
   appels: "Personnes ayant appuyé sur Appeler depuis votre fiche Google. Ces appels ne passent pas par votre site.",

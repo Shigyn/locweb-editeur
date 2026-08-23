@@ -17,9 +17,22 @@ import { MANIFEST, GROUP_ORDER } from './manifest.js?v=6';
    prix bougent trop souvent pour passer par nous a chaque fois. */
 const GROUPES_ESSENTIELS = ['Horaires', 'Footer', 'Contact'];
 
-function groupesAutorises(acces, groupesPresents) {
+/* Ce qu'un restaurateur modifie vraiment : son accroche, ce qu'il
+   propose, ses horaires et sa carte. Le reste (A propos, Engagement,
+   Expertise, Preuve sociale, Offre) vient d'un modele pense pour les
+   artisans et ne bouge jamais chez lui — l'afficher quand meme, c'est
+   noyer les quatre sections utiles dans neuf. */
+const GROUPES_RESTAURANT = ['Hero', 'Services', 'Horaires'];
+
+/* "Autres" ramasse tout bloc sans entree au manifeste. C'est un filet
+   de developpement, pas une section : le client n'a aucun moyen de
+   savoir ce qu'il y trouvera, et ce qui s'y range est justement ce
+   qu'on n'a pas su nommer. */
+function groupesAutorises(acces, groupesPresents, secteur) {
   if (acces === 'aucun') return [];
-  if (acces === 'complet') return [...groupesPresents];
+  const tous = [...groupesPresents].filter((g) => g !== 'Autres');
+  if (secteur === 'restaurateur') return tous.filter((g) => GROUPES_RESTAURANT.includes(g));
+  if (acces === 'complet') return tous;
   return GROUPES_ESSENTIELS;
 }
 const JOURS = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi', dimanche: 'Dimanche' };
@@ -39,8 +52,12 @@ export async function rendre(page, etat, { charger }) {
   const textes = contenu.filter((l) => l.type === 'texte');
   const images = contenu.filter((l) => l.type === 'image');
   const groupesPresents = new Set([...textes, ...images].map((l) => MANIFEST[l.cle_bloc]?.groupe || 'Autres'));
-  const autorises = groupesAutorises(client.acces_client, groupesPresents);
-  const groupesVerrouilles = [...groupesPresents].filter((g) => !autorises.includes(g));
+  const autorises = groupesAutorises(client.acces_client, groupesPresents, etat.profil?.secteur);
+  // "Autres" ne figure ni dans les sections editables ni dans la liste
+  // des sections geree par LocWeb : annoncer au client qu'on s'occupe
+  // de ses "autres" ne lui apprend rien et l'inquiete pour rien.
+  const groupesVerrouilles = [...groupesPresents]
+    .filter((g) => g !== 'Autres' && !autorises.includes(g));
 
   const enAttente = new Set(
     [...textes, ...images]

@@ -1350,3 +1350,17 @@ a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
 }
 
 .formule-nom{ font-size:1.35rem; font-weight:700; letter-spacing:-.025em; }
+
+/* Reglage du budget dans le recapitulatif : c'est en voyant le total,
+   gestion comprise, qu'on ajuste — pas trois ecrans plus haut. */
+.budget-reglage{ display:flex; align-items:center; gap:10px; }
+.budget-val{ font-variant-numeric: tabular-nums; min-width:9ch; text-align:right; }
+.bt-pas{
+  width:30px; height:30px; flex:none; border-radius:8px;
+  display:grid; place-items:center;
+  background: var(--surface); border:1px solid var(--trait-fort);
+  color: var(--encre); font-size:1.05rem; line-height:1; cursor:pointer;
+  transition: background-color .12s, border-color .12s, opacity .12s;
+}
+.bt-pas:hover:not(:disabled){ background: var(--surface-creux); border-color: var(--accent); }
+.bt-pas:disabled{ opacity:.35; cursor:default; }

@@ -233,15 +233,12 @@ export async function rendre(page, etat, { charger, oublier }) {
     /* --- etape 3 : estimation --- */
 
     function ecranEstimation() {
-      // Fourchette calculee a partir du budget avec un cout par clic
-      // typique pour un artisan local (1,20 EUR a 2,50 EUR) et un taux de
-      // conversion de 3 a 8 %. Ce sont des ordres de grandeur, pas une
-      // promesse — l'ecran le dit explicitement.
+      const m = ESTIMATION[etat.profil?.secteur] || ESTIMATION.artisan;
       const b = reponses.budget_hebdo || 0;
-      const clicsMin = Math.floor(b / 2.5);
-      const clicsMax = Math.floor(b / 1.2);
-      const demMin = Math.max(0, Math.round(clicsMin * 0.03));
-      const demMax = Math.max(clicsMax ? 1 : 0, Math.round(clicsMax * 0.08));
+      const clicsMin = Math.floor(b / m.cpc[1]);
+      const clicsMax = Math.floor(b / m.cpc[0]);
+      const demMin = Math.round(clicsMin * m.conversion[0]);
+      const demMax = Math.round(clicsMax * m.conversion[1]);
 
       const corps = h('div');
       corps.append(h('div.recap-ligne',
@@ -255,10 +252,10 @@ export async function rendre(page, etat, { charger, oublier }) {
           h('p.estim-etiq', 'visites potentielles / semaine')),
         h('div.estim',
           h('p.estim-val', demMin === demMax ? nombre(demMin) : `${nombre(demMin)}–${nombre(demMax)}`),
-          h('p.estim-etiq', 'demandes potentielles / semaine'))));
+          h('p.estim-etiq', `${m.unite} / semaine`))));
 
       corps.append(h('p.note-prudence',
-        "Ces chiffres sont des estimations basées sur des campagnes comparables dans votre métier. Ils ne constituent pas une garantie de résultat."));
+        `Ordres de grandeur pour ce type d'activité, pas une garantie. ${m.reserve}`));
 
       return {
         titre: 'Estimation de votre campagne',
@@ -309,16 +306,51 @@ export async function rendre(page, etat, { charger, oublier }) {
     /* --- etape 5 : recapitulatif --- */
 
     function ecranRecap() {
-      const b = reponses.budget_hebdo || 0;
-      const mensuel = b * 4;
-      const gestion = 49;
+      const GESTION = 49;
+      const PAS = 10;
+      const MINI = 10;
       const corps = h('div');
 
-      corps.append(h('div.recap-tableau',
-        ligneRecap('Campagne', OBJECTIFS.find((o) => o.cle === reponses.objectif)?.libelle || '—'),
-        ligneRecap('Budget publicitaire', `${nombre(mensuel)} EUR / mois`),
-        ligneRecap('Prestation de gestion LocWeb', `${gestion} EUR / mois`),
-        ligneRecap('Total', `${nombre(mensuel + gestion)} EUR / mois`, true)));
+      // Le budget se regle ICI, pas seulement a l'etape 1. C'est en
+      // voyant le total, gestion comprise, qu'on realise si la somme
+      // passe — et devoir remonter trois ecrans pour ajuster de 10 EUR
+      // fait abandonner.
+      const tableau = h('div.recap-tableau');
+
+      const moins = h('button.bt-pas', { type: 'button', 'aria-label': 'Baisser le budget' }, '−');
+      const plus = h('button.bt-pas', { type: 'button', 'aria-label': 'Augmenter le budget' }, '+');
+      const valeur = h('span.budget-val');
+      const reglage = h('div.budget-reglage', moins, valeur, plus);
+
+      const bouger = (delta) => {
+        const nouveauB = Math.max(MINI, (reponses.budget_hebdo || 0) + delta);
+        reponses.budget_hebdo = nouveauB;
+        peindre();
+      };
+      moins.addEventListener('click', () => bouger(-PAS));
+      plus.addEventListener('click', () => bouger(PAS));
+
+      const parSemaine = h('p.aide', { style: { marginTop: '10px' } });
+
+      function peindre() {
+        const b = reponses.budget_hebdo || 0;
+        const mensuel = b * 4;
+        valeur.textContent = `${nombre(mensuel)} EUR / mois`;
+        moins.disabled = b <= MINI;
+        parSemaine.textContent =
+          `Soit ${nombre(b)} EUR par semaine. Ajustable à tout moment, même après le lancement.`;
+
+        vider(tableau);
+        tableau.append(
+          ligneRecap('Campagne', OBJECTIFS.find((o) => o.cle === reponses.objectif)?.libelle || '—'),
+          ligneRecap('Budget publicitaire', reglage),
+          ligneRecap('Prestation de gestion LocWeb', `${GESTION} EUR / mois`),
+          ligneRecap('Total', `${nombre(mensuel + GESTION)} EUR / mois`, true));
+      }
+      peindre();
+      corps.append(tableau);
+
+      corps.append(parSemaine);
 
       corps.append(h('p.note-prudence',
         "Aucun paiement n'est effectué depuis cette page. Après validation, nous vous recontactons pour finaliser la mise en place de la campagne dans Google Ads."));
@@ -350,7 +382,12 @@ export async function rendre(page, etat, { charger, oublier }) {
         });
         oublier('campagnes');
         souffler('Demande envoyée — on revient vers vous rapidement.', 'bien');
-      } catch {
+      } catch (err) {
+        // La vraie cause va dans la console : "Envoi impossible" ne dit
+        // rien a Nico quand un client l'appelle pour signaler le
+        // probleme, et c'est justement la qu'il faut pouvoir trancher
+        // entre un souci de reseau et un refus de la base.
+        console.error('Demande de campagne refusée :', err);
         souffler("Envoi impossible. Réessayez ou contactez-nous.", 'alerte');
         return;
       }
@@ -374,26 +411,110 @@ export async function rendre(page, etat, { charger, oublier }) {
     return ville || zone || 'Zone à définir';
   }
 
-  function motsClesInitiaux() {
+  /* Les mots-cles dependent du metier, pas d'un moule unique.
+
+     "depannage snack" et "devis snack" ne veulent rien dire : personne
+     ne demande un devis pour un kebab. Un restaurateur se cherche par
+     "a emporter", "livraison", "ouvert le dimanche" ; un artisan par
+     "urgence" et "devis". Proposer les mauvais mots-cles decredibilise
+     tout l'assistant, et un client qui les valide paie des clics qui
+     n'aboutiront jamais. */
+  /* Estimation par secteur.
+
+     Un meme budget ne produit pas du tout le meme resultat selon le
+     metier, et pas seulement parce que le taux de conversion change :
+
+     1. Le cout du clic. "plombier urgence" se dispute a prix d'or entre
+        artisans ; "snack fleurie" ne se dispute presque pas.
+     2. Le taux. Chercher un restaurant, c'est deja vouloir manger. Un
+        devis de charpente se compare pendant des semaines.
+     3. L'unite mesuree. Un artisan remplit un formulaire, on le compte.
+        Un client de snack appelle, ou pousse la porte — ca n'apparait
+        jamais dans les demandes du site.
+
+     Ces fourchettes sont des ordres de grandeur poses a la main, pas
+     des donnees mesurees. Elles seront a recalibrer sur les vraies
+     campagnes une fois qu'il y en aura assez dans la table `campagnes`. */
+  const ESTIMATION = {
+    restaurateur: {
+      cpc: [0.40, 1.10],
+      conversion: [0.15, 0.35],
+      unite: 'appels ou commandes',
+      reserve: "La plupart des clients appellent ou passent directement : ces contacts n'apparaitront pas dans vos demandes en ligne.",
+    },
+    artisan: {
+      cpc: [1.20, 2.50],
+      conversion: [0.03, 0.08],
+      unite: 'demandes de devis',
+      reserve: 'Un devis se compare : le contact arrive souvent plusieurs jours apres le clic.',
+    },
+    independant: {
+      cpc: [0.80, 2.00],
+      conversion: [0.05, 0.15],
+      unite: 'prises de contact',
+      reserve: 'Une partie des contacts passera par le telephone plutot que par le formulaire.',
+    },
+  };
+  ESTIMATION.autre = ESTIMATION.independant;
+
+  const MODELES = {
+    restaurateur: {
+      initiaux: (b, v) => [b, `${b} ${v}`, `restaurant ${v}`],
+      suggestions: (b, v) => [
+        `${b} a emporter ${v}`,
+        `livraison ${b} ${v}`,
+        `${b} ouvert ${v}`,
+        `meilleur ${b} ${v}`,
+        `commander ${b} ${v}`,
+      ],
+    },
+    artisan: {
+      initiaux: (b, v) => [b, `${b} ${v}`, `${b} urgence ${v}`],
+      suggestions: (b, v) => [
+        `depannage ${b} ${v}`,
+        `devis ${b} ${v}`,
+        `${b} pas cher ${v}`,
+        `${b} rapide ${v}`,
+      ],
+    },
+    independant: {
+      initiaux: (b, v) => [b, `${b} ${v}`, `${b} pres de moi`],
+      suggestions: (b, v) => [
+        `${b} ${v} tarif`,
+        `prendre rendez-vous ${b} ${v}`,
+        `meilleur ${b} ${v}`,
+        `${b} a domicile ${v}`,
+      ],
+    },
+  };
+  MODELES.autre = MODELES.independant;
+
+  function modele() {
+    return MODELES[etat.profil?.secteur] || MODELES.artisan;
+  }
+
+  function racine() {
     const metier = (etat.profil?.metier_precis || client.metier || '').toLowerCase();
     const ville = (etat.profil?.localisation || client.ville || '').toLowerCase();
-    if (!metier) return [];
-    const base = metier.split(/[\/,]/)[0].trim();
-    return [base, `${base} ${ville}`.trim(), `${base} urgence ${ville}`.trim()]
+    return { base: metier.split(/[\/,]/)[0].trim(), ville };
+  }
+
+  function nettoyer(liste) {
+    return liste
+      .map((m) => m.replace(/\s+/g, ' ').trim())
       .filter((m, i, t) => m && t.indexOf(m) === i);
   }
 
+  function motsClesInitiaux() {
+    const { base, ville } = racine();
+    if (!base) return [];
+    return nettoyer(modele().initiaux(base, ville));
+  }
+
   function suggestions() {
-    const metier = (etat.profil?.metier_precis || client.metier || '').toLowerCase();
-    const ville = (etat.profil?.localisation || client.ville || '').toLowerCase();
-    if (!metier) return [];
-    const base = metier.split(/[\/,]/)[0].trim();
-    return [
-      `dépannage ${base} ${ville}`.trim(),
-      `${base} pas cher ${ville}`.trim(),
-      `devis ${base} ${ville}`.trim(),
-      `${base} rapide ${ville}`.trim(),
-    ].filter(Boolean);
+    const { base, ville } = racine();
+    if (!base) return [];
+    return nettoyer(modele().suggestions(base, ville));
   }
 
   function blocInfo(libelle, valeur) {

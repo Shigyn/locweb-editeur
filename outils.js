@@ -426,13 +426,19 @@ export const ETATS_DEMANDE = {
   indesirable:  { libelle: 'Indésirable',   ton: '' },
 };
 
+/* Les cles ne bougent pas (contrainte en base), seuls les libelles
+   disent ce qui se passe vraiment : "En preparation" ne dit pas si
+   quelqu'un s'en occupe, "En cours de traitement" si. */
 export const ETATS_CAMPAGNE = {
-  demandee:       { libelle: 'Demandée',       ton: 'action' },
-  en_preparation: { libelle: 'En préparation', ton: 'veille' },
-  active:         { libelle: 'Active',         ton: 'bien' },
-  en_pause:       { libelle: 'En pause',       ton: '' },
-  terminee:       { libelle: 'Terminée',       ton: '' },
+  demandee:       { libelle: 'Demande reçue',         ton: 'action' },
+  en_preparation: { libelle: 'En cours de traitement', ton: 'veille' },
+  active:         { libelle: 'Ads lancée',            ton: 'bien' },
+  en_pause:       { libelle: 'En pause',              ton: '' },
+  terminee:       { libelle: 'Terminée',              ton: '' },
 };
+
+/* L'ordre d'avancement, pour la liste deroulante de l'operateur. */
+export const SUITE_CAMPAGNE = ['demandee', 'en_preparation', 'active', 'en_pause', 'terminee'];
 
 export function pastilleEtat(cle, table) {
   const e = table[cle] || { libelle: cle || '—', ton: '' };

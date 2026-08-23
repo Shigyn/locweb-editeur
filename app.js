@@ -141,6 +141,13 @@ async function apresConnexion() {
     rafraichirPastille();
   }
 
+  // L'entree operateur n'existe que pour un compte de la table
+  // `operateurs`. Ce n'est pas ce qui protege les donnees — les policies
+  // en base s'en chargent — c'est juste qu'un client n'a rien a faire
+  // avec un menu qui ne lui montrera jamais rien.
+  D.suisJeOperateur().then((oui) => { if (oui) ajouterMenuOperateur(); })
+    .catch(() => { /* le menu operateur n'est pas critique */ });
+
   // Les modules transverses se greffent sur l'entete — laquelle est
   // masquee pendant l'onboarding. Rien a installer tant qu'on y est.
   if (espace.classList.contains('mode-onboarding')) return;
@@ -175,6 +182,19 @@ async function rendreAccueilOnboarding() {
   });
 }
 
+function ajouterMenuOperateur() {
+  const pied = document.querySelector('.rail-pied .rail-nav');
+  if (!pied || pied.querySelector('[data-route="operateur"]')) return;
+  const lien = h('a', { href: '#/operateur', 'data-route': 'operateur' },
+    h('svg.ic', {
+      viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+      'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      html: '<path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-5"/>',
+    }),
+    'Demandes clients');
+  pied.insertBefore(lien, pied.firstChild);
+}
+
 /* ---------- routage ---------- */
 
 const page = $('#page');
@@ -185,6 +205,7 @@ const VUES = {
   demandes:     () => import('./vue-activite.js'),
   publicite:    () => import('./vue-acquisition.js'),
   compte:       () => import('./vue-compte.js'),
+  operateur:    () => import('./vue-operateur.js'),
   aide:         () => import('./vue-aide.js'),
 };
 

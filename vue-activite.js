@@ -5,15 +5,40 @@
 //  reception.
 // ===================================================================
 
-import { h, vider, depuis, dateLongue, nombre, pastilleEtat, ETATS_DEMANDE, exporterCsv, souffler } from './outils.js';
+import { h, vider, depuis, dateLongue, nombre, pastilleEtat, ETATS_DEMANDE,
+         ETATS_CAMPAGNE, exporterCsv, souffler } from './outils.js';
 import * as D from './donnees.js';
 
 export async function rendre(page, etat, { charger, oublier, rafraichirPastille }) {
   const { client } = etat;
-  const demandes = await charger('demandes', () => D.listerDemandes(client.id));
+  const [demandes, campagnes] = await Promise.all([
+    charger('demandes', () => D.listerDemandes(client.id)),
+    charger('campagnes', () => D.listerCampagnes(client.id)).catch(() => []),
+  ]);
 
   vider(page);
   page.append(h('h1', 'Demandes'));
+
+  // Ce que le client a demande A LocWeb, avant ce qu'il a recu DE ses
+  // visiteurs : quand on vient de commander une campagne, c'est la
+  // premiere chose qu'on cherche. Seules les campagnes encore en
+  // mouvement s'affichent — une campagne terminee n'attend plus rien.
+  const enCours = campagnes.filter((c) => ['demandee', 'en_preparation'].includes(c.statut));
+  if (enCours.length) {
+    const liste = h('div.section-corps', { style: { paddingTop: '10px' } });
+    enCours.forEach((c) => {
+      liste.append(h('div.suivi-ads',
+        h('div',
+          h('p.suivi-ads-nom', c.nom),
+          h('p.suivi-ads-sous', `Demandée ${depuis(c.date_creation)}`)),
+        pastilleEtat(c.statut, ETATS_CAMPAGNE)));
+    });
+    page.append(h('div.section',
+      h('div.section-tete',
+        h('h2', 'Ma demande de campagne'),
+        h('a.section-lien', { href: '#/publicite' }, 'Voir →')),
+      liste));
+  }
 
   if (!demandes.length) {
     page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },

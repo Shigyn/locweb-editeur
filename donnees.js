@@ -190,6 +190,33 @@ export async function majDemande(id, statut) {
 
 /* ---------- acquisition (campagnes) ---------- */
 
+/* ---------- operateur ----------
+
+   Ces trois fonctions ne marchent QUE pour un compte operateur : les
+   policies `est_operateur()` de la base filtrent tout le reste. Un
+   client qui les appellerait recevrait une liste vide, pas les donnees
+   des autres. La verification est en base, pas ici. */
+
+export async function suisJeOperateur() {
+  const { data, error } = await sb.rpc('est_operateur');
+  return !error && data === true;
+}
+
+export async function listerToutesCampagnes() {
+  const { data, error } = await sb.from('campagnes')
+    .select('id, nom, statut, objectif, budget_mensuel, zone, mots_cles, note, date_creation, client_id, clients(nom_site)')
+    .order('date_creation', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function majCampagne(id, champs) {
+  const { error } = await sb.from('campagnes')
+    .update({ ...champs, date_maj: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
 export async function listerCampagnes(clientId) {
   const { data, error } = await sb.from('campagnes').select('*').eq('client_id', clientId).order('date_creation', { ascending: false });
   if (error) throw error;

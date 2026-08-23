@@ -104,7 +104,9 @@ export async function rendre(page, etat, { charger }) {
       if (!lignesTexte.length && !lignesImage.length) continue;
       page.append(sectionGroupe(client, groupe, lignesTexte, lignesImage, enAttente, majBarre));
     }
-    if (client.acces_client === 'complet') page.append(sectionProduits(client, produits));
+    if (client.acces_client === 'complet') {
+      page.append(sectionProduits(client, produits, etat.profil?.secteur));
+    }
   }
 
   if (groupesVerrouilles.length && client.acces_client !== 'aucun') {
@@ -269,17 +271,53 @@ function champImage(client, ligne, enAttente, majBarre) {
 
 const CHAMPS_SYNC_STRIPE = ['nom', 'prix', 'description', 'disponible'];
 
-function sectionProduits(client, produits) {
+function sectionProduits(client, produits, secteur) {
   const corps = h('div.section-corps', { style: { paddingTop: '14px' } });
   const liste = h('div');
   corps.append(liste);
 
+  // Les categories deja utilisees alimentent une liste de suggestions.
+  // Sans ca, "Entrees", "entree" et "Entrée" deviennent trois rubriques
+  // distinctes sur le site, et la carte part en morceaux.
+  const suggestions = h('datalist', { id: 'categories-produits' });
+  function majSuggestions() {
+    vider(suggestions);
+    [...new Set(produits.map((p) => p.categorie).filter(Boolean))]
+      .forEach((c) => suggestions.append(h('option', { value: c })));
+  }
+  corps.append(suggestions);
+
   function dessiner() {
     vider(liste);
-    if (!produits.length) liste.append(h('p.vide', 'Aucun produit pour le moment.'));
-    produits.forEach((p) => liste.append(carteProduit(client, p, () => {
-      const i = produits.indexOf(p); if (i >= 0) produits.splice(i, 1); dessiner();
-    })));
+    majSuggestions();
+
+    if (!produits.length) {
+      liste.append(h('p.vide', 'Rien pour le moment.'));
+      return;
+    }
+
+    // Regroupe par categorie, dans l'ordre ou chacune apparait. Pas
+    // d'ordre alphabetique : sur une carte, les entrees passent avant
+    // les desserts, et "Desserts, Entrees, Plats" n'a aucun sens.
+    const groupes = new Map();
+    produits.forEach((p) => {
+      const cle = p.categorie || '';
+      if (!groupes.has(cle)) groupes.set(cle, []);
+      groupes.get(cle).push(p);
+    });
+
+    const retirer = (p) => {
+      const i = produits.indexOf(p);
+      if (i >= 0) produits.splice(i, 1);
+      dessiner();
+    };
+
+    groupes.forEach((lot, cle) => {
+      liste.append(h('p.groupe-produits',
+        cle || 'Sans catégorie',
+        h('span.groupe-compte', `${lot.length} article${lot.length > 1 ? 's' : ''}`)));
+      lot.forEach((p) => liste.append(carteProduit(client, p, retirer, dessiner)));
+    });
   }
   dessiner();
 
@@ -289,15 +327,17 @@ function sectionProduits(client, produits) {
     produits.push(p);
     dessiner();
     await D.syncProduitStripe(p.id);
-  } }, '+ Ajouter un produit'));
+  } }, secteur === 'restaurateur' ? '+ Ajouter un plat' : '+ Ajouter un produit'));
 
-  return h('div.section', h('div.section-tete', h('h2', 'Produits et tarifs')), corps);
+  return h('div.section',
+    h('div.section-tete', h('h2', secteur === 'restaurateur' ? 'Ma carte' : 'Produits et tarifs')),
+    corps);
 }
 
-function carteProduit(client, p, surSuppression) {
+function carteProduit(client, p, surSuppression, surRegroupement) {
   const nom = h('input', { type: 'text', value: p.nom ?? '' });
   const prix = h('input', { type: 'number', step: '0.01', value: p.prix ?? '' });
-  const categorie = h('input', { type: 'text', value: p.categorie ?? '' });
+  const categorie = h('input', { type: 'text', value: p.categorie ?? '', list: 'categories-produits', placeholder: 'Entrées, Plats, Desserts...' });
   const desc = h('textarea', { rows: 2, value: p.description ?? '' });
   const dispo = h('input', { type: 'checkbox', checked: !!p.disponible });
   const img = h('img', { src: p.image_url || '' });
@@ -306,13 +346,16 @@ function carteProduit(client, p, surSuppression) {
   async function sauver(field, valeur) {
     try { await D.majProduit(p.id, { [field]: valeur }); } catch { souffler('Enregistrement impossible.', 'alerte'); return; }
     p[field] = valeur;
-    souffler('Enregistre.', 'bien');
+    souffler('Enregistré.', 'bien');
     if (CHAMPS_SYNC_STRIPE.includes(field)) await D.syncProduitStripe(p.id);
   }
 
   nom.addEventListener('change', () => sauver('nom', nom.value));
   prix.addEventListener('change', () => sauver('prix', Number(prix.value)));
-  categorie.addEventListener('change', () => sauver('categorie', categorie.value));
+  categorie.addEventListener('change', async () => {
+    await sauver('categorie', categorie.value);
+    surRegroupement?.();
+  });
   desc.addEventListener('change', () => sauver('description', desc.value));
   dispo.addEventListener('change', () => sauver('disponible', dispo.checked));
 
@@ -339,7 +382,7 @@ function carteProduit(client, p, surSuppression) {
           `"${p.nom || 'Ce produit'}" sera définitivement retiré de votre site. Cette action est irréversible.`,
           { titre: 'Supprimer ce produit ?', action: 'Supprimer', danger: true })) return;
         await D.supprimerProduit(p.id);
-        surSuppression();
+        surSuppression(p);
       } }, 'Supprimer')));
 }
 

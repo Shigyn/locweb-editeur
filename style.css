@@ -1333,3 +1333,18 @@ a.champ-lien:focus-visible{
 .champ-lien-icone{ width:15px; height:15px; flex:none; margin-left:auto; color: var(--sourdine); }
 a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
 .champ-lien.vide{ font-weight:500; font-style:italic; color: var(--sourdine); }
+
+/* En-tete de rubrique dans la carte : sans elle, quarante plats font une
+   liste indifferenciee ou personne ne retrouve son entree. */
+.groupe-produits{
+  display:flex; align-items:baseline; gap:10px;
+  margin: 22px 0 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--trait);
+  font-size:.78rem; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color: var(--encre);
+}
+.groupe-produits:first-child{ margin-top: 0; }
+.groupe-compte{
+  margin-left:auto; font-size:.72rem; font-weight:600;
+  letter-spacing:0; text-transform:none; color: var(--sourdine);
+}

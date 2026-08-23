@@ -27,8 +27,12 @@ export function h(spec, ...reste) {
       if (k === 'html') el.innerHTML = v;
       else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
       else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
-      else if (!estSvg && k in el && typeof v !== 'boolean') el[k] = v;
-      else el.setAttribute(k, v === true ? '' : v);
+      // `k in el` ne dit pas que la propriete est ECRIVABLE : `list` sur
+      // un <input> n'a qu'un getter et renvoie l'element datalist, pas
+      // son id. On tente la propriete, on retombe sur l'attribut.
+      else if (!estSvg && k in el && typeof v !== 'boolean') {
+        try { el[k] = v; } catch { el.setAttribute(k, v); }
+      } else el.setAttribute(k, v === true ? '' : v);
     }
   }
   for (const enfant of enfants.flat(4)) {

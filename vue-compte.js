@@ -12,7 +12,7 @@
 //  endroit, et pour que le retour de Google revienne ici.
 // ===================================================================
 
-import { h, vider, differer, souffler, depuis, dateLongue } from './outils.js';
+import { h, vider, differer, souffler, depuis, dateLongue, sectionPliable } from './outils.js';
 import * as D from './donnees.js';
 import { GOOGLE_OAUTH_CLIENT_ID } from './config.js';
 import { champsProfil } from './completion.js';
@@ -21,6 +21,15 @@ const SCOPES_GOOGLE = [
   'https://www.googleapis.com/auth/business.manage',
   'https://www.googleapis.com/auth/analytics.readonly',
 ].join(' ');
+
+// Libelles des formules. Le tarif ne figure pas ici : il n'est affiche
+// nulle part dans l'espace client, et le seul endroit ou il fait foi
+// c'est le contrat.
+const FORMULES = {
+  vitrine: 'Vitrine',
+  restaurant: 'Restaurant',
+  ecommerce: 'E-commerce',
+};
 
 const ONGLETS = [
   { cle: 'infos',      libelle: 'Mes infos' },
@@ -86,8 +95,10 @@ export async function rendre(page, etat) {
   async function ongletInfos() {
     const zone = h('div');
 
-    zone.append(groupe('Qui contacter', 'En cas de problème sur votre site.', champsProfil.contact));
-    zone.append(groupe('Mon métier', null, champsProfil.activite));
+    zone.append(groupe('Qui contacter', 'En cas de problème sur votre site.', champsProfil.contact,
+      '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-6.2 7.5-6.2s7.5 2.6 7.5 6.2"/>'));
+    zone.append(groupe('Mon métier', null, champsProfil.activite,
+      '<path d="M4 16a8 8 0 0 1 16 0"/><path d="M2 16h20"/><path d="M10 8V4.5A1.5 1.5 0 0 1 11.5 3h1A1.5 1.5 0 0 1 14 4.5V8"/>'));
 
     /* ---------- reseaux ---------- */
 
@@ -132,26 +143,32 @@ export async function rendre(page, etat) {
     grilleReseaux.prepend(h('div.champ', { style: { margin: '0' } },
       h('span', 'Adresse de votre site'), champSite));
 
-    zone.append(h('div.section',
-      h('div.section-tete', h('h2', 'Mon site et mes réseaux')),
-      h('div.section-corps', { style: { paddingTop: '14px' } }, grilleReseaux)));
+    const remplisReseaux = Object.values(profil.reseaux || {}).filter(Boolean).length;
+    const site = sectionPliable({
+      titre: 'Mon site et mes réseaux',
+      icone: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/>',
+      resume: `${remplisReseaux} réseau${remplisReseaux > 1 ? 'x' : ''}`,
+    });
+    site.corps.append(grilleReseaux);
+    zone.append(site.bloc);
 
     /* ---------- abonnement et compte ---------- */
 
-    const formule = client.formule || 'vitrine';
-    const PRIX = { vitrine: 49, ecommerce: 79 };
+    // Pas de prix affiche : le client sait ce qu'il paie, il l'a signe.
+    // Le lui remettre sous les yeux en gros chiffres a chaque visite
+    // transforme son espace de travail en facture, et invite a se
+    // demander si ca les vaut plutot qu'a s'en servir.
     const { data: { user } } = await D.sb.auth.getUser();
 
-    zone.append(h('div.section',
-      h('div.section-tete', h('h2', 'Mon abonnement')),
-      h('div.section-corps', { style: { paddingTop: '16px' } },
-        h('div.synthese',
-          h('div.mesure',
-            h('p.val', formule === 'ecommerce' ? 'E-commerce' : 'Vitrine'),
-            h('p.etiq', 'Formule')),
-          h('div.mesure',
-            h('p.val', `${PRIX[formule] || 49} €`),
-            h('p.etiq', 'Par mois, tout compris'))),
+    const abo = sectionPliable({
+      titre: 'Mon abonnement',
+      icone: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/>',
+      resume: FORMULES[client.formule] || FORMULES.vitrine,
+    });
+    abo.corps.append(
+        h('p.formule-nom', FORMULES[client.formule] || FORMULES.vitrine),
+        h('p.aide', { style: { marginTop: '8px' } },
+          'Hébergement, nom de domaine, éditeur de contenu et support inclus.'),
         h('p.aide', { style: { marginTop: '16px' } },
           'Connecté avec ', h('b', user?.email || '—'), '.'),
         h('div', { style: { display: 'flex', gap: '10px', marginTop: '12px', flexWrap: 'wrap' } },
@@ -165,12 +182,13 @@ export async function rendre(page, etat) {
           }, 'Changer mon mot de passe'),
           h('button.bt.bt-nu', {
             onclick: () => { D.deconnexion().then(() => location.reload()); },
-          }, 'Se déconnecter')))));
+          }, 'Se déconnecter')));
+    zone.append(abo.bloc);
 
     return zone;
   }
 
-  function groupe(titre, aide, champs) {
+  function groupe(titre, aide, champs, icone) {
     const grille = h('div.onb-grille');
     champs.forEach(({ cle, libelle, type, indice, options }) => {
       const saisie = type === 'choix'
@@ -190,16 +208,29 @@ export async function rendre(page, etat) {
       grille.append(h('label.champ', { style: { margin: '0' } }, h('span', libelle), saisie));
     });
 
-    return h('div.section',
-      h('div.section-tete', h('h2', titre), aide ? h('p', aide) : null),
-      h('div.section-corps', { style: { paddingTop: '14px' } }, grille));
+    // Le resume dit ce qu'on trouvera dedans sans avoir a ouvrir : un
+    // titre seul n'apprend rien, "2 sur 4" dit s'il faut aller voir.
+    const remplis = champs.filter((c) => profil[c.cle]).length;
+    const { bloc, corps } = sectionPliable({
+      titre, sous: aide, icone,
+      resume: `${remplis} sur ${champs.length}`,
+    });
+    corps.append(grille);
+    return bloc;
   }
 
   /* ================= onglet 2 : connexions ================= */
 
   function ongletConnexions() {
     const zone = h('div');
-    const corpsComptes = h('div.section-corps', { style: { paddingTop: '14px' } });
+    const connectes = ['acces_ga4', 'acces_google_business', 'acces_google_ads',
+      'acces_pixel_meta', 'acces_pixel_google'].filter((c) => profil[c]).length;
+    const { bloc, corps: corpsComptes } = sectionPliable({
+      titre: 'Comptes reliés',
+      icone: '<path d="M9 12a3 3 0 0 1 3-3h4a3 3 0 0 1 0 6h-1"/><path d="M15 12a3 3 0 0 1-3 3H8a3 3 0 0 1 0-6h1"/>',
+      resume: `${connectes} sur 5`,
+      ouvert: true,
+    });
 
     corpsComptes.append(carteGoogle());
     corpsComptes.append(
@@ -220,9 +251,7 @@ export async function rendre(page, etat) {
       }),
     );
 
-    zone.append(h('div.section',
-      h('div.section-tete', h('h2', 'Comptes reliés')),
-      corpsComptes));
+    zone.append(bloc);
     return zone;
   }
 

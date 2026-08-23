@@ -310,6 +310,36 @@ function abrege(v) {
    Un artisan n'a aucune raison de savoir ce qu'est un "taux
    d'engagement". Chaque chiffre affiche porte donc sa definition en
    une phrase, en clair, sans vocabulaire d'analyste. */
+/* Section depliable, fermee par defaut.
+
+   Reprend exactement le balisage des sections de l'editeur : une seule
+   facon de plier un bloc dans toute l'app, sinon le client reapprend a
+   chaque page. <details> plutot qu'un booleen maison — l'ouverture au
+   clavier, le role ARIA et la recherche dans la page marchent tout
+   seuls.
+
+   `resume` s'affiche a droite quand le bloc est ferme : un titre seul
+   n'apprend rien, "2 sur 4 renseignes" dit s'il faut ouvrir. */
+export function sectionPliable({ titre, sous, resume, icone, ouvert = false }) {
+  const corps = h('div.section-corps');
+  const bloc = h('details.section.section-pliable', { open: ouvert },
+    h('summary.section-resume',
+      icone
+        ? h('span.section-icone', h('svg', {
+            viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+            'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+            html: icone,
+          }))
+        : null,
+      h('span.section-infos',
+        h('span.section-nom', titre),
+        sous ? h('span.section-desc', sous) : null),
+      resume ? h('span.section-compte', resume) : null,
+      h('span.section-chevron', { html: '&rsaquo;' })),
+    corps);
+  return { bloc, corps };
+}
+
 export const EXPLICATIONS = {
   visiteurs: "Nombre de personnes différentes venues sur votre site. Une même personne qui revient trois fois compte pour une.",
   sessions: "Nombre de visites au total. Si un visiteur revient le lendemain, cela fait deux sessions.",

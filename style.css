@@ -1348,3 +1348,5 @@ a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
   margin-left:auto; font-size:.72rem; font-weight:600;
   letter-spacing:0; text-transform:none; color: var(--sourdine);
 }
+
+.formule-nom{ font-size:1.35rem; font-weight:700; letter-spacing:-.025em; }

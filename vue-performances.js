@@ -53,6 +53,16 @@ const CANAUX = {
   'Unassigned': 'Origine inconnue',
 };
 
+/* Les evenements envoyes par clients/mesure.js, en francais. */
+const CONTACTS = {
+  appel_telephone:    'Appels depuis le site',
+  clic_itineraire:    'Itinéraires demandés',
+  envoi_formulaire:   'Formulaires envoyés',
+  clic_whatsapp:      'Contacts WhatsApp',
+  clic_email:         "Clics sur l'e-mail",
+  clic_reseau_social: 'Clics vers vos réseaux',
+};
+
 const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const APPAREILS = { mobile: 'Téléphone', desktop: 'Ordinateur', tablet: 'Tablette' };
 
@@ -221,6 +231,19 @@ export async function rendre(page, etat, { charger: cache } = {}) {
           .map((v) => ({ nom: v.cle, valeur: v.valeur }))));
     }
     if (duo.children.length) site.corps.append(duo);
+
+    // Les contacts avant les repartitions : c'est la seule mesure de
+    // cette page qui parle d'argent. Un clic sur le numero, c'est un
+    // client au telephone — pas une statistique de frequentation.
+    if (rep.contacts?.length) {
+      const lignes = rep.contacts
+        .filter((c) => CONTACTS[c.cle])
+        .sort((a, b) => b.valeur - a.valeur)
+        .map((c) => ({ nom: CONTACTS[c.cle], valeur: c.valeur }));
+      if (lignes.length) {
+        site.corps.append(carteRepartition('Ce que font vos visiteurs', 'contacts', lignes));
+      }
+    }
 
     const duo2 = h('div.grille-duo');
     if (rep.pages?.length) {

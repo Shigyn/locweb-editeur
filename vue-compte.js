@@ -271,25 +271,153 @@ export async function rendre(page, etat) {
       location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
     } }, tousConnectes ? 'Reconnecter Google' : 'Se connecter avec Google');
 
-    const proprieteGa4 = champVerrouille({
-      valeur: profil.ga4_property_id,
-      placeholder: 'ex : 123456789',
-      aide: 'ID de propriété GA4 — dans GA4 : Admin puis Paramètres de la propriété.',
-      surValidation: async (v) => {
-        await D.majProfil(client.id, { ga4_property_id: v });
-        profil.ga4_property_id = v;
-      },
-    });
+    /* Choix dans une liste plutot que saisie a la main.
 
-    const ficheGbp = champVerrouille({
-      valeur: profil.gbp_location_id,
-      placeholder: 'ex : 16711969773629618707',
-      aide: 'Identifiant de votre fiche Google Business.',
-      surValidation: async (v) => {
-        await D.majProfilTolerant(client.id, { gbp_location_id: v });
-        profil.gbp_location_id = v;
-      },
-    });
+       Les identifiants Google sont des nombres a 9 et 20 chiffres,
+       planques dans deux ecrans differents de l'admin et dans une URL.
+       Une faute de frappe casse tout en silence. Comme le consentement
+       OAuth donne deja acces a la liste des proprietes et des fiches,
+       autant la proposer.
+
+       Le champ manuel reste accessible en repli : un client peut avoir
+       une propriete partagee qui n'apparait pas dans sa liste. */
+    const zoneChoix = h('div', { style: { marginTop: '14px' } });
+
+    if (profil.acces_ga4 || profil.acces_google_business) {
+      zoneChoix.append(h('div.squelette', { style: { height: '60px' } }));
+      remplirChoix();
+    } else {
+      zoneChoix.append(champsManuels());
+    }
+
+    async function remplirChoix() {
+      let comptes;
+      try { comptes = await D.comptesGoogle(); }
+      catch (err) {
+        console.error('Liste des comptes Google indisponible :', err);
+        vider(zoneChoix);
+        zoneChoix.append(champsManuels());
+        return;
+      }
+
+      vider(zoneChoix);
+
+      if (comptes.proprietes?.length) {
+        zoneChoix.append(listeChoix({
+          libelle: 'Propriété Analytics',
+          options: comptes.proprietes.map((p) => ({
+            valeur: p.id,
+            libelle: p.mesure ? `${p.nom} — ${p.mesure}` : p.nom,
+            brut: p,
+          })),
+          valeur: profil.ga4_property_id,
+          surChoix: async (id, p) => {
+            await D.majProfilTolerant(client.id, {
+              ga4_property_id: id,
+              ga4_measurement_id: p?.mesure || null,
+            });
+            profil.ga4_property_id = id;
+            souffler('Propriété reliée.', 'bien');
+          },
+        }));
+      }
+
+      if (comptes.fiches?.length) {
+        zoneChoix.append(listeChoix({
+          libelle: 'Fiche Google Business',
+          options: comptes.fiches.map((f) => ({
+            valeur: f.id,
+            libelle: f.adresse ? `${f.nom} — ${f.adresse}` : f.nom,
+            brut: f,
+          })),
+          valeur: profil.gbp_location_id,
+          surChoix: async (id, f) => {
+            await D.majProfilTolerant(client.id, { gbp_location_id: id });
+            profil.gbp_location_id = id;
+            souffler('Fiche reliée.', 'bien');
+            if (f) proposerReprise(f);
+          },
+        }));
+      }
+
+      if (!zoneChoix.children.length) {
+        zoneChoix.append(
+          h('p.aide', { style: { marginBottom: '10px' } },
+            "Aucune propriété ni fiche trouvée sur ce compte Google. Vous pouvez saisir les identifiants à la main."),
+          champsManuels());
+      }
+    }
+
+    function listeChoix({ libelle, options, valeur, surChoix }) {
+      const select = h('select',
+        h('option', { value: '' }, 'Choisir...'),
+        ...options.map((o) => h('option', { value: o.valeur }, o.libelle)));
+      select.value = valeur || '';
+      select.addEventListener('change', async () => {
+        const choisi = options.find((o) => o.valeur === select.value);
+        try { await surChoix(select.value || null, choisi?.brut); }
+        catch { souffler('Enregistrement impossible.', 'alerte'); }
+      });
+      return h('label.champ', { style: { marginBottom: '12px' } },
+        h('span', libelle), select);
+    }
+
+    /* Ce que Google sait deja du client : on ne l'ecrase jamais sans
+       demander. Une adresse ou des horaires ecrases en silence, c'est
+       la mauvaise surprise garantie. */
+    function proposerReprise(f) {
+      const reprises = [];
+      if (f.telephone && !profil.contact_telephone) reprises.push(['contact_telephone', 'téléphone', f.telephone]);
+      if (f.ville && !profil.localisation) reprises.push(['localisation', 'ville', f.ville]);
+      if (f.categorie && !profil.metier_precis) reprises.push(['metier_precis', 'métier', f.categorie]);
+      if (!reprises.length) return;
+
+      const resume = reprises.map(([, quoi, val]) => `${quoi} : ${val}`).join(' · ');
+      const banniere = h('div.onb-apres', { style: { marginTop: '4px', marginBottom: '12px' } },
+        h('div',
+          h('b', 'Reprendre les infos de votre fiche Google ?'),
+          h('p', resume),
+          h('div', { style: { display: 'flex', gap: '10px', marginTop: '10px' } },
+            h('button.bt.bt-vif.bt-mini', {
+              onclick: async () => {
+                const champs = Object.fromEntries(reprises.map(([cle, , val]) => [cle, val]));
+                const { ok } = await D.majProfilTolerant(client.id, champs);
+                if (!ok) { souffler('Enregistrement impossible.', 'alerte'); return; }
+                Object.assign(profil, champs);
+                etat.profil = profil;
+                banniere.remove();
+                souffler('Informations reprises.', 'bien');
+              },
+            }, 'Reprendre'),
+            h('button.bt.bt-nu.bt-mini', { onclick: () => banniere.remove() }, 'Non merci'))));
+      zoneChoix.prepend(banniere);
+    }
+
+    function champsManuels() {
+      const proprieteGa4 = champVerrouille({
+        valeur: profil.ga4_property_id,
+        placeholder: 'ex : 123456789',
+        aide: 'ID de propriété GA4 — dans GA4 : Admin puis Paramètres de la propriété.',
+        surValidation: async (v) => {
+          await D.majProfil(client.id, { ga4_property_id: v });
+          profil.ga4_property_id = v;
+        },
+      });
+
+      const ficheGbp = champVerrouille({
+        valeur: profil.gbp_location_id,
+        placeholder: 'ex : 16711969773629618707',
+        aide: 'Identifiant de votre fiche Google Business.',
+        surValidation: async (v) => {
+          await D.majProfilTolerant(client.id, { gbp_location_id: v });
+          profil.gbp_location_id = v;
+        },
+      });
+
+      return h('div',
+        h('div', proprieteGa4),
+        h('div', { style: { marginTop: '12px' } }, ficheGbp));
+    }
 
     return h('div.champ-inline',
       h('label.champ-tete', h('span', 'Google Business + Analytics')),
@@ -297,8 +425,7 @@ export async function rendre(page, etat) {
         ligneEtat('Fiche Google Business', profil.acces_google_business),
         ligneEtat('Google Analytics', profil.acces_ga4)),
       h('div', { style: { marginTop: '12px' } }, bouton),
-      h('div', { style: { marginTop: '14px' } }, proprieteGa4),
-      h('div', { style: { marginTop: '12px' } }, ficheGbp));
+      zoneChoix);
   }
 
   function ligneEtat(libelle, valeur) {

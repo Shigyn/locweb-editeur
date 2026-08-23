@@ -190,6 +190,22 @@ export async function majDemande(id, statut) {
 
 /* ---------- acquisition (campagnes) ---------- */
 
+/* Ce a quoi le client a acces chez Google : proprietes Analytics et
+   fiches d'etablissement, avec ce que Google sait deja de lui
+   (telephone, adresse, horaires, categorie). Evite de lui faire
+   recopier des identifiants a 20 chiffres. */
+export async function comptesGoogle() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) throw new Error('Session absente.');
+  const reponse = await fetch(`${EDGE_FUNCTIONS_URL}/google-comptes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+  });
+  const donnees = await reponse.json();
+  if (!reponse.ok) throw Object.assign(new Error(donnees.error || 'Requête refusée.'), { donnees });
+  return donnees;
+}
+
 /* ---------- operateur ----------
 
    Ces trois fonctions ne marchent QUE pour un compte operateur : les

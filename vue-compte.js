@@ -351,11 +351,19 @@ export async function rendre(page, etat) {
       if (options.length) {
         return listeChoix({ libelle: titre, options, valeur, surChoix });
       }
+      // Meme regle qu'ailleurs : le detail technique en console, une
+      // phrase lisible a l'ecran. Un client n'a pas a lire un message
+      // d'erreur d'API pour comprendre ou il en est.
+      if (souci) console.error(`${titre} — Google a refusé la liste :`, souci);
+      const enAttenteAcces = souci && /quota|not been used|disabled/i.test(souci);
+
       return h('div', { style: { marginBottom: '14px' } },
         h('p.aide', { style: { marginBottom: '8px' } },
-          souci
-            ? `${titre} — Google a refusé la liste : ${souci}`
-            : `${titre} — rien trouvé sur ce compte Google. Saisie manuelle :`),
+          enAttenteAcces
+            ? `${titre} — accès en cours de validation chez Google. En attendant, saisie manuelle :`
+            : souci
+              ? `${titre} — Google n'a pas répondu. Saisie manuelle :`
+              : `${titre} — rien trouvé sur ce compte Google. Saisie manuelle :`),
         manuel());
     }
 

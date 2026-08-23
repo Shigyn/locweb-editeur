@@ -311,17 +311,29 @@ async function chargerGbp(zone, periode) {
     vider(zone);
     const echec = blocPliable('Performance de votre fiche Google');
     zone.append(echec.bloc);
-    // "Cette section reapparaitra des que Google reprendra la main"
-    // sonne bien mais ne dit rien : neuf fois sur dix Google a refuse
-    // pour une raison precise, et cette raison est deja dans la reponse.
-    // La cacher, c'est se condamner a deviner.
+    // Le detail technique part en console, pas a l'ecran : "Quota
+    // exceeded for quota metric Requests" est parfait pour deboguer et
+    // illisible pour un artisan. Mais on ne le jette pas non plus — se
+    // priver de la cause, c'est se condamner a deviner.
+    const detail = e.donnees?.detail || e.message;
+    console.error('Fiche Google indisponible :', detail);
+
     const manqueId = String(e.message).includes('Identifiant');
-    const detail = e.donnees?.detail;
+    // Google livre ses API Fiche avec un quota nul : tant que l'acces
+    // n'est pas accorde, chaque appel est refuse. Ce n'est pas une
+    // panne, c'est une autorisation en cours — et le dire evite au
+    // client de croire que son espace est casse.
+    const enAttenteAcces = /quota/i.test(detail) || /not been used|disabled/i.test(detail);
+
     echec.corps.append(carteVide(
-      manqueId ? "Il manque l'identifiant de votre fiche Google" : 'Statistiques de la fiche indisponibles',
+      manqueId ? "Il manque l'identifiant de votre fiche Google"
+        : enAttenteAcces ? 'Statistiques de votre fiche Google bientôt disponibles'
+        : 'Statistiques de la fiche momentanément indisponibles',
       manqueId
         ? 'Renseignez-le dans Mon compte pour voir vues, appels et avis.'
-        : (detail || "Réessayez dans un moment."),
+        : enAttenteAcces
+          ? "Google valide notre demande d'accès à ces données. Vos vues, appels et itinéraires apparaîtront ici dès que ce sera fait."
+          : 'Réessayez dans un moment.',
       manqueId ? h('a.bt.bt-vif', { href: '#/compte?onglet=connexions' }, 'Connecter') : null));
     return;
   }

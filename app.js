@@ -48,6 +48,54 @@ $('#bt-oubli').addEventListener('click', async () => {
 });
 
 $('#bt-deconnexion').addEventListener('click', async () => { await D.deconnexion(); location.reload(); });
+$('#bt-deconnexion-menu')?.addEventListener('click', async () => { await D.deconnexion(); location.reload(); });
+
+/* ---------- menu du compte ---------- */
+
+const avatar = $('#entete-avatar');
+const menuCompte = $('#menu-compte');
+
+avatar?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const ouvert = !menuCompte.hidden;
+  menuCompte.hidden = ouvert;
+  avatar.setAttribute('aria-expanded', String(!ouvert));
+});
+// Clic ailleurs ou Echap : referme. Un menu qui reste ouvert derriere le
+// contenu est plus genant qu'utile.
+document.addEventListener('click', () => {
+  if (menuCompte && !menuCompte.hidden) {
+    menuCompte.hidden = true;
+    avatar.setAttribute('aria-expanded', 'false');
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && menuCompte && !menuCompte.hidden) {
+    menuCompte.hidden = true;
+    avatar.setAttribute('aria-expanded', 'false');
+  }
+});
+
+/* ---------- theme clair / sombre ---------- */
+
+const THEMES = { clair: 'sombre', sombre: 'clair' };
+
+function appliquerTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('locweb-theme-client', t); } catch { /* navigation privee */ }
+}
+
+appliquerTheme((() => {
+  try {
+    const enregistre = localStorage.getItem('locweb-theme-client');
+    if (enregistre === 'clair' || enregistre === 'sombre') return enregistre;
+  } catch { /* navigation privee */ }
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'sombre' : 'clair';
+})());
+
+$('#bt-theme')?.addEventListener('click', () => {
+  appliquerTheme(THEMES[document.documentElement.dataset.theme] || 'sombre');
+});
 
 async function apresConnexion() {
   const client = await D.monClient();
@@ -65,6 +113,9 @@ async function apresConnexion() {
   $('#nom-site').textContent = nom;
   $('#entete-nom').textContent = nom;
   $('#entete-avatar').textContent = nom.trim().slice(0, 2).toUpperCase();
+  $('#menu-nom').textContent = nom;
+  const { data: { user: compte } } = await D.sb.auth.getUser();
+  $('#menu-mail').textContent = compte?.email || '';
 
   if (client.domaine) {
     const url = /^https?:\/\//.test(client.domaine) ? client.domaine : `https://${client.domaine}`;

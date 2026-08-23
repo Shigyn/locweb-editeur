@@ -50,7 +50,10 @@ export async function rendre(page, etat, { charger }) {
   }
 
   async function publier() {
-    if (!certain(`Publier ${enAttente.size} modification(s) sur votre site maintenant ?`)) return;
+    const nb = enAttente.size;
+    if (!await certain(
+      `${nb} modification${nb > 1 ? 's' : ''} ${nb > 1 ? 'seront publiees' : 'sera publiee'} sur votre site, visible${nb > 1 ? 's' : ''} immediatement par vos visiteurs.`,
+      { titre: 'Publier vos modifications ?', action: 'Publier' })) return;
     btPublier.disabled = true;
     btPublier.textContent = 'Publication...';
     const ids = [...enAttente];
@@ -283,7 +286,9 @@ function carteProduit(client, p, surSuppression) {
     h('div.produit-bas',
       h('label.produit-dispo', dispo, 'Disponible a la vente'),
       h('button.bt.bt-nu', { onclick: async () => {
-        if (!certain('Supprimer ce produit ?')) return;
+        if (!await certain(
+          `"${p.nom || 'Ce produit'}" sera definitivement retire de votre site. Cette action est irreversible.`,
+          { titre: 'Supprimer ce produit ?', action: 'Supprimer', danger: true })) return;
         await D.supprimerProduit(p.id);
         surSuppression();
       } }, 'Supprimer')));

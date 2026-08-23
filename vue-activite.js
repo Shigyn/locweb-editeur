@@ -5,7 +5,7 @@
 //  reception.
 // ===================================================================
 
-import { h, vider, depuis, dateLongue, nombre, pastilleEtat, ETATS_DEMANDE } from './outils.js';
+import { h, vider, depuis, dateLongue, nombre, pastilleEtat, ETATS_DEMANDE, exporterCsv, souffler } from './outils.js';
 import * as D from './donnees.js';
 
 export async function rendre(page, etat, { charger, oublier, rafraichirPastille }) {
@@ -25,6 +25,28 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
   page.append(h('div.synthese',
     h('div.mesure', h('p.val', nombre(demandes.length)), h('p.etiq', 'Total recu'), h('p.sous', 'depuis la mise en ligne')),
     h('div.mesure', h('p.val', nombre(nouvelles)), h('p.etiq', 'A traiter'), h('p.sous', nouvelles ? 'sans reponse' : 'tout est traite'))));
+
+  // Export : un artisan qui veut relancer ses prospects dans son propre
+  // tableur ne doit pas avoir a recopier a la main.
+  page.append(h('div.barre-outils',
+    h('button.bt.bt-plein.bt-mini', {
+      onclick: () => {
+        exporterCsv(
+          `demandes-${new Date().toISOString().slice(0, 10)}.csv`,
+          [
+            { titre: 'Date', valeur: (d) => dateLongue(d.date_creation) },
+            { titre: 'Nom', valeur: (d) => d.nom },
+            { titre: 'Telephone', valeur: (d) => d.telephone },
+            { titre: 'Email', valeur: (d) => d.email },
+            { titre: 'Ville', valeur: (d) => d.ville },
+            { titre: 'Besoin', valeur: (d) => d.besoin },
+            { titre: 'Message', valeur: (d) => d.message },
+            { titre: 'Statut', valeur: (d) => ETATS_DEMANDE[d.statut || 'nouvelle']?.libelle },
+          ],
+          demandes);
+        souffler('Fichier telecharge.', 'bien');
+      },
+    }, 'Exporter en CSV')));
 
   const liste = h('div.liste-carte');
   demandes.forEach((d) => { const [ligne, detail] = ligneDemande(d, oublier, rafraichirPastille); liste.append(ligne, detail); });

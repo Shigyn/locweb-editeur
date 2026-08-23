@@ -45,7 +45,66 @@ export function differer(fn, delai = 700) {
   return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), delai); };
 }
 
-export function certain(q) { return window.confirm(q); }
+/* Confirmation : une vraie fenetre au lieu du `confirm()` natif, qui est
+   laid, non stylable, et bloque tout le navigateur. Renvoie une promesse
+   pour s'utiliser exactement comme l'ancien : `if (!await certain(...))`.
+
+   L'action destructive porte une couleur d'alerte et n'est jamais le
+   bouton par defaut — Echap et le clic en dehors annulent. */
+export function certain(question, { titre = 'Confirmation', action = 'Confirmer', danger = false } = {}) {
+  return new Promise((resoudre) => {
+    const fermer = (reponse) => {
+      document.removeEventListener('keydown', surTouche);
+      fond.remove();
+      resoudre(reponse);
+    };
+    const surTouche = (e) => {
+      if (e.key === 'Escape') fermer(false);
+      if (e.key === 'Enter') fermer(true);
+    };
+
+    const btConfirmer = h('button.bt', {
+      class: danger ? 'bt bt-danger' : 'bt bt-vif',
+      onclick: () => fermer(true),
+    }, action);
+
+    const fond = h('div.fond-modale', {
+      onclick: (e) => { if (e.target === fond) fermer(false); },
+    },
+      h('div.modale', { role: 'dialog', 'aria-modal': 'true' },
+        h('p.modale-titre', titre),
+        h('p.modale-texte', question),
+        h('div.modale-pied',
+          h('button.bt.bt-plein', { onclick: () => fermer(false) }, 'Annuler'),
+          btConfirmer)));
+
+    document.body.append(fond);
+    document.addEventListener('keydown', surTouche);
+    btConfirmer.focus();
+  });
+}
+
+/* Export CSV : le point-virgule et le BOM sont necessaires pour qu'Excel
+   en francais ouvre le fichier correctement (sinon tout atterrit dans
+   une seule colonne et les accents sont casses). */
+export function exporterCsv(nomFichier, colonnes, lignes) {
+  const echapper = (v) => {
+    const s = String(v ?? '');
+    return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const contenu = [
+    colonnes.map((c) => echapper(c.titre)).join(';'),
+    ...lignes.map((l) => colonnes.map((c) => echapper(c.valeur(l))).join(';')),
+  ].join('\r\n');
+
+  const blob = new Blob(['﻿' + contenu], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const lien = h('a', { href: url, download: nomFichier });
+  document.body.append(lien);
+  lien.click();
+  lien.remove();
+  URL.revokeObjectURL(url);
+}
 
 let minuterieSouffle;
 export function souffler(texte, ton = 'bien') {
@@ -205,14 +264,67 @@ export const EXPLICATIONS = {
   jours_semaine: "Les jours ou l'on vous cherche le plus.",
 };
 
-// Petite bulle au survol : `aide` est le texte explicatif. Rendue en
-// italique et volontairement discrete — c'est une aide, pas un contenu.
+/* Bulle d'aide au survol.
+
+   UNE seule bulle vit dans le <body> et se deplace : une bulle enfant de
+   chaque element serait coupee par le `overflow: hidden` des cartes (qui
+   sert a leurs coins arrondis). C'est aussi ce que font les vraies
+   librairies de tooltip, pour la meme raison. */
+let bulleUnique;
+
+function bulle() {
+  if (!bulleUnique) {
+    bulleUnique = h('div.bulle', { role: 'tooltip' });
+    document.body.append(bulleUnique);
+  }
+  return bulleUnique;
+}
+
+function montrer(cible, texte) {
+  const b = bulle();
+  b.textContent = texte;
+  b.classList.add('visible');
+
+  const r = cible.getBoundingClientRect();
+  const rb = b.getBoundingClientRect();
+  const marge = 10;
+
+  // Au-dessus par defaut ; en dessous s'il n'y a pas la place en haut.
+  let haut = r.top - rb.height - 8;
+  let flecheEnBas = true;
+  if (haut < marge) { haut = r.bottom + 8; flecheEnBas = false; }
+
+  // Bornee a l'ecran : sans ca, un element en bord droit pousse la bulle
+  // hors du champ de vision.
+  let gauche = r.left;
+  const maxGauche = window.innerWidth - rb.width - marge;
+  if (gauche > maxGauche) gauche = maxGauche;
+  if (gauche < marge) gauche = marge;
+
+  b.style.top = `${haut}px`;
+  b.style.left = `${gauche}px`;
+  b.classList.toggle('vers-bas', !flecheEnBas);
+  // La fleche suit la cible meme quand la bulle a ete recalee.
+  b.style.setProperty('--fleche', `${Math.max(12, Math.min(r.left - gauche + r.width / 2, rb.width - 12))}px`);
+}
+
+function cacher() {
+  if (bulleUnique) bulleUnique.classList.remove('visible');
+}
+
 export function avecAide(element, aide) {
   if (!aide) return element;
   element.classList.add('a-aide');
-  element.append(h('span.bulle', aide));
+  element.tabIndex = 0;
+  element.addEventListener('mouseenter', () => montrer(element, aide));
+  element.addEventListener('mouseleave', cacher);
+  element.addEventListener('focus', () => montrer(element, aide));
+  element.addEventListener('blur', cacher);
   return element;
 }
+
+// Une page qui defile laisserait la bulle flotter au mauvais endroit.
+addEventListener('scroll', cacher, true);
 
 export const ETATS_DEMANDE = {
   nouvelle:     { libelle: 'Nouvelle',      ton: 'action' },

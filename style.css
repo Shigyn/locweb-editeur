@@ -497,30 +497,137 @@ select{ cursor: pointer; }
 .conversion-jauge{ height:100%; border-radius:100px; background: var(--accent); transition: width .5s var(--detente, ease); }
 .conversion-repere{ font-size:.8rem; color: var(--sourdine); margin-top:10px; }
 
+/* ---------- theme sombre ---------- */
+
+:root[data-theme="sombre"]{
+  --fond:          #0E0E11;
+  --surface:       #17171B;
+  --surface-creux: #202026;
+  --encre:         #EDEBE7;
+  --encre-douce:   #B4B2AD;
+  --sourdine:      #85837E;
+  --trait:         #26262C;
+  --trait-fort:    #383840;
+
+  --accent:        #EDEBE7;   /* clair sur fond sombre, toujours monochrome */
+  --accent-fonce:  #FFFFFF;
+  --accent-voile:  rgba(237,235,231,.08);
+  --sur-accent:    #17171B;
+
+  --vert:          #5DBE84;
+  --vert-voile:    rgba(93,190,132,.13);
+  --ambre:         #E0A93F;
+  --ambre-voile:   rgba(224,169,63,.14);
+  --alerte:        #F0705C;
+  --alerte-voile:  rgba(240,112,92,.13);
+
+  --ombre-fine:  0 1px 2px rgba(0,0,0,.4);
+  --ombre:       0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
+  --ombre-haute: 0 14px 36px rgba(0,0,0,.6);
+}
+/* En sombre, le bouton principal devient clair : il lui faut donc un
+   texte fonce, pas le blanc du theme clair. */
+:root[data-theme="sombre"] .bt-vif{ color: var(--sur-accent); }
+:root[data-theme="sombre"] .rail-nav a[aria-current="page"]{ color: var(--sur-accent); }
+:root[data-theme="sombre"] .rail-nav a[aria-current="page"] .ic{ color: var(--sur-accent); }
+:root[data-theme="sombre"] .appel-icone{ color: var(--sur-accent); }
+:root[data-theme="sombre"] .choix.actif .choix-icone,
+:root[data-theme="sombre"] .choix.actif .choix-case{ color: var(--sur-accent); }
+:root[data-theme="sombre"] .entete-avatar{ color: var(--sur-accent); }
+:root[data-theme="sombre"] .bulle{ background: var(--surface-creux); border:1px solid var(--trait-fort); }
+:root[data-theme="sombre"] .bulle::after{ border-top-color: var(--surface-creux); }
+:root[data-theme="sombre"] .bulle.vers-bas::after{ border-bottom-color: var(--surface-creux); }
+
+/* ---------- entete : icone et menu du compte ---------- */
+
+.entete-icone{
+  width:36px; height:36px; border-radius:9px; flex:none;
+  display:grid; place-items:center; color: var(--encre-douce);
+  border:1px solid var(--trait-fort); background: var(--surface);
+  transition: background-color .14s, color .14s;
+}
+.entete-icone:hover{ background: var(--surface-creux); color: var(--encre); }
+.entete-icone .ic{ width:17px; height:17px; color:inherit; }
+
+.menu-compte{ position:relative; }
+button.entete-avatar{ cursor:pointer; border:0; }
+.menu-deroulant{
+  position:absolute; top:calc(100% + 8px); right:0; z-index:80;
+  min-width:220px; padding:6px;
+  background: var(--surface); border:1px solid var(--trait); border-radius:12px;
+  box-shadow: var(--ombre-haute);
+}
+.menu-entete{
+  padding:10px 12px 12px; border-bottom:1px solid var(--trait); margin-bottom:6px;
+}
+.menu-entete b{ display:block; font-size:.9rem; font-weight:650; }
+.menu-entete span{ display:block; font-size:.8rem; color: var(--sourdine); margin-top:2px; word-break:break-all; }
+.menu-item{
+  display:block; width:100%; text-align:left;
+  padding:9px 12px; border-radius:8px;
+  font-size:.88rem; font-weight:550; color: var(--encre-douce); text-decoration:none;
+  transition: background-color .12s, color .12s;
+}
+.menu-item:hover{ background: var(--surface-creux); color: var(--encre); }
+.menu-item-danger{ color: var(--alerte); }
+.menu-item-danger:hover{ background: var(--alerte-voile); color: var(--alerte); }
+
+/* ---------- modale de confirmation ---------- */
+
+.fond-modale{
+  position:fixed; inset:0; z-index:150;
+  background: rgba(22,22,26,.45); backdrop-filter: blur(3px);
+  display:grid; place-items:center; padding:20px;
+  animation: apparait .14s ease;
+}
+@keyframes apparait{ from{ opacity:0; } to{ opacity:1; } }
+.modale{
+  width:min(440px,100%); background: var(--surface);
+  border:1px solid var(--trait); border-radius:16px;
+  box-shadow: var(--ombre-haute); padding:24px;
+  animation: monte .18s cubic-bezier(.16,1,.3,1);
+}
+@keyframes monte{ from{ opacity:0; transform: translateY(8px) scale(.98); } to{ opacity:1; transform:none; } }
+.modale-titre{ font-size:1.06rem; font-weight:700; letter-spacing:-.018em; }
+.modale-texte{ color: var(--encre-douce); font-size:.92rem; margin-top:8px; line-height:1.55; }
+.modale-pied{ display:flex; gap:10px; justify-content:flex-end; margin-top:22px; flex-wrap:wrap; }
+
+.lien-retour{
+  display:inline-flex; align-items:center; gap:6px; margin-bottom:18px;
+  font-size:.88rem; font-weight:600; color: var(--sourdine);
+  transition: color .14s;
+}
+.lien-retour:hover{ color: var(--encre); }
+
 /* ---------- bulle d'aide au survol ---------- */
 
-.a-aide{ position:relative; }
+/* Le pointille discret signale qu'une explication existe, sans alourdir
+   la lecture. */
+.a-aide{
+  cursor:help; text-decoration:underline dotted var(--trait-fort);
+  text-underline-offset:3px; display:inline-block;
+}
+.a-aide:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:3px; }
+
+/* Bulle unique, enfant du <body> : en position fixed elle echappe au
+   `overflow: hidden` des cartes, qui la tronquait. */
 .bulle{
-  position:absolute; bottom:calc(100% + 8px); left:0; z-index:60;
-  width:max-content; max-width:270px;
+  position:fixed; z-index:200; max-width:280px;
   background: var(--encre); color:#fff;
   font-size:.79rem; font-style:italic; font-weight:400; line-height:1.45;
   padding:9px 12px; border-radius:9px; box-shadow: var(--ombre-haute);
   opacity:0; visibility:hidden; transform: translateY(4px);
-  transition: opacity .16s, transform .16s, visibility .16s;
+  transition: opacity .15s, transform .15s, visibility .15s;
   pointer-events:none; white-space:normal; text-transform:none; letter-spacing:0;
 }
+.bulle.visible{ opacity:1; visibility:visible; transform: translateY(0); }
 .bulle::after{
-  content:''; position:absolute; top:100%; left:18px;
-  border:5px solid transparent; border-top-color: var(--encre);
+  content:''; position:absolute; top:100%; left:var(--fleche,18px);
+  margin-left:-5px; border:5px solid transparent; border-top-color: var(--encre);
 }
-.a-aide:hover > .bulle, .a-aide:focus-visible > .bulle{
-  opacity:1; visibility:visible; transform: translateY(0);
+.bulle.vers-bas::after{
+  top:auto; bottom:100%; border-top-color:transparent; border-bottom-color: var(--encre);
 }
-/* Sur les dernieres colonnes, la bulle sortirait de l'ecran a droite :
-   on l'ancre a droite pour ces cas-la. */
-.a-aide.aide-droite > .bulle{ left:auto; right:0; }
-.a-aide.aide-droite > .bulle::after{ left:auto; right:18px; }
 
 /* ---------- repartitions (barres horizontales) ---------- */
 

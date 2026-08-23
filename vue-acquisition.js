@@ -104,10 +104,10 @@ export async function rendre(page, etat, { charger, oublier }) {
 
     const hote = h('div.onb');
     vider(page);
+    // Pas de barre de marque ici : le menu lateral et l'entete sont deja
+    // affiches, la repeter ferait trois fois "LocWeb" au meme ecran.
     page.append(
-      h('div.onb-barre',
-        h('button.bt.bt-nu', { onclick: afficherAccueil }, '← Retour'),
-        h('p.marque', { html: 'Loc<em>Web</em>', style: { marginLeft: 'auto', marginBottom: '0' } })),
+      h('button.lien-retour', { onclick: afficherAccueil }, '← Retour a l\'acquisition'),
       hote);
 
     const ECRANS = [ecranCampagne, ecranMotsCles, ecranEstimation, null, ecranRecap];

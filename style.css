@@ -1424,3 +1424,55 @@ a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
   display:block; font-size:.76rem; font-weight:500;
   color: var(--sourdine); margin-top:2px;
 }
+
+/* ===================================================================
+   Allegement de Statistiques.
+
+   Le contenu ne bouge pas, seul le decor recule. Huit blocs encadres,
+   ombres et bordures marquees les uns sur les autres, ca donne une page
+   lourde ou chaque bloc se dispute l'attention. Ici les cadres
+   s'effacent et c'est l'espace qui separe.
+   =================================================================== */
+
+.zone .kpi,
+.zone .section{
+  box-shadow: none;
+}
+.zone .kpi:hover,
+.zone .section:hover{
+  box-shadow: none;
+  border-color: var(--trait);
+}
+
+/* L'icone n'a plus besoin de son cadre : elle sert de reperage, pas de
+   decoration. Sans bordure elle pese moitie moins et se lit pareil. */
+.kpi-icone{
+  border-color: transparent;
+  background: var(--surface-creux);
+  color: var(--sourdine);
+  width: 34px; height: 34px; border-radius: 10px; margin-bottom: 14px;
+}
+.kpi-icone svg{ width: 16px; height: 16px; }
+
+.kpi{ min-height: 0; padding: 22px; }
+.grille-kpi{ gap: 14px; }
+
+/* Les repartitions respirent au lieu de s'empiler. */
+.grille-duo{ gap: 14px; margin-bottom: 14px; }
+
+/* Le titre d'une repartition n'a pas besoin d'un filet sous lui quand
+   le bloc lui-meme est deja delimite. */
+.zone .grille-duo .section-tete{ border-bottom: 0; padding-bottom: 4px; }
+
+/* La courbe : un gris profond plutot qu'un noir franc. Sur fond creme,
+   le noir pur vibre et attire l'oeil plus que la donnee ne le merite. */
+.zone svg polyline[stroke]{ stroke: var(--encre-douce); }
+
+/* Le graphe secondaire des cartes KPI reste une indication, pas une
+   figure : on le pose plus bas et plus discret. */
+.kpi-graphe{ opacity: .45; }
+
+/* Barres de repartition : moins contrastees, la longueur suffit a
+   comparer. */
+.repartition-barre{ background: var(--encre-douce); }
+.camembert-puce{ opacity: .9; }

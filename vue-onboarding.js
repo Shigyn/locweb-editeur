@@ -20,6 +20,15 @@ const OBJECTIFS = [
   { cle: 'avis',   libelle: "Plus d'avis Google",        icone: '<path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9Z"/>' },
 ];
 
+const CANAUX = [
+  { cle: 'bouche',   libelle: 'Bouche a oreille',  icone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>' },
+  { cle: 'google',   libelle: 'Recherche Google',  icone: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>' },
+  { cle: 'reseaux',  libelle: 'Reseaux sociaux',   icone: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>' },
+  { cle: 'ads',      libelle: 'Publicite en ligne', icone: '<path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/>' },
+  { cle: 'annuaire', libelle: 'Annuaires, Pages Jaunes', icone: '<path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>' },
+  { cle: 'autres',   libelle: 'Autrement',          icone: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>' },
+];
+
 const ETAPES_PREPA = [
   'Enregistrement de vos informations',
   'Verification de vos connexions',
@@ -51,7 +60,7 @@ export async function rendre(page, etat, { terminer }) {
   // tout reste modifiable depuis Parametrage.
   async function passer() {
     try {
-      await D.majProfil(client.id, { ...champsProfil(), complete_le: new Date().toISOString() });
+      await D.majProfilTolerant(client.id, { ...champsProfil(), complete_le: new Date().toISOString() });
       etat.profil = { ...(etat.profil || {}), complete_le: new Date().toISOString() };
     } catch { souffler("Vos reponses n'ont pas pu etre enregistrees.", 'alerte'); }
     await terminer();
@@ -59,26 +68,16 @@ export async function rendre(page, etat, { terminer }) {
 
   function champsProfil() {
     return {
-      secteur: reponses.secteur ?? null,
       metier_precis: reponses.metier_precis ?? null,
       localisation: reponses.localisation ?? null,
       zone_intervention: reponses.zone_intervention ?? null,
-      nb_employes: reponses.nb_employes ?? null,
-      clients_par_mois: reponses.clients_par_mois ?? null,
-      panier_moyen: reponses.panier_moyen ?? null,
-      ca_mensuel: reponses.ca_mensuel ?? null,
-      objectif_ca: reponses.objectif_ca ?? null,
-      site_internet: reponses.site_internet ?? null,
       reseaux: reponses.reseaux ?? null,
       objectifs: reponses.objectifs ?? null,
-      deja_fait_pub: reponses.deja_fait_pub ?? null,
-      budget_pub_mensuel: reponses.budget_pub_mensuel ?? null,
-      utilise_google_ads: reponses.utilise_google_ads ?? null,
-      utilise_meta_ads: reponses.utilise_meta_ads ?? null,
+      canaux_actuels: reponses.canaux_actuels ?? null,
     };
   }
 
-  const ECRANS = [etapeEntreprise, etapeActivite, etapePresence, etapeObjectifs, etapeAcquisition];
+  const ECRANS = [etapeMetier, etapeZone, etapeObjectifs, etapePresence, etapeAcquisition];
 
   function afficher() {
     vider(hote);
@@ -102,30 +101,29 @@ export async function rendre(page, etat, { terminer }) {
 
   /* ---------- etape 1 : entreprise ---------- */
 
-  function etapeEntreprise() {
-    const secteur = champ('Secteur / activite', 'secteur', 'ex : Artisanat du batiment');
-    const metier = champ('Metier', 'metier_precis', 'ex : Plomberie / Chauffage');
-    const localisation = champ('Localisation', 'localisation', 'ex : Beziers');
-    const zone = champ("Zone d'intervention", 'zone_intervention', 'ex : rayon de 30 km');
+  // Une question par ecran : un formulaire de quatre champs d'un coup
+  // fait fuir ; la meme chose etalee se remplit sans y penser.
+
+  /* ---------- etape 1 : le metier ---------- */
+
+  function etapeMetier() {
     return {
-      titre: h('h1', 'Votre entreprise'),
-      sous: 'Verifions les informations de votre entreprise.',
-      corps: h('div.onb-grille', secteur, metier, localisation, zone),
+      titre: h('h1', 'Quel est votre metier ?'),
+      sous: "Cela nous sert a proposer les bons mots-cles pour vos campagnes.",
+      corps: h('div.onb-grille',
+        champ('Votre metier', 'metier_precis', 'ex : Plombier chauffagiste')),
     };
   }
 
-  /* ---------- etape 2 : activite ---------- */
+  /* ---------- etape 2 : la zone ---------- */
 
-  function etapeActivite() {
+  function etapeZone() {
     return {
-      titre: h('h1', 'Votre activite'),
-      sous: 'Ces chiffres nous aident a mieux comprendre votre entreprise. Rien n\'est obligatoire.',
+      titre: h('h1', 'Ou intervenez-vous ?'),
+      sous: 'Votre ville et le rayon autour duquel vous vous deplacez.',
       corps: h('div.onb-grille',
-        champ("Nombre d'employes", 'nb_employes', 'ex : 4', 'number'),
-        champ('Clients par mois', 'clients_par_mois', 'ex : 25', 'number'),
-        champ('Panier moyen (EUR)', 'panier_moyen', 'ex : 450', 'number'),
-        champ("Chiffre d'affaires mensuel (EUR)", 'ca_mensuel', 'ex : 11000', 'number'),
-        champ("Objectif de chiffre d'affaires (EUR)", 'objectif_ca', 'ex : 15000', 'number')),
+        champ('Votre ville', 'localisation', 'ex : Beziers'),
+        champ("Jusqu'a quelle distance", 'zone_intervention', 'ex : 30 km autour')),
     };
   }
 
@@ -133,7 +131,6 @@ export async function rendre(page, etat, { terminer }) {
 
   function etapePresence() {
     const corps = h('div.onb-grille',
-      champ('Site internet', 'site_internet', client.domaine || 'ex : monsite.fr'),
       champReseau('Facebook', 'facebook'),
       champReseau('Instagram', 'instagram'));
 
@@ -142,26 +139,52 @@ export async function rendre(page, etat, { terminer }) {
       ligneConnexion('Google Analytics', reponses.acces_ga4));
 
     return {
-      titre: h('h1', 'Votre presence en ligne'),
-      sous: 'Vous pourrez connecter vos comptes Google maintenant ou plus tard, depuis Parametrage.',
+      titre: h('h1', 'Vos reseaux et comptes Google'),
+      sous: 'Tout est facultatif — vous pourrez connecter vos comptes plus tard depuis Parametrage.',
       corps,
     };
   }
 
-  /* ---------- etape 4 : objectifs ---------- */
+  /* ---------- etape 5 : publicite ---------- */
+
+  function etapeAcquisition() {
+    return {
+      titre: h('h1', "Comment vos clients vous trouvent-ils aujourd'hui ?"),
+      sous: 'Plusieurs reponses possibles. Cela nous dit sur quel canal appuyer en priorite.',
+      corps: cartesCochables(CANAUX, 'canaux'),
+    };
+  }
+
+  /* ---------- etape 2 : objectifs ---------- */
 
   function etapeObjectifs() {
-    const choisis = new Set(reponses.objectifs || []);
+    return {
+      titre: h('h1', 'Que voulez-vous obtenir ?'),
+      sous: 'Plusieurs reponses possibles — vous pourrez changer plus tard.',
+      corps: cartesCochables(OBJECTIFS, 'objectifs'),
+    };
+  }
+
+  /* Cartes a selection multiple, partagees par les etapes Objectifs et
+     Canaux : meme comportement, seule la liste change. L'etat se lit au
+     cadre ET a la coche, jamais a la couleur seule. */
+  function cartesCochables(liste, cle) {
+    const champ = cle === 'objectifs' ? 'objectifs' : 'canaux_actuels';
+    const choisis = new Set(reponses[champ] || []);
     const grille = h('div.onb-choix');
-    OBJECTIFS.forEach((o) => {
+
+    liste.forEach((o) => {
       const carte = h('button.choix', {
         type: 'button',
         class: choisis.has(o.cle) ? 'choix actif' : 'choix',
+        'aria-pressed': String(choisis.has(o.cle)),
         onclick: () => {
           choisis.has(o.cle) ? choisis.delete(o.cle) : choisis.add(o.cle);
-          reponses.objectifs = [...choisis];
-          carte.className = choisis.has(o.cle) ? 'choix actif' : 'choix';
-          carte.querySelector('.choix-case').innerHTML = choisis.has(o.cle) ? '&check;' : '';
+          reponses[champ] = [...choisis];
+          const actif = choisis.has(o.cle);
+          carte.className = actif ? 'choix actif' : 'choix';
+          carte.setAttribute('aria-pressed', String(actif));
+          carte.querySelector('.choix-case').innerHTML = actif ? '&check;' : '';
         },
       },
         h('span.choix-icone', h('svg', {
@@ -172,28 +195,7 @@ export async function rendre(page, etat, { terminer }) {
         h('span.choix-case', { html: choisis.has(o.cle) ? '&check;' : '' }));
       grille.append(carte);
     });
-    return {
-      titre: h('h1', 'Vos objectifs'),
-      sous: 'Selectionnez ce qui compte le plus pour vous — vous pourrez changer plus tard.',
-      corps: grille,
-    };
-  }
-
-  /* ---------- etape 5 : acquisition ---------- */
-
-  function etapeAcquisition() {
-    const corps = h('div.onb-grille');
-    corps.append(
-      bascule('Avez-vous deja fait de la publicite ?', 'deja_fait_pub',
-        'Google Ads, Meta Ads, Instagram...'),
-      champ('Budget publicitaire mensuel (EUR)', 'budget_pub_mensuel', 'ex : 300', 'number'),
-      bascule('Google Ads', 'utilise_google_ads'),
-      bascule('Meta Ads (Facebook / Instagram)', 'utilise_meta_ads'));
-    return {
-      titre: h('h1', 'Votre acquisition'),
-      sous: 'Quelques informations pour preparer vos futures campagnes.',
-      corps,
-    };
+    return grille;
   }
 
   /* ---------- fabriques de champs ---------- */
@@ -265,13 +267,21 @@ export async function rendre(page, etat, { terminer }) {
 
     let echec = false;
 
-    // 1. Enregistrement reel du profil
+    // 1. Enregistrement du profil. Volontairement tolerant : une colonne
+    //    manquante en base ne doit pas faire echouer l'onboarding entier
+    //    ni empecher `complete_le` de passer — sinon le questionnaire
+    //    revient a chaque connexion.
     lignes[0].classList.add('encours');
+    let resultat;
     try {
-      await avecPlancher(D.majProfil(client.id, {
+      resultat = await avecPlancher(D.majProfilTolerant(client.id, {
         ...champsProfil(), complete_le: new Date().toISOString(),
       }));
-      marquerLigne(lignes[0]);
+      marquerLigne(lignes[0], !resultat.ok);
+      if (!resultat.ok) echec = true;
+      if (resultat.ignores?.length) {
+        console.warn('Colonnes absentes en base, ignorees :', resultat.ignores.join(', '));
+      }
     } catch { echec = true; marquerLigne(lignes[0], true); }
 
     // 2. Relecture des connexions (vraie lecture en base)

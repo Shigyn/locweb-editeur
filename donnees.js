@@ -54,6 +54,38 @@ export async function majProfil(clientId, champs) {
   if (error) throw error;
 }
 
+/* Enregistrement tolerant, pour l'onboarding.
+
+   PostgREST rejette la requete ENTIERE des qu'une seule colonne n'existe
+   pas encore en base. Resultat : une migration non passee faisait echouer
+   la sauvegarde complete, `complete_le` n'etait jamais ecrit, et le
+   questionnaire revenait a chaque connexion.
+
+   Ici on retente en retirant a chaque fois la colonne que PostgreSQL
+   signale comme inconnue. Le profil se remplit donc autant que la base
+   le permet, et `complete_le` finit toujours par passer. Ce qui n'a pas
+   pu etre enregistre reste modifiable dans Parametrage. */
+export async function majProfilTolerant(clientId, champs) {
+  const restants = { ...champs };
+  const ignores = [];
+
+  for (let essai = 0; essai < 12; essai++) {
+    const { error } = await sb.from('profils_client')
+      .upsert({ client_id: clientId, ...restants, date_maj: new Date().toISOString() });
+
+    if (!error) return { ok: true, ignores };
+
+    // PGRST204 : "Could not find the 'xxx' column". On extrait le nom
+    // entre apostrophes plutot que de deviner.
+    const nom = error.message?.match(/'([^']+)' column/)?.[1];
+    if (!nom || !(nom in restants)) return { ok: false, ignores, erreur: error };
+
+    delete restants[nom];
+    ignores.push(nom);
+  }
+  return { ok: false, ignores, erreur: new Error('trop de colonnes manquantes') };
+}
+
 /* ---------- contenu du site ---------- */
 
 export async function lireContenu(clientId) {

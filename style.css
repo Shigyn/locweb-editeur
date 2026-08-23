@@ -640,6 +640,22 @@ button.entete-avatar{ cursor:pointer; border:0; }
 
 .grille-duo{ display:grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
 
+/* ---------- grands blocs depliables (Performances) ---------- */
+
+.bloc-pliable{ margin-bottom:22px; }
+.bloc-tete{
+  display:flex; align-items:center; gap:12px; cursor:pointer; list-style:none;
+  padding:14px 2px; border-bottom:1px solid var(--trait); margin-bottom:2px;
+}
+.bloc-tete::-webkit-details-marker{ display:none; }
+.bloc-titre{ font-size:1rem; font-weight:700; letter-spacing:-.018em; }
+.bloc-chevron{
+  margin-left:auto; color: var(--sourdine); font-size:1.5rem; line-height:1;
+  transition: transform .2s;
+}
+.bloc-pliable[open] .bloc-chevron{ transform: rotate(90deg); }
+.bloc-corps{ padding-top:18px; }
+
 /* ---------- avis Google ---------- */
 
 .note-globale{

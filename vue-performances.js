@@ -104,7 +104,8 @@ export async function rendre(page, etat) {
 
     /* ---------- cartes KPI ---------- */
 
-    zone.append(h('p.titre-section', 'Performance de votre site'));
+    const site = blocPliable('Performance de votre site');
+    zone.append(site.bloc);
 
     const grille = h('div.grille-kpi');
     METRIQUES.forEach((m, i) => {
@@ -129,12 +130,12 @@ export async function rendre(page, etat) {
         etiquette,
         h('p.kpi-sous', `vs ${periode.compare}`)));
     });
-    zone.append(grille);
+    site.corps.append(grille);
 
     /* ---------- un seul graphique dans le temps ---------- */
 
     if (serie.length > 1) {
-      zone.append(h('div.section',
+      site.corps.append(h('div.section',
         h('div.section-tete',
           h('h2', 'Visiteurs'),
           h('p', `Evolution sur ${periode.libelle.toLowerCase()}`)),
@@ -155,7 +156,7 @@ export async function rendre(page, etat) {
         rep.villes.filter((v) => v.cle && v.cle !== '(not set)')
           .map((v) => ({ nom: v.cle, valeur: v.valeur }))));
     }
-    if (duo.children.length) zone.append(duo);
+    if (duo.children.length) site.corps.append(duo);
 
     const duo2 = h('div.grille-duo');
     if (rep.pages?.length) {
@@ -170,10 +171,10 @@ export async function rendre(page, etat) {
       duo2.append(carteRepartition('Jours de la semaine', 'jours_semaine',
         ordre.map((n) => ({ nom: JOURS_SEMAINE[n], valeur: parJour.get(n) || 0 }))));
     }
-    if (duo2.children.length) zone.append(duo2);
+    if (duo2.children.length) site.corps.append(duo2);
 
     if (!serie.length) {
-      zone.append(carteVide('Aucune donnee sur cette periode',
+      site.corps.append(carteVide('Aucune donnee sur cette periode',
         "Votre site n'a pas encore recu de visite sur la periode choisie."));
     }
   }
@@ -212,9 +213,10 @@ const AIDE_GBP = {
 
 async function chargerGbp(zone, periode) {
   vider(zone);
-  zone.append(h('p.titre-section', 'Performance de votre fiche Google'));
-  zone.append(h('div.grille-kpi', ...[0, 1, 2, 3].map(() =>
+  const attente = blocPliable('Performance de votre fiche Google');
+  attente.corps.append(h('div.grille-kpi', ...[0, 1, 2, 3].map(() =>
     h('div.squelette', { style: { height: '132px', borderRadius: '16px' } }))));
+  zone.append(attente.bloc);
 
   let r;
   try {
@@ -228,8 +230,9 @@ async function chargerGbp(zone, periode) {
     if (!reponse.ok) throw new Error(r.error || 'refus');
   } catch (e) {
     vider(zone);
-    zone.append(h('p.titre-section', 'Performance de votre fiche Google'));
-    zone.append(carteVide(
+    const echec = blocPliable('Performance de votre fiche Google');
+    zone.append(echec.bloc);
+    echec.corps.append(carteVide(
       String(e.message).includes('Identifiant')
         ? "Il manque l'identifiant de votre fiche Google"
         : 'Statistiques de la fiche indisponibles',
@@ -243,7 +246,8 @@ async function chargerGbp(zone, periode) {
 
   const t = r.totaux || {};
   vider(zone);
-  zone.append(h('p.titre-section', 'Performance de votre fiche Google'));
+  const gbp = blocPliable('Performance de votre fiche Google');
+  zone.append(gbp.bloc);
 
   const grille = h('div.grille-kpi');
   ['vues', 'appels', 'itineraires', 'clics_site'].forEach((cle, i) => {
@@ -257,7 +261,7 @@ async function chargerGbp(zone, periode) {
       h('p.kpi-val', nombre(t[cle] || 0)),
       etiquette));
   });
-  zone.append(grille);
+  gbp.corps.append(grille);
 
   /* ---------- avis ---------- */
 
@@ -291,7 +295,7 @@ async function chargerGbp(zone, periode) {
         "Aucun avis pour le moment."));
     }
 
-    zone.append(h('div.section',
+    gbp.corps.append(h('div.section',
       h('div.section-tete', h('h2', 'Vos avis Google')), corps));
   }
 }
@@ -299,6 +303,19 @@ async function chargerGbp(zone, periode) {
 function etoiles(note) {
   const n = Math.round(Number(note) || 0);
   return '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n));
+}
+
+/* Grande section depliable : les deux blocs (site / fiche Google) font
+   chacun une page entiere de contenu. Repliables, on choisit celui qu'on
+   veut regarder au lieu de defiler dans les deux. */
+function blocPliable(titre, ouvert = true) {
+  const corps = h('div.bloc-corps');
+  const bloc = h('details.bloc-pliable', { open: ouvert },
+    h('summary.bloc-tete',
+      h('span.bloc-titre', titre),
+      h('span.bloc-chevron', { html: '&rsaquo;' })),
+    corps);
+  return { bloc, corps };
 }
 
 function carteRepartition(titre, cleAide, entrees) {

@@ -3,7 +3,7 @@
 //
 //  Quatre blocs, dans cet ordre, et rien d'autre :
 //    1. une phrase qui tranche
-//    2. trois chiffres
+//    2. deux ou trois chiffres, selon ce qui est branche
 //    3. une courbe
 //    4. ce qu'il faut faire
 //
@@ -24,6 +24,7 @@ import { blocAFaire } from './completion.js';
 const ICONES_KPI = {
   visiteurs: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   demandes:  '<path d="M4 5h16v12H8l-4 4V5Z"/>',
+  appels:    '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
   conversion: '<path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/>',
 };
 
@@ -38,16 +39,17 @@ export async function rendre(page, etat, { charger }) {
   page.append(zone);
   zone.append(h('div.squelette', { style: { height: '104px', borderRadius: '16px', marginBottom: '18px' } }));
 
-  const stats = profil?.acces_ga4
-    ? await D.statsGa4('30j').catch(() => null)
-    : null;
+  const [stats, fiche] = await Promise.all([
+    profil?.acces_ga4 ? D.statsGa4('30j').catch(() => null) : null,
+    profil?.acces_google_business ? D.statsGbp('30j').catch(() => null) : null,
+  ]);
 
   const limite = Date.now() - 30 * 864e5;
   const demandes30 = demandes.filter((d) => new Date(d.date_creation) >= limite);
 
   vider(zone);
   zone.append(verdict(stats, demandes30, profil));
-  zone.append(chiffres(stats, demandes30));
+  zone.append(chiffres(stats, fiche, demandes30));
   const graphe = courbe(stats);
   if (graphe) zone.append(graphe);
   const actions = blocAFaire(profil || {}, client, { stats, demandes, limite: 3 });
@@ -91,21 +93,37 @@ function verdict(stats, demandes30, profil) {
     h('p.verdict-texte', texte));
 }
 
-/* ---------- 2. trois chiffres ---------- */
+/* ---------- 2. les chiffres ---------- */
 
-// Trois, pas quatre : visiteurs (combien viennent), demandes (combien
-// se manifestent), taux (le lien entre les deux). Un quatrieme diluerait
-// la lecture sans rien apprendre.
-function chiffres(stats, demandes30) {
+/* On n'affiche que des cartes qui portent une valeur.
+
+   Trois cartes vides ne disent pas "pas de donnees", elles donnent
+   l'impression d'un outil casse. Et surtout : le taux de contact se
+   calcule a partir des deux autres — l'afficher a cote d'elles, c'est
+   montrer trois fois la meme chose. Il n'apparait donc que lorsqu'il
+   apprend quelque chose, et cede sa place aux appels Google des que la
+   fiche est reliee : un appel est un canal a part entiere, pas une
+   division des deux colonnes precedentes. */
+function chiffres(stats, fiche, demandes30) {
   const visiteurs = stats?.totaux?.visiteurs ?? null;
-  const taux = visiteurs ? (demandes30.length / visiteurs) * 100 : null;
-
+  const appels = fiche?.totaux?.appels ?? null;
   const grille = h('div.grille-kpi');
-  grille.append(kpi('visiteurs', 'Visiteurs', visiteurs === null ? '—' : nombre(visiteurs),
-    stats?.variations?.visiteurs, (stats?.series || []).map((l) => l.visiteurs)));
+
+  if (visiteurs !== null) {
+    grille.append(kpi('visiteurs', 'Visiteurs', nombre(visiteurs),
+      stats?.variations?.visiteurs, (stats?.series || []).map((l) => l.visiteurs)));
+  }
+
   grille.append(kpi('demandes', 'Demandes reçues', nombre(demandes30.length), null, null));
-  grille.append(kpi('conversion', 'Taux de contact', taux === null ? '—' : `${taux.toFixed(1)} %`,
-    null, null, 'conversion'));
+
+  if (appels !== null) {
+    grille.append(kpi('appels', 'Appels depuis Google', nombre(appels), null, null));
+  } else if (visiteurs) {
+    const taux = (demandes30.length / visiteurs) * 100;
+    grille.append(kpi('conversion', 'Taux de contact', `${taux.toFixed(1)} %`,
+      null, null, 'conversion'));
+  }
+
   return grille;
 }
 

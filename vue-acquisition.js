@@ -345,6 +345,7 @@ export async function rendre(page, etat, { charger, oublier }) {
       plus.addEventListener('click', () => bouger(PAS));
 
       const parSemaine = h('p.aide', { style: { marginTop: '10px' } });
+      const totalGeneral = h('p.aide', { style: { marginTop: '6px' } });
       const alerte = h('p.avertissement', { hidden: true },
         `En dessous de ${BUDGET_FAIBLE} EUR par semaine, votre annonce sort trop rarement pour donner des résultats visibles.`);
 
@@ -357,20 +358,31 @@ export async function rendre(page, etat, { charger, oublier }) {
           `Soit ${nombre(b)} EUR par semaine. Ajustable à tout moment, même après le lancement.`;
         alerte.hidden = !(b && b < BUDGET_FAIBLE);
 
+        // Deux encaissements differents, donc pas de "Total" unique.
+        // Le budget part sur le compte Google Ads du client, avec sa
+        // carte ; LocWeb ne facture que sa gestion. Additionner les deux
+        // sous un seul total laissait croire au client qu'il nous devait
+        // la somme entiere.
         vider(tableau);
         tableau.append(
           ligneRecap('Campagne', OBJECTIFS.find((o) => o.cle === reponses.objectif)?.libelle || '—'),
-          ligneRecap('Budget publicitaire', reglage),
-          ligneRecap('Prestation de gestion LocWeb', `${GESTION} EUR / mois`),
-          ligneRecap('Total', `${nombre(mensuel + GESTION)} EUR / mois`, true));
+          ligneRecap(
+            h('span.recap-double', 'Budget publicitaire', h('small', 'réglé directement à Google')),
+            reglage),
+          ligneRecap(
+            h('span.recap-double', 'Gestion LocWeb', h('small', 'ce que nous vous facturons')),
+            `${GESTION} EUR / mois`, true));
+
+        totalGeneral.textContent =
+          `Soit ${nombre(mensuel + GESTION)} EUR par mois au total, dont ${nombre(mensuel)} EUR chez Google sur votre propre compte.`;
       }
       peindre();
       corps.append(tableau);
 
-      corps.append(parSemaine, alerte);
+      corps.append(parSemaine, totalGeneral, alerte);
 
       corps.append(h('p.note-prudence',
-        "Aucun paiement n'est effectué depuis cette page. Après validation, nous vous recontactons pour finaliser la mise en place de la campagne dans Google Ads."));
+        "Aucun paiement n'est effectué depuis cette page. La campagne tourne sur votre propre compte Google Ads : nous vous enverrons une demande de liaison à accepter, et c'est votre carte qui règle la publicité. Nous vous recontactons pour la mise en place."));
 
       return {
         titre: 'Récapitulatif',

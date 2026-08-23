@@ -341,6 +341,7 @@ export function sectionPliable({ titre, sous, resume, icone, ouvert = false }) {
 }
 
 export const EXPLICATIONS = {
+  appels: "Personnes ayant appuyé sur Appeler depuis votre fiche Google. Ces appels ne passent pas par votre site.",
   visiteurs: "Nombre de personnes différentes venues sur votre site. Une même personne qui revient trois fois compte pour une.",
   sessions: "Nombre de visites au total. Si un visiteur revient le lendemain, cela fait deux sessions.",
   pages_vues: "Nombre total de pages consultées, toutes visites confondues.",

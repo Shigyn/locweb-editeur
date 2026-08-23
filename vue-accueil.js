@@ -1,183 +1,115 @@
 // ===================================================================
-//  Accueil — le tableau de bord. Une phrase de synthese en haut, les
-//  chiffres qui comptent en dessous, puis les acces aux sections.
+//  Accueil — repond a une seule question : "ca marche ou pas ?"
 //
-//  Regle de fond : tout ce qui est affiche vient de donnees reelles
-//  (GA4 pour le trafic, la base pour les demandes). Quand une source
+//  Quatre blocs, dans cet ordre, et rien d'autre :
+//    1. une phrase qui tranche
+//    2. trois chiffres
+//    3. une courbe
+//    4. ce qu'il faut faire
+//
+//  Ce qui a ete retire volontairement : la grille "Vos sections", qui
+//  reproduisait le menu lateral en plus gros ; la barre de taux de
+//  conversion, dont le chiffre figure maintenant dans les trois du
+//  haut ; et les sous-titres qui presentaient chaque bloc alors que le
+//  bloc se presente tout seul.
+//
+//  Regle de fond : tout vient de donnees reelles. Quand une source
 //  manque, on le dit — jamais de chiffre de demonstration.
 // ===================================================================
 
-import { h, vider, nombre, grapheAires, souffler, EXPLICATIONS, avecAide } from './outils.js';
+import { h, vider, nombre, grapheAires, EXPLICATIONS, avecAide } from './outils.js';
 import * as D from './donnees.js';
-
-const CARTES = [
-  {
-    route: '#/performances', titre: 'Performances',
-    texte: 'Visiteurs, sessions et pages vues.',
-    icone: '<path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-5 3 3 5-7"/>',
-  },
-  {
-    route: '#/mon-site', titre: 'Mon éditeur',
-    texte: 'Horaires, textes et photos de votre site.',
-    icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M7 6.5h.01M10 6.5h.01"/>',
-  },
-  {
-    route: '#/acquisition', titre: 'Acquisition',
-    texte: 'Lancez une campagne pour attirer des clients.',
-    icone: '<path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/>',
-  },
-  {
-    route: '#/activite', titre: 'Mon activité',
-    texte: 'Les demandes reçues via votre site.',
-    icone: '<path d="M4 5h16v12H8l-4 4V5Z"/>',
-  },
-];
+import { blocAFaire } from './completion.js';
 
 const ICONES_KPI = {
   visiteurs: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   demandes:  '<path d="M4 5h16v12H8l-4 4V5Z"/>',
-  traiter:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
-  pages:     '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/>',
+  conversion: '<path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/>',
 };
 
 export async function rendre(page, etat, { charger }) {
-  const { client } = etat;
+  const { client, profil } = etat;
   const demandes = await charger('demandes', () => D.listerDemandes(client.id));
 
   vider(page);
-  page.append(
-    h('h1', `Bonjour, ${client.nom_site || 'bienvenue'}`),
-    h('p.sous-titre', 'Voici les performances de votre présence en ligne.'),
-  );
+  page.append(h('h1', `Bonjour, ${client.nom_site || 'bienvenue'}`));
+
+  const zone = h('div');
+  page.append(zone);
+  zone.append(h('div.squelette', { style: { height: '104px', borderRadius: '16px', marginBottom: '18px' } }));
+
+  const stats = profil?.acces_ga4
+    ? await D.statsGa4('30j').catch(() => null)
+    : null;
 
   const limite = Date.now() - 30 * 864e5;
   const demandes30 = demandes.filter((d) => new Date(d.date_creation) >= limite);
-  const nouvelles = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
-
-  // La progression passe avant les chiffres tant qu'il reste des
-  // etapes : un chiffre incomplet se lit mal, et l'utilisateur doit
-  // savoir pourquoi avant de le regarder.
-  const { barreCompletion, completion } = await import('./completion.js');
-  if (completion(etat.profil || {}, client).reste.length) {
-    page.append(barreCompletion(etat.profil || {}, client, { compact: true }));
-  }
-
-  const zoneSynthese = h('div');
-  page.append(zoneSynthese);
-
-  if (etat.profil?.acces_ga4) {
-    await remplirAvecGa4(zoneSynthese, demandes30, nouvelles);
-  } else {
-    zoneSynthese.append(h('div.invite',
-      h('div',
-        h('p.invite-titre', 'Connectez Google Analytics pour suivre votre trafic'),
-        h('p.invite-texte', "Vous verrez ici vos visiteurs, vos pages vues et l'évolution de votre présence en ligne.")),
-      h('a.bt.bt-vif', { href: '#/parametrage' }, 'Connecter')));
-
-    zoneSynthese.append(h('div.grille-kpi',
-      carteKpi('demandes', 'Demandes reçues', nombre(demandes30.length), '30 derniers jours', null, null),
-      carteKpi('traiter', 'À traiter', nombre(nouvelles), nouvelles ? 'en attente de réponse' : 'tout est traité', null, null)));
-  }
-
-  page.append(h('p.titre-section', 'Vos sections'));
-  const grille = h('div.grille-cartes');
-  CARTES.forEach((c) => {
-    grille.append(h('a.carte-menu', { href: c.route },
-      h('span.carte-icone', h('svg', {
-        viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
-        'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', html: c.icone,
-      })),
-      h('span.carte-titre', c.titre),
-      h('span.carte-texte', c.texte)));
-  });
-  page.append(grille);
-}
-
-async function remplirAvecGa4(zone, demandes30, nouvelles) {
-  zone.append(h('div.squelette', { style: { height: '120px', borderRadius: '16px', marginBottom: '18px' } }));
-
-  let r;
-  try {
-    const { data: { session } } = await D.sb.auth.getSession();
-    const reponse = await fetch(`${D.EDGE_FUNCTIONS_URL}/ga4-donnees`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ periode: '30j' }),
-    });
-    r = await reponse.json();
-    if (!reponse.ok) throw new Error(r.error || 'refus');
-  } catch {
-    vider(zone);
-    zone.append(h('div.invite',
-      h('div',
-        h('p.invite-titre', 'Statistiques momentanément indisponibles'),
-        h('p.invite-texte', "Vos demandes restent consultables ci-dessous.")),
-      h('a.bt.bt-plein', { href: '#/performances' }, 'Réessayer')));
-    zone.append(h('div.grille-kpi',
-      carteKpi('demandes', 'Demandes reçues', nombre(demandes30.length), '30 derniers jours', null, null),
-      carteKpi('traiter', 'À traiter', nombre(nouvelles), nouvelles ? 'en attente' : 'tout est traité', null, null)));
-    return;
-  }
-
-  const serie = r.series || [];
-  const totaux = r.totaux || {};
-  const variations = r.variations || {};
-  const visiteurs = totaux.visiteurs || 0;
-
-  // Taux de conversion : part des visiteurs qui sont alles jusqu'a
-  // remplir le formulaire. C'est le seul chiffre qui relie le trafic au
-  // chiffre d'affaires, donc celui qui merite d'etre mis en avant.
-  const taux = visiteurs ? (demandes30.length / visiteurs) * 100 : null;
 
   vider(zone);
-
-  /* ---------- phrase de synthese ---------- */
-
-  const enHausse = (variations.visiteurs ?? 0) > 0;
-  zone.append(h('div.synthese-narrative',
-    h('p.synthese-badge', 'DONNÉES SYNCHRONISÉES À L\'INSTANT'),
-    h('p.synthese-titre', visiteurs
-      ? (enHausse ? 'Votre présence en ligne progresse.' : 'Votre présence en ligne est stable.')
-      : 'Votre site attend ses premiers visiteurs.'),
-    h('p.synthese-texte', visiteurs
-      ? `Sur les 30 derniers jours, votre site a reçu ${nombre(visiteurs)} visiteur${visiteurs > 1 ? 's' : ''}` +
-        (demandes30.length
-          ? ` et généré ${nombre(demandes30.length)} demande${demandes30.length > 1 ? 's' : ''}, soit un taux de conversion de ${taux.toFixed(1)} %.`
-          : ", mais aucune demande n'a encore été envoyée via le formulaire.")
-      : "Dès que votre site recevra des visites, vous verrez ici son évolution jour par jour."),
-    h('a.synthese-lien', { href: '#/performances' }, 'Voir le détail des performances →')));
-
-  /* ---------- rangee de KPI ---------- */
-
-  zone.append(h('div.grille-kpi',
-    carteKpi('visiteurs', 'Visiteurs', nombre(visiteurs), '30 derniers jours',
-      variations.visiteurs, serie.map((l) => l.visiteurs)),
-    carteKpi('pages', 'Pages vues', nombre(totaux.pages_vues || 0), '30 derniers jours',
-      variations.pages_vues, serie.map((l) => l.pages_vues)),
-    carteKpi('demandes', 'Demandes reçues', nombre(demandes30.length), '30 derniers jours', null, null),
-    carteKpi('traiter', 'À traiter', nombre(nouvelles), nouvelles ? 'en attente de réponse' : 'tout est traité', null, null),
-  ));
-
-  /* ---------- taux de conversion ---------- */
-
-  if (taux !== null) {
-    // Barre plafonnee a 10 % : au-dela, un site local est deja
-    // exceptionnel, et une echelle sur 100 rendrait toute barre
-    // invisible.
-    const largeur = Math.min(100, (taux / 10) * 100);
-    zone.append(h('div.section',
-      h('div.section-corps', { style: { padding: '20px 22px' } },
-        h('div.conversion-tete',
-          h('div',
-            avecAide(h('p.conversion-etiq', 'Votre taux de conversion'), EXPLICATIONS.conversion),
-            h('p.conversion-val', `${taux.toFixed(1)} %`)),
-          h('p.conversion-aide', 'Part de vos visiteurs qui vous contactent')),
-        h('div.conversion-barre', h('div.conversion-jauge', { style: { width: `${largeur.toFixed(1)}%` } })),
-        h('p.conversion-repere', 'Un bon taux pour un site local se situe entre 2 % et 5 %.'))));
-  }
+  zone.append(verdict(stats, demandes30, profil));
+  zone.append(chiffres(stats, demandes30));
+  const graphe = courbe(stats);
+  if (graphe) zone.append(graphe);
+  const actions = blocAFaire(profil || {}, client, { stats, demandes, limite: 3 });
+  if (actions) zone.append(actions);
 }
 
-function carteKpi(icone, libelle, valeur, sous, variation, serie, cleAide) {
+/* ---------- 1. la phrase qui tranche ---------- */
+
+// Un verdict, pas une description. "342 visiteurs" ne dit pas si c'est
+// bien ; "en hausse de 12 %" le dit.
+function verdict(stats, demandes30, profil) {
+  const visiteurs = stats?.totaux?.visiteurs ?? null;
+  const variation = stats?.variations?.visiteurs;
+  const nb = demandes30.length;
+
+  let titre;
+  let texte;
+
+  if (!profil?.acces_ga4) {
+    titre = nb ? `${nb} demande${nb > 1 ? 's' : ''} ce mois-ci` : 'Votre site est en ligne';
+    texte = 'Reliez Google pour voir combien de personnes le visitent.';
+  } else if (!stats) {
+    titre = 'Statistiques indisponibles';
+    texte = 'Vos demandes restent consultables. Réessayez dans un moment.';
+  } else if (!visiteurs) {
+    titre = 'Votre site attend ses premiers visiteurs';
+    texte = 'Dès les premières visites, vous verrez ici son évolution.';
+  } else if (Number.isFinite(variation) && variation >= 10) {
+    titre = `Votre trafic progresse de ${Math.round(variation)} %`;
+    texte = `${nombre(visiteurs)} visiteurs sur 30 jours. Ce qui est en place fonctionne.`;
+  } else if (Number.isFinite(variation) && variation <= -10) {
+    titre = `Votre trafic baisse de ${Math.abs(Math.round(variation))} %`;
+    texte = `${nombre(visiteurs)} visiteurs sur 30 jours. Une baisse peut être saisonnière.`;
+  } else {
+    titre = 'Votre présence en ligne est stable';
+    texte = `${nombre(visiteurs)} visiteurs sur 30 jours${nb ? `, ${nb} demande${nb > 1 ? 's' : ''}` : ''}.`;
+  }
+
+  return h('div.verdict',
+    h('p.verdict-titre', titre),
+    h('p.verdict-texte', texte));
+}
+
+/* ---------- 2. trois chiffres ---------- */
+
+// Trois, pas quatre : visiteurs (combien viennent), demandes (combien
+// se manifestent), taux (le lien entre les deux). Un quatrieme diluerait
+// la lecture sans rien apprendre.
+function chiffres(stats, demandes30) {
+  const visiteurs = stats?.totaux?.visiteurs ?? null;
+  const taux = visiteurs ? (demandes30.length / visiteurs) * 100 : null;
+
+  const grille = h('div.grille-kpi');
+  grille.append(kpi('visiteurs', 'Visiteurs', visiteurs === null ? '—' : nombre(visiteurs),
+    stats?.variations?.visiteurs, (stats?.series || []).map((l) => l.visiteurs)));
+  grille.append(kpi('demandes', 'Demandes reçues', nombre(demandes30.length), null, null));
+  grille.append(kpi('conversion', 'Taux de contact', taux === null ? '—' : `${taux.toFixed(1)} %`,
+    null, null, 'conversion'));
+  return grille;
+}
+
+function kpi(icone, libelle, valeur, variation, serie, cleAide) {
   return h('div.kpi',
     h('div.kpi-haut',
       h('span.kpi-icone', h('svg', {
@@ -188,7 +120,6 @@ function carteKpi(icone, libelle, valeur, sous, variation, serie, cleAide) {
       badgeVariation(variation)),
     h('p.kpi-val', valeur),
     avecAide(h('p.kpi-etiq', libelle), EXPLICATIONS[cleAide || icone]),
-    h('p.kpi-sous', sous),
     serie && serie.length > 1 ? h('div.kpi-graphe', grapheAires(serie, { hauteur: 34 })) : null);
 }
 
@@ -198,4 +129,18 @@ function badgeVariation(v) {
   return h('span.badge-var', { class: `badge-var ${hausse ? 'hausse' : 'baisse'}` },
     h('span.badge-fleche', { html: hausse ? '&uarr;' : '&darr;' }),
     `${Math.abs(v).toFixed(1)} %`);
+}
+
+/* ---------- 3. la courbe ---------- */
+
+function courbe(stats) {
+  const serie = stats?.series || [];
+  if (serie.length < 2) return null;
+  return h('div.section',
+    h('div.section-tete',
+      h('h2', 'Visiteurs'),
+      h('a.section-lien', { href: '#/statistiques' }, 'Tout voir →')),
+    h('div.section-corps', { style: { paddingTop: '18px' } },
+      h('div.kpi-graphe', { style: { height: '110px' } },
+        grapheAires(serie.map((l) => l.visiteurs), { hauteur: 110 }))));
 }

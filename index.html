@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icone-512.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="LocWeb">
-<link rel="stylesheet" href="style.css?v=27">
+<link rel="stylesheet" href="style.css?v=29">
 </head>
 <body>
 
@@ -49,49 +49,36 @@
 
   <nav class="rail" aria-label="Navigation">
     <p class="marque rail-marque">Loc<em>Web</em></p>
-    <p class="rail-titre">Pilotage</p>
     <div class="rail-nav">
       <a href="#/accueil" data-route="accueil">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-5 3 3 5-7"/></svg>
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10V20h13V10"/></svg>
         Accueil
       </a>
-      <a href="#/performances" data-route="performances">
+      <a href="#/statistiques" data-route="statistiques">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="1"/><rect x="12" y="8" width="3" height="10" rx="1"/><rect x="17" y="5" width="3" height="13" rx="1"/></svg>
-        Performances
+        Statistiques
       </a>
       <a href="#/mon-site" data-route="mon-site">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>
-        Mon éditeur
+        Mon site
       </a>
-      <a href="#/acquisition" data-route="acquisition">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>
-        Acquisition
-      </a>
-      <a href="#/activite" data-route="activite">
+      <a href="#/demandes" data-route="demandes">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v12H8l-4 4V5Z"/></svg>
-        Mon activité
+        Demandes
         <b class="pastille" id="pastille-activite" hidden>0</b>
       </a>
-      <a href="#/rapports" data-route="rapports">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-        Rapports
-      </a>
-    </div>
-
-    <p class="rail-titre">Mon compte</p>
-    <div class="rail-nav">
-      <a href="#/mes-infos" data-route="mes-infos">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-6.2 7.5-6.2s7.5 2.6 7.5 6.2"/></svg>
-        Mes infos
-      </a>
-      <a href="#/parrainage" data-route="parrainage">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 21V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg>
-        Parrainage
+      <a href="#/publicite" data-route="publicite">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>
+        Publicité
       </a>
     </div>
 
     <div class="rail-pied">
       <div class="rail-nav">
+        <a href="#/compte" data-route="compte">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-6.2 7.5-6.2s7.5 2.6 7.5 6.2"/></svg>
+          Mon compte
+        </a>
         <a href="#/aide" data-route="aide">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 1.6-2.3 3.5"/><path d="M12 17.5h.01"/></svg>
           Aide
@@ -110,7 +97,7 @@
       <p class="entete-salut">Bonjour <b id="entete-nom">—</b></p>
       <div class="entete-droite">
         <a class="entete-lien" id="entete-site" href="#" target="_blank" rel="noopener noreferrer" hidden>Voir mon site</a>
-        <a class="entete-icone" href="#/parametrage" data-route="parametrage" id="bt-reglages" title="Paramétrage" aria-label="Paramétrage">
+        <a class="entete-icone" href="#/compte?onglet=connexions" data-route="compte" id="bt-reglages" title="Connexions" aria-label="Connexions">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1Z"/></svg>
         </a>
         <button class="entete-icone" id="bt-theme" title="Changer de thème" aria-label="Changer de thème">
@@ -120,9 +107,8 @@
           <button class="entete-avatar" id="entete-avatar" aria-haspopup="true" aria-expanded="false">—</button>
           <div class="menu-deroulant" id="menu-compte" hidden>
             <p class="menu-entete"><b id="menu-nom">—</b><span id="menu-mail"></span></p>
-            <a class="menu-item" href="#/mes-infos">Mes infos</a>
-            <a class="menu-item" href="#/parametrage">Paramétrage</a>
-            <a class="menu-item" href="#/parrainage">Parrainage</a>
+            <a class="menu-item" href="#/compte">Mon compte</a>
+            <a class="menu-item" href="#/compte?onglet=parrainage">Parrainage</a>
             <a class="menu-item" href="#/aide">Aide</a>
             <button class="menu-item menu-item-danger" id="bt-deconnexion-menu">Se déconnecter</button>
           </div>
@@ -133,6 +119,6 @@
   </main>
 </div>
 
-<script type="module" src="app.js?v=26"></script>
+<script type="module" src="app.js?v=28"></script>
 </body>
 </html>

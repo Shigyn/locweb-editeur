@@ -312,24 +312,8 @@ a.bt{ text-decoration:none; }
 .banniere strong{ font-size:.95rem; font-weight:650; }
 .banniere-fleche{ margin-left:auto; color: var(--sourdine); font-size:1.1rem; }
 
-.grille-cartes{ display:grid; grid-template-columns: repeat(auto-fit,minmax(232px,1fr)); gap:14px; }
-.carte-menu{
-  display:flex; flex-direction:column; text-decoration:none;
-  background: var(--surface); border:1px solid var(--trait); border-radius: var(--r);
-  padding: 22px 20px; box-shadow: var(--ombre-fine);
-  transition: box-shadow .16s, border-color .16s, transform .16s;
-}
-.carte-menu:hover{ box-shadow: var(--ombre); border-color: var(--trait-fort); transform: translateY(-2px); }
 /* Pastille ronde facon SaaS, mais en gris : la couleur ne porte aucune
    information ici, elle ne servirait qu'a decorer. */
-.carte-icone{
-  width:44px; height:44px; border-radius:12px; margin-bottom:14px;
-  display:grid; place-items:center;
-  background: var(--surface-creux); color: var(--encre);
-}
-.carte-icone svg{ width:21px; height:21px; }
-.carte-titre{ font-size:1rem; font-weight:700; letter-spacing:-.015em; }
-.carte-texte{ font-size:.85rem; color: var(--sourdine); margin-top:4px; line-height:1.45; }
 
 /* ---------- onglets de periode ---------- */
 
@@ -448,24 +432,6 @@ a.bt{ text-decoration:none; }
 
 /* ---------- accueil : synthese narrative ---------- */
 
-.synthese-narrative{
-  background: var(--surface); border:1px solid var(--trait); border-radius:16px;
-  padding: 22px 24px; margin-bottom:18px; box-shadow: var(--ombre-fine);
-}
-.synthese-badge{
-  font-size:.68rem; font-weight:700; letter-spacing:.12em; color: var(--sourdine);
-  display:flex; align-items:center; gap:7px; margin-bottom:10px;
-}
-.synthese-badge::before{
-  content:''; width:7px; height:7px; border-radius:50%; background: var(--vert);
-}
-.synthese-titre{ font-size:1.28rem; font-weight:700; letter-spacing:-.025em; }
-.synthese-texte{ color: var(--encre-douce); font-size:.93rem; margin-top:6px; line-height:1.55; max-width:64ch; }
-.synthese-lien{
-  display:inline-block; margin-top:14px; font-size:.88rem; font-weight:600;
-  color: var(--encre); text-decoration:none;
-}
-.synthese-lien:hover{ text-decoration:underline; text-underline-offset:3px; }
 
 .titre-section{
   font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
@@ -474,13 +440,6 @@ a.bt{ text-decoration:none; }
 
 /* Invite : une carte qui propose une action manquante, sans faire
    croire que la donnee existe deja. */
-.invite{
-  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
-  background: var(--surface); border:1px dashed var(--trait-fort); border-radius:16px;
-  padding: 20px 22px; margin-bottom:18px;
-}
-.invite-titre{ font-weight:650; font-size:.98rem; }
-.invite-texte{ color: var(--sourdine); font-size:.88rem; margin-top:3px; max-width:56ch; }
 .invite .bt{ margin-left:auto; }
 
 .kpi-haut{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
@@ -490,12 +449,6 @@ a.bt{ text-decoration:none; }
 
 /* ---------- taux de conversion ---------- */
 
-.conversion-tete{ display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
-.conversion-etiq{ font-size:.85rem; color: var(--sourdine); }
-.conversion-val{ font-size:1.9rem; font-weight:700; letter-spacing:-.035em; font-variant-numeric: tabular-nums; }
-.conversion-aide{ margin-left:auto; font-size:.83rem; color: var(--sourdine); }
-.conversion-barre{ height:9px; border-radius:100px; background: var(--surface-creux); overflow:hidden; }
-.conversion-jauge{ height:100%; border-radius:100px; background: var(--accent); transition: width .5s var(--detente, ease); }
 .conversion-repere{ font-size:.8rem; color: var(--sourdine); margin-top:10px; }
 
 /* ---------- theme sombre ---------- */
@@ -934,11 +887,6 @@ button.entete-avatar{ cursor:pointer; border:0; }
 }
 .bascule.active .bascule-pastille{ transform: translateX(20px); }
 
-.onb-connexion{
-  grid-column: 1/-1; display:flex; align-items:center; gap:14px;
-  padding:15px 16px; border:1px solid var(--trait); border-radius:12px; background: var(--surface);
-}
-.onb-connexion-nom{ font-size:.93rem; font-weight:600; }
 .onb-connexion .bt, .onb-connexion .etat{ margin-left:auto; }
 
 /* ---------- ecran de preparation ---------- */
@@ -1299,4 +1247,67 @@ kbd{
 
 .prepa-boutons{
   display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:22px;
+}
+
+/* ===================================================================
+   Refonte clarte : le verdict, le bloc "A faire", et les etats de
+   connexion. Les anciennes classes .synthese-* et .conversion-* ne
+   sont plus produites par aucun ecran.
+   =================================================================== */
+
+/* Le verdict remplace le bloc "synthese narrative" : meme role, moins
+   de mots. Pas d'encadre, pas de badge — c'est la premiere chose lue,
+   elle n'a besoin d'aucune decoration pour se faire remarquer. */
+.verdict{ margin-bottom: 22px; }
+.verdict-titre{
+  font-size: clamp(1.35rem, 3.2vw, 1.7rem); font-weight: 700;
+  letter-spacing: -.03em; line-height: 1.2; text-wrap: balance;
+}
+.verdict-texte{
+  font-size: .95rem; color: var(--sourdine);
+  margin-top: 7px; line-height: 1.55; max-width: 56ch;
+}
+
+/* Bloc "A faire" : plus compact que l'ancienne barre de progression,
+   parce qu'il n'est plus seul sur l'ecran. */
+.prog-tete{ display:flex; align-items:center; gap:14px; padding:16px 20px; }
+.prog-titre{ font-size:1rem; font-weight:700; letter-spacing:-.015em; }
+.prog-reste{
+  padding: 11px 20px; font-size: .82rem; color: var(--sourdine);
+  border-top: 1px solid var(--trait);
+}
+
+/* Lien discret a droite d'un titre de section : "Tout voir" sans
+   fabriquer un bouton, qui appellerait plus l'oeil que le graphe. */
+.section-tete{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+.section-tete h2{ flex:1; min-width:0; }
+.section-lien{
+  font-size:.84rem; font-weight:600; color: var(--sourdine);
+  text-decoration:none; white-space:nowrap;
+}
+.section-lien:hover{ color: var(--encre); }
+
+/* Etat d'une connexion : la couleur seule ne suffit pas a distinguer
+   connecte de pas connecte, le texte le dit aussi. */
+.ligne-etat{ font-size:.86rem; color: var(--sourdine); }
+.ligne-etat[data-ok="oui"]{ color: var(--vert); font-weight:600; }
+.mini-etat{ font-size:.82rem; color: var(--sourdine); }
+.mini-etat[data-ok="oui"]{ color: var(--vert); font-weight:650; }
+
+/* Barre d'outils des statistiques : onglets a gauche, actions a droite. */
+.barre-outils{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+
+/* ---------- impression ----------
+   Le bouton "Imprimer" des Statistiques produisait un PDF avec le menu
+   lateral, l'entete et les boutons. On ne garde que le contenu. */
+@media print{
+  .rail, .entete, .maj-bouton, .barre-outils, .publication,
+  .palette-fond, .notif-panneau, .bt, .prog-fleche{ display:none !important; }
+  .zone{ margin:0; }
+  .page{ max-width:none; padding:0; }
+  .section, .kpi, .mesure{
+    box-shadow:none !important; border-color:#ddd !important;
+    break-inside: avoid;
+  }
+  body{ background:#fff; }
 }

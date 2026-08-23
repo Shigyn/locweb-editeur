@@ -48,7 +48,7 @@ export async function fluxNotifications(etat) {
       date: new Date(d.date_creation || Date.now()).getTime(),
       titre: `Nouvelle demande de ${d.nom || 'un visiteur'}`,
       detail: d.message ? d.message.slice(0, 90) : (d.telephone || d.email || ''),
-      lien: '#/activite',
+      lien: '#/demandes',
       urgent: (d.statut || 'nouvelle') === 'nouvelle',
     });
   });
@@ -82,7 +82,7 @@ export async function fluxNotifications(etat) {
       date: Date.now(),
       titre: 'Vos statistiques ne sont pas connectées',
       detail: 'Reliez Google pour voir vos visites et vos appels.',
-      lien: '#/parametrage',
+      lien: '#/compte?onglet=connexions',
       urgent: true,
     });
   }

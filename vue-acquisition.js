@@ -49,7 +49,6 @@ export async function rendre(page, etat, { charger, oublier }) {
     vider(page);
     page.append(
       h('h1', 'Obtenez plus de clients'),
-      h('p.sous-titre', 'Nous vous aidons à attirer de nouveaux clients grâce à votre présence en ligne.'),
     );
 
     page.append(h('div.appel-action',
@@ -58,8 +57,8 @@ export async function rendre(page, etat, { charger, oublier }) {
         'stroke-linecap': 'round', 'stroke-linejoin': 'round',
         html: '<path d="m12 3 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/><path d="M19 15v4M17 17h4"/>',
       })),
-      h('p.appel-titre', 'Prêt à attirer plus de clients ?'),
-      h('p.appel-texte', "Une campagne Google Ads pensée pour votre activité, votre zone et votre budget. En 5 étapes simples."),
+      h('p.appel-titre', 'Lancer une campagne Google'),
+      h('p.appel-texte', 'Ciblée sur votre métier, votre zone et votre budget.'),
       h('button.bt.bt-vif', { onclick: () => lancerAssistant() }, 'Lancer ma campagne')));
 
     page.append(h('p.titre-section', 'Comment ça marche'));

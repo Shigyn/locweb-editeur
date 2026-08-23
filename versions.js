@@ -12,26 +12,15 @@
 
 export const VERSIONS = [
   {
-    version: '1.6',
+    version: '1.7',
     date: '2026-08-23',
-    titre: 'Votre espace sur votre téléphone',
+    titre: 'Un espace plus simple',
     points: [
+      'Le menu passe de dix entrées à cinq : Accueil, Statistiques, Mon site, Demandes, Publicité.',
+      "L'accueil répond à une seule question : combien de visiteurs, combien de demandes, et quoi faire ensuite.",
+      'Vos infos, vos connexions Google et votre parrainage sont regroupés dans Mon compte.',
       "Installez l'espace comme une application : menu du compte, puis Installer l'application.",
-      'Une fois installé, il s’ouvre en plein écran et reste consultable même sans réseau.',
-      'Vos coordonnées et vos réponses au questionnaire sont maintenant vraiment enregistrées.',
-    ],
-  },
-  {
-    version: '1.5',
-    date: '2026-08-23',
-    titre: 'Un espace complet',
-    points: [
-      'Nouveau menu Mes infos : vos coordonnées, votre métier, vos réseaux, votre abonnement.',
-      "Nouveau menu Rapports : le bilan de votre semaine ou de votre mois, avec ce qu'il faut faire.",
-      'Une cloche en haut à droite regroupe vos demandes et les nouveautés.',
-      'Une recherche (Ctrl+K) trouve une page ou un texte de votre site en deux secondes.',
-      'Parrainez un artisan : un mois offert pour lui, un mois offert pour vous.',
-      "Toute l'application est passée aux accents français.",
+      'Vos coordonnées et vos réponses au questionnaire sont enfin vraiment enregistrées.',
     ],
   },
   {
@@ -39,7 +28,7 @@ export const VERSIONS = [
     date: '2026-08-23',
     titre: 'Votre fiche Google et vos vraies statistiques',
     points: [
-      'Vos vues, appels et avis Google apparaissent dans Performances.',
+      'Vos vues, appels et avis Google apparaissent dans Statistiques.',
       'Les répartitions téléphone / ordinateur et villes passent en camembert.',
       'Passez la souris sur un chiffre : une phrase explique ce qu\'il mesure.',
     ],

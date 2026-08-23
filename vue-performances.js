@@ -38,13 +38,13 @@ const APPAREILS = { mobile: 'Téléphone', desktop: 'Ordinateur', tablet: 'Table
 
 export async function rendre(page, etat) {
   vider(page);
-  page.append(h('h1', 'Performances'));
+  page.append(h('h1', 'Statistiques'));
 
   if (!etat.profil?.acces_ga4) {
     page.append(carteVide(
-      'Connectez Google Analytics pour voir vos statistiques',
-      'Rendez-vous dans Paramétrage pour connecter votre compte Google en un clic.',
-      h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au paramétrage')));
+      'Connectez Google Analytics',
+      'Un clic depuis Mon compte, et vos chiffres remontent ici.',
+      h('a.bt.bt-vif', { href: '#/compte?onglet=connexions' }, 'Connecter')));
     return;
   }
 
@@ -63,7 +63,12 @@ export async function rendre(page, etat) {
     }, p.libelle));
   });
 
-  page.append(h('div.barre-outils', onglets), zone);
+  // L'export vient de l'ancien menu Rapports : le bilan n'etait pas une
+  // page a part, c'etait un bouton sur cette page-ci.
+  const outils = h('div', { style: { display: 'flex', gap: '8px', marginLeft: 'auto' } },
+    h('button.bt.bt-nu.bt-mini', { onclick: () => window.print() }, 'Imprimer'));
+
+  page.append(h('div.barre-outils', onglets, outils), zone);
 
   async function charger(periode) {
     // Le squelette reprend exactement la structure et les hauteurs du
@@ -91,9 +96,9 @@ export async function rendre(page, etat) {
         zone.append(carteVide(
           manqueId ? "Il manque l'identifiant de votre propriété Analytics" : 'Statistiques momentanément indisponibles',
           manqueId
-            ? 'Renseignez-le dans Paramétrage — dans GA4 : Admin puis Paramètres de la propriété.'
+            ? 'Renseignez-le dans Mon compte — dans GA4 : Admin puis Paramètres de la propriété.'
             : 'Réessayez dans quelques instants. Si ça persiste, contactez-nous.',
-          manqueId ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au paramétrage') : null));
+          manqueId ? h('a.bt.bt-vif', { href: '#/compte?onglet=connexions' }, 'Connecter') : null));
         return;
       }
       vider(zone);
@@ -143,8 +148,7 @@ export async function rendre(page, etat) {
     if (serie.length > 1) {
       site.corps.append(h('div.section',
         h('div.section-tete',
-          h('h2', 'Visiteurs'),
-          h('p', `Évolution sur ${periode.libelle.toLowerCase()}`)),
+          h('h2', 'Visiteurs')),
         h('div.section-corps', { style: { paddingTop: '18px' } },
           grapheComplet(serie.map((l) => l.visiteurs), serie.map((l) => formaterJour(l.date))))));
     }
@@ -216,7 +220,7 @@ const LIBELLES_GBP = {
 
 const AIDE_GBP = {
   vues: "Nombre de fois où votre fiche est apparue dans Google ou sur Maps.",
-  appels: "Personnes ayant appuyé sur le bouton Appeler de votre fiche Google. Ce sont des appels que vous devez à votre présence en ligne.",
+  appels: "Personnes ayant appuyé sur Appeler depuis votre fiche Google.",
   itineraires: "Personnes ayant demandé l'itinéraire vers votre adresse.",
   clics_site: "Personnes venues sur votre site depuis votre fiche Google.",
 };
@@ -239,10 +243,10 @@ async function chargerGbp(zone, periode) {
         ? "Il manque l'identifiant de votre fiche Google"
         : 'Statistiques de la fiche indisponibles',
       String(e.message).includes('Identifiant')
-        ? "Renseignez-le dans Paramétrage pour voir les vues, les appels et les avis de votre fiche."
+        ? "Renseignez-le dans Mon compte pour voir vues, appels et avis."
         : "Cette section réapparaîtra dès que Google reprendra la main.",
       String(e.message).includes('Identifiant')
-        ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au paramétrage') : null));
+        ? h('a.bt.bt-vif', { href: '#/compte?onglet=connexions' }, 'Connecter') : null));
     return;
   }
 

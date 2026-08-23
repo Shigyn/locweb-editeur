@@ -15,15 +15,14 @@ import { h, vider } from './outils.js';
 import * as D from './donnees.js';
 
 const PAGES = [
-  { titre: 'Accueil', detail: 'Vue d\'ensemble', lien: '#/accueil', motsCles: 'tableau bord resume' },
-  { titre: 'Performances', detail: 'Visites, appels, fiche Google', lien: '#/performances', motsCles: 'statistiques visiteurs analytics trafic' },
-  { titre: 'Mon éditeur', detail: 'Modifier les textes du site', lien: '#/mon-site', motsCles: 'contenu textes photos horaires publier' },
-  { titre: 'Acquisition', detail: 'Campagnes publicitaires', lien: '#/acquisition', motsCles: 'ads publicite google facebook budget' },
-  { titre: 'Mon activité', detail: 'Demandes de devis reçues', lien: '#/activite', motsCles: 'leads clients messages devis contacts' },
-  { titre: 'Rapports', detail: 'Bilan hebdomadaire et mensuel', lien: '#/rapports', motsCles: 'bilan resume mois semaine pdf' },
-  { titre: 'Mes infos', detail: 'Coordonnées, réseaux, abonnement', lien: '#/mes-infos', motsCles: 'profil telephone email nom formule prix' },
-  { titre: 'Paramétrage', detail: 'Comptes Google, pixels', lien: '#/parametrage', motsCles: 'connexion ga4 analytics business ads pixel meta' },
-  { titre: 'Parrainage', detail: 'Recommander LocWeb', lien: '#/parrainage', motsCles: 'offrir ami collegue mois offert' },
+  { titre: 'Accueil', detail: "Vue d'ensemble", lien: '#/accueil', motsCles: 'tableau bord resume' },
+  { titre: 'Statistiques', detail: 'Visites, appels, fiche Google', lien: '#/statistiques', motsCles: 'performances visiteurs analytics trafic bilan rapport' },
+  { titre: 'Mon site', detail: 'Modifier les textes et les photos', lien: '#/mon-site', motsCles: 'editeur contenu textes photos horaires publier' },
+  { titre: 'Demandes', detail: 'Devis et contacts recus', lien: '#/demandes', motsCles: 'leads clients messages activite prospects' },
+  { titre: 'Publicité', detail: 'Campagnes Google et Meta', lien: '#/publicite', motsCles: 'ads acquisition campagne budget facebook' },
+  { titre: 'Mon compte', detail: 'Coordonnees, metier, abonnement', lien: '#/compte', motsCles: 'infos profil telephone email formule prix' },
+  { titre: 'Connexions', detail: 'Google Analytics, fiche Google, pixels', lien: '#/compte?onglet=connexions', motsCles: 'parametrage ga4 business ads pixel meta connecter' },
+  { titre: 'Parrainage', detail: 'Un mois offert de chaque cote', lien: '#/compte?onglet=parrainage', motsCles: 'offrir ami collegue filleul' },
   { titre: 'Aide', detail: 'Nous contacter', lien: '#/aide', motsCles: 'support probleme question sos' },
 ];
 

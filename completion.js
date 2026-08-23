@@ -1,24 +1,25 @@
 // ===================================================================
-//  Progression — le module de completion du compte.
+//  Ce qu'il reste a faire — source unique.
 //
-//  Principe : ne jamais afficher un pourcentage sans dire ce qui
-//  manque. Un score seul culpabilise sans aider ; une liste de taches
-//  cliquables transforme le score en chemin. Chaque tache pointe vers
-//  l'endroit exact ou on la resout.
+//  Avant, deux listes coexistaient : la progression du compte (etapes
+//  de configuration) et les conseils des Rapports (deduits des
+//  chiffres). Deux listes empilees sur le meme ecran, le client ne
+//  savait plus laquelle regarder. Ici tout passe par une seule file,
+//  classee par urgence reelle.
 //
-//  La source de verite des champs est ici, partagee entre "Mes infos"
-//  (qui les affiche en formulaire) et l'accueil (qui affiche le reste
-//  a faire). Ajouter un champ a un seul endroit suffit.
+//  Regle : une action n'apparait que si une condition mesuree la
+//  declenche. Pas de conseil generique — un seul suffit a decredibiliser
+//  les autres.
 // ===================================================================
 
 import { h } from './outils.js';
 
 export const champsProfil = {
   contact: [
-    { cle: 'contact_prenom',    libelle: 'Prénom',    type: 'text',  indice: '' },
-    { cle: 'contact_nom',       libelle: 'Nom',       type: 'text',  indice: '' },
-    { cle: 'contact_email',     libelle: 'E-mail',    type: 'email', indice: 'vous@exemple.fr' },
-    { cle: 'contact_telephone', libelle: 'Téléphone', type: 'tel',   indice: '06 12 34 56 78' },
+    { cle: 'contact_prenom',    libelle: 'Prénom',    type: 'text' },
+    { cle: 'contact_nom',       libelle: 'Nom',       type: 'text' },
+    { cle: 'contact_email',     libelle: 'E-mail',    type: 'email' },
+    { cle: 'contact_telephone', libelle: 'Téléphone', type: 'tel' },
   ],
   // Volontairement les MEMES colonnes que le questionnaire d'accueil
   // (vue-onboarding.js) : le client a ete prevenu qu'il pourrait
@@ -31,9 +32,9 @@ export const champsProfil = {
       { valeur: 'restaurateur', libelle: 'Restaurateur' },
       { valeur: 'autre',        libelle: 'Autre' },
     ] },
-    { cle: 'metier_precis',     libelle: 'Votre métier',        type: 'text', indice: 'Plombier, coiffeur, restaurateur...' },
-    { cle: 'localisation',      libelle: 'Votre ville',         type: 'text', indice: 'Nom de votre ville' },
-    { cle: 'zone_intervention', libelle: "Zone d'intervention", type: 'choix', options: [
+    { cle: 'metier_precis',     libelle: 'Votre métier', type: 'text', indice: 'Plombier, coiffeur, restaurateur...' },
+    { cle: 'localisation',      libelle: 'Votre ville',  type: 'text', indice: 'Nom de votre ville' },
+    { cle: 'zone_intervention', libelle: 'Zone', type: 'choix', options: [
       { valeur: 'Sur place uniquement', libelle: 'Sur place uniquement' },
       { valeur: "Jusqu'à 5 km",  libelle: "Jusqu'à 5 km" },
       { valeur: "Jusqu'à 10 km", libelle: "Jusqu'à 10 km" },
@@ -46,105 +47,132 @@ export const champsProfil = {
   ],
 };
 
-// Chaque etape vaut le meme poids : hierarchiser les points ferait
-// croire qu'une tache est facultative alors qu'aucune ne l'est.
+// Etapes de configuration : elles servent au calcul du pourcentage.
 const ETAPES = [
-  {
-    id: 'contact',
-    titre: 'Vos coordonnées',
-    pourquoi: 'Pour vous joindre si votre site a un souci.',
-    ou: '#/mes-infos',
-    fait: (p) => Boolean(p.contact_telephone && (p.contact_prenom || p.contact_nom)),
-  },
-  {
-    id: 'activite',
-    titre: 'Votre métier et votre zone',
-    pourquoi: 'Sert à cibler vos campagnes et à rédiger vos textes.',
-    ou: '#/mes-infos',
-    fait: (p) => Boolean(p.metier_precis && p.zone_intervention),
-  },
-  {
-    id: 'ga4',
-    titre: 'Connecter Google Analytics',
-    pourquoi: 'Sans ça, aucune statistique de visite ne peut s\'afficher.',
-    ou: '#/parametrage',
-    fait: (p) => Boolean(p.acces_ga4),
-  },
-  {
-    id: 'reseaux',
-    titre: 'Vos réseaux sociaux',
-    pourquoi: 'Ils apparaissent en pied de page de votre site.',
-    ou: '#/mes-infos',
-    fait: (p) => Object.values(p.reseaux || {}).some(Boolean),
-  },
-  {
-    id: 'gbp',
-    titre: 'Connecter votre fiche Google',
-    pourquoi: 'Chez un artisan, la fiche amène souvent plus d\'appels que le site.',
-    ou: '#/parametrage',
-    fait: (p) => Boolean(p.acces_google_business),
-  },
+  { id: 'contact',  fait: (p) => Boolean(p.contact_telephone && (p.contact_prenom || p.contact_nom)) },
+  { id: 'activite', fait: (p) => Boolean(p.metier_precis && p.zone_intervention) },
+  { id: 'ga4',      fait: (p) => Boolean(p.acces_ga4) },
+  { id: 'gbp',      fait: (p) => Boolean(p.acces_google_business) },
+  { id: 'reseaux',  fait: (p) => Object.values(p.reseaux || {}).some(Boolean) },
 ];
 
-/** Retourne { faites, total, pourcent, reste: [etape] }. */
+/** Retourne { faites, total, pourcent, reste: [id] }. */
 export function completion(profil = {}, client = {}) {
-  const reste = ETAPES.filter((e) => !e.fait(profil, client));
+  const reste = ETAPES.filter((e) => !e.fait(profil, client)).map((e) => e.id);
   const faites = ETAPES.length - reste.length;
-  return {
-    faites,
-    total: ETAPES.length,
-    pourcent: Math.round((faites / ETAPES.length) * 100),
-    reste,
-  };
+  return { faites, total: ETAPES.length, pourcent: Math.round((faites / ETAPES.length) * 100), reste };
+}
+
+/**
+ * La file d'actions, de la plus urgente a la moins urgente.
+ * `stats` et `demandes` sont facultatifs : sans eux, seules les etapes
+ * de configuration remontent.
+ */
+export function aFaire(profil = {}, client = {}, { stats = null, demandes = [] } = {}) {
+  const liste = [];
+  const visiteurs = stats?.totaux?.visiteurs ?? null;
+  const sansReponse = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
+
+  // Un devis qui attend passe avant tout le reste : c'est le seul point
+  // de la liste ou chaque heure coute de l'argent au client.
+  if (sansReponse) {
+    liste.push({
+      titre: `${sansReponse} demande${sansReponse > 1 ? 's' : ''} sans réponse`,
+      pourquoi: "Rappelé dans l'heure, un devis aboutit bien plus souvent.",
+      ou: '#/demandes',
+    });
+  }
+  if (!profil.acces_ga4) {
+    liste.push({
+      titre: 'Connecter Google Analytics',
+      pourquoi: 'Sans ça, aucune statistique de visite ne peut s\'afficher.',
+      ou: '#/compte?onglet=connexions',
+    });
+  }
+  if (!profil.acces_google_business) {
+    liste.push({
+      titre: 'Connecter votre fiche Google',
+      pourquoi: "La fiche amène souvent plus d'appels que le site lui-même.",
+      ou: '#/compte?onglet=connexions',
+    });
+  }
+  if (visiteurs !== null && visiteurs > 50 && !demandes.length) {
+    liste.push({
+      titre: 'Rendez votre téléphone plus visible',
+      pourquoi: 'Des visiteurs viennent, mais aucun ne vous contacte.',
+      ou: '#/mon-site',
+    });
+  }
+  if (!profil.contact_telephone) {
+    liste.push({
+      titre: 'Vos coordonnées',
+      pourquoi: 'Pour vous joindre si votre site a un souci.',
+      ou: '#/compte',
+    });
+  }
+  if (!profil.metier_precis || !profil.zone_intervention) {
+    liste.push({
+      titre: 'Votre métier et votre zone',
+      pourquoi: 'Sert à cibler vos campagnes.',
+      ou: '#/compte',
+    });
+  }
+  if (visiteurs !== null && visiteurs < 30) {
+    liste.push({
+      titre: 'Votre site est peu visité',
+      pourquoi: 'Une campagne locale peut amorcer le trafic.',
+      ou: '#/publicite',
+    });
+  }
+  if (!Object.values(profil.reseaux || {}).some(Boolean)) {
+    liste.push({
+      titre: 'Vos réseaux sociaux',
+      pourquoi: 'Ils apparaissent en pied de page de votre site.',
+      ou: '#/compte',
+    });
+  }
+  return liste;
 }
 
 /** Anneau de progression en SVG. */
-function anneau(pourcent, taille = 62) {
-  const r = (taille - 8) / 2;
+function anneau(pourcent, taille = 52) {
+  const r = (taille - 7) / 2;
   const circonference = 2 * Math.PI * r;
   const c = taille / 2;
   return h('svg.prog-anneau', {
     viewBox: `0 0 ${taille} ${taille}`, width: taille, height: taille,
-    html: `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--trait)" stroke-width="6"/>
-      <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--accent)" stroke-width="6"
+    html: `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--trait)" stroke-width="5"/>
+      <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--accent)" stroke-width="5"
         stroke-linecap="round" stroke-dasharray="${circonference}"
         stroke-dashoffset="${circonference * (1 - pourcent / 100)}"
         transform="rotate(-90 ${c} ${c})"/>
       <text x="${c}" y="${c}" text-anchor="middle" dominant-baseline="central"
-        font-size="15" font-weight="700" fill="var(--encre)">${pourcent}%</text>`,
+        font-size="13" font-weight="700" fill="var(--encre)">${pourcent}%</text>`,
   });
 }
 
 /**
- * Bloc complet : anneau + liste des etapes restantes.
- * Une fois tout fait, on affiche un etat de reussite plutot que de
- * masquer le bloc — disparaitre donnerait l'impression d'un bug.
+ * Le bloc "A faire". `limite` coupe la liste — l'accueil en montre
+ * trois, une liste de huit lignes ne se lit pas, elle se subit.
  */
-export function barreCompletion(profil, client, { compact = false } = {}) {
-  const { faites, total, pourcent, reste } = completion(profil, client);
+export function blocAFaire(profil, client, { stats, demandes, limite = 3 } = {}) {
+  const liste = aFaire(profil, client, { stats, demandes });
+  if (!liste.length) return null;
 
-  if (!reste.length) {
-    return h('div.section.prog-bloc',
-      h('div.prog-tete',
-        anneau(100),
-        h('div',
-          h('p.prog-titre', 'Votre compte est complet'),
-          h('p.prog-sous', 'Tout est en place. Vos statistiques et vos campagnes sont pilotables.'))));
-  }
-
-  const liste = h('div.prog-liste');
-  (compact ? reste.slice(0, 3) : reste).forEach((e) => {
-    liste.append(h('a.prog-tache', { href: e.ou },
+  const { pourcent } = completion(profil, client);
+  const corps = h('div.prog-liste');
+  liste.slice(0, limite).forEach((e) => {
+    corps.append(h('a.prog-tache', { href: e.ou },
       h('span.prog-case'),
       h('span.prog-texte', h('b', e.titre), h('span', e.pourquoi)),
       h('span.prog-fleche', '→')));
   });
 
+  const reste = liste.length - limite;
   return h('div.section.prog-bloc',
     h('div.prog-tete',
       anneau(pourcent),
-      h('div',
-        h('p.prog-titre', 'Terminer la configuration'),
-        h('p.prog-sous', `${faites} étape${faites > 1 ? 's' : ''} sur ${total}. Il reste ${reste.length} chose${reste.length > 1 ? 's' : ''} à faire.`))),
-    liste);
+      h('p.prog-titre', 'À faire')),
+    corps,
+    reste > 0 ? h('p.prog-reste', `+ ${reste} autre${reste > 1 ? 's' : ''}`) : null);
 }

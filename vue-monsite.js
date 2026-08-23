@@ -34,7 +34,7 @@ export async function rendre(page, etat, { charger }) {
   ]);
 
   vider(page);
-  page.append(h('h1', 'Mon éditeur'));
+  page.append(h('h1', 'Mon site'));
 
   const textes = contenu.filter((l) => l.type === 'texte');
   const images = contenu.filter((l) => l.type === 'image');

@@ -266,7 +266,7 @@ export async function rendre(page, etat, { terminer }) {
         h('b', dejaConnecte ? 'Vos comptes Google sont connectés' : 'Et vos statistiques Google ?'),
         h('p', dejaConnecte
           ? 'Rien à faire ici, vos chiffres remonteront automatiquement.'
-          : "Fiche Google et Analytics se connectent en un clic depuis Paramétrage, une fois le questionnaire terminé. On vous y emmènera."))));
+          : "Elles se connectent en un clic, juste après. On vous y emmènera."))));
 
     return {
       titre: h('h1', 'Vos réseaux sociaux'),
@@ -478,7 +478,7 @@ export async function rendre(page, etat, { terminer }) {
           : `Le tableau de bord de ${client.nom_site || 'votre entreprise'} est configuré et prêt à l'emploi.`),
       h('div.prepa-boutons',
         restentComptes
-          ? h('button.bt.bt-vif', { onclick: () => allerA('#/parametrage') }, 'Connecter Google →')
+          ? h('button.bt.bt-vif', { onclick: () => allerA('#/compte?onglet=connexions') }, 'Connecter Google →')
           : null,
         h('button', {
           class: restentComptes ? 'bt bt-nu' : 'bt bt-vif',

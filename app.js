@@ -180,15 +180,26 @@ async function rendreAccueilOnboarding() {
 const page = $('#page');
 const VUES = {
   accueil:      () => import('./vue-accueil.js'),
-  performances: () => import('./vue-performances.js'),
-  'mon-site':  () => import('./vue-monsite.js'),
-  acquisition: () => import('./vue-acquisition.js'),
-  activite:    () => import('./vue-activite.js'),
-  rapports:    () => import('./vue-rapports.js'),
-  'mes-infos': () => import('./vue-mes-infos.js'),
-  parametrage: () => import('./vue-parametrage.js'),
-  parrainage:  () => import('./vue-parrainage.js'),
-  aide:        () => import('./vue-aide.js'),
+  statistiques: () => import('./vue-performances.js'),
+  'mon-site':   () => import('./vue-monsite.js'),
+  demandes:     () => import('./vue-activite.js'),
+  publicite:    () => import('./vue-acquisition.js'),
+  compte:       () => import('./vue-compte.js'),
+  aide:         () => import('./vue-aide.js'),
+};
+
+/* Anciennes adresses. Elles vivent dans les favoris des clients, dans
+   les e-mails de notification deja partis et dans l'historique des
+   navigateurs : les casser ferait atterrir sur l'accueil sans un mot
+   d'explication. On redirige, on ne devine pas. */
+const ALIAS = {
+  performances: 'statistiques',
+  activite:     'demandes',
+  acquisition:  'publicite',
+  rapports:     'statistiques',
+  'mes-infos':  'compte',
+  parametrage:  'compte?onglet=connexions',
+  parrainage:   'compte?onglet=parrainage',
 };
 
 function squelette() {
@@ -200,6 +211,12 @@ let jeton = 0;
 
 export async function router() {
   const nom = (location.hash.replace(/^#\/?/, '') || 'accueil').split(/[/?]/)[0];
+
+  if (ALIAS[nom]) {
+    location.replace(`${location.pathname}#/${ALIAS[nom]}`);
+    return;
+  }
+
   const importer = VUES[nom] || VUES.accueil;
   const mien = ++jeton;
   squelette();

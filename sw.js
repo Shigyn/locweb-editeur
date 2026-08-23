@@ -56,7 +56,13 @@ self.addEventListener('fetch', (e) => {
 
   e.respondWith((async () => {
     try {
-      const reponse = await fetch(req);
+      // `no-cache` force la revalidation aupres du serveur pour le code
+      // de l'app. Sans ca, GitHub Pages sert un module js depuis le
+      // cache HTTP du navigateur pendant plusieurs minutes apres un
+      // deploiement — et le client voit un melange d'ancien et de
+      // nouveau, ce qui est pire qu'une version en retard.
+      const estCode = /\.(js|css|webmanifest)$/i.test(url.pathname);
+      const reponse = await fetch(req, estCode ? { cache: 'no-cache' } : undefined);
       // On ne garde que les reponses completes : mettre une 404 ou une
       // reponse partielle en cache reviendrait a figer une panne.
       if (reponse.ok && reponse.type === 'basic') {

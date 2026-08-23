@@ -152,9 +152,9 @@ async function apresConnexion() {
   // masquee pendant l'onboarding. Rien a installer tant qu'on y est.
   if (espace.classList.contains('mode-onboarding')) return;
   const [{ installerCloche }, { installerPalette }, installation] = await Promise.all([
-    import('./notifications.js'),
-    import('./palette.js'),
-    import('./installation.js'),
+    import(v('./notifications.js')),
+    import(v('./palette.js')),
+    import(v('./installation.js')),
   ]);
   installerCloche(etat);
   installerPalette(etat);
@@ -169,7 +169,7 @@ async function apresConnexion() {
 // a la structure du document.
 async function rendreAccueilOnboarding() {
   espace.classList.add('mode-onboarding');
-  const module = await import('./vue-onboarding.js');
+  const module = await import(v('./vue-onboarding.js'));
   await module.rendre($('#page'), etat, {
     router,
     rafraichirPastille,
@@ -198,15 +198,24 @@ function ajouterMenuOperateur() {
 /* ---------- routage ---------- */
 
 const page = $('#page');
+/* Toutes les vues portent la meme version que l'app.
+
+   Sans ca, bumper app.js?v=N ne sert a rien : app.js est bien recharge,
+   mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
+   que le navigateur sert depuis son cache. On voyait donc du code neuf
+   appeler des vues perimees. */
+export const VERSION = '45';
+const v = (f) => `${f}?v=${VERSION}`;
+
 const VUES = {
-  accueil:      () => import('./vue-accueil.js'),
-  statistiques: () => import('./vue-performances.js'),
-  'mon-site':   () => import('./vue-monsite.js'),
-  demandes:     () => import('./vue-activite.js'),
-  publicite:    () => import('./vue-acquisition.js'),
-  compte:       () => import('./vue-compte.js'),
-  operateur:    () => import('./vue-operateur.js'),
-  aide:         () => import('./vue-aide.js'),
+  accueil:      () => import(v('./vue-accueil.js')),
+  statistiques: () => import(v('./vue-performances.js')),
+  'mon-site':   () => import(v('./vue-monsite.js')),
+  demandes:     () => import(v('./vue-activite.js')),
+  publicite:    () => import(v('./vue-acquisition.js')),
+  compte:       () => import(v('./vue-compte.js')),
+  operateur:    () => import(v('./vue-operateur.js')),
+  aide:         () => import(v('./vue-aide.js')),
 };
 
 /* Anciennes adresses. Elles vivent dans les favoris des clients, dans
@@ -278,7 +287,7 @@ export async function rafraichirPastille() {
 // Avant meme la connexion : la page de connexion fait partie de la
 // coquille mise en cache, sinon un client hors ligne ouvrirait une
 // icone sur une page blanche.
-import('./installation.js').then((m) => m.installerServiceWorker());
+import(v('./installation.js')).then((m) => m.installerServiceWorker());
 
 /* ---------- reprise de session ---------- */
 

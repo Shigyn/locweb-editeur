@@ -293,7 +293,7 @@ export async function rendre(page, etat, { charger: cache } = {}) {
 
     if (r.repartitions_erreur) {
       site.corps.append(carteVide('Détails indisponibles',
-        String(r.repartitions_erreur)));
+        "Les chiffres principaux sont à jour ; le détail par appareil, ville et source n'a pas pu être chargé."));
     }
 
     if (!serie.length) {

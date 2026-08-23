@@ -9,7 +9,7 @@
 // ===================================================================
 
 import {
-  h, vider, nombre, grapheComplet, souffler, EXPLICATIONS, avecAide,
+  h, vider, nombre, grapheComplet, camembert, souffler, EXPLICATIONS, avecAide,
 } from './outils.js';
 import * as D from './donnees.js';
 
@@ -66,21 +66,25 @@ export async function rendre(page, etat) {
   page.append(h('div.barre-outils', onglets), zone);
 
   async function charger(periode) {
+    // Le squelette reprend exactement la structure et les hauteurs du
+    // contenu final : sans ca, la page sursaute au moment ou les
+    // donnees arrivent et remplacent des blocs plus courts.
     vider(zone);
-    zone.append(h('div.grille-kpi', ...METRIQUES.map(() => h('div.squelette', { style: { height: '148px', borderRadius: '16px' } }))));
+    const attenteSite = blocPliable('Performance de votre site');
+    attenteSite.corps.append(
+      h('div.grille-kpi', ...METRIQUES.map(() => h('div.squelette.sq-kpi'))),
+      h('div.squelette.sq-graphe'),
+      h('div.grille-duo', h('div.squelette.sq-carte'), h('div.squelette.sq-carte')));
+    zone.append(attenteSite.bloc);
 
     let r;
     try {
-      const { data: { session } } = await D.sb.auth.getSession();
-      const reponse = await fetch(`${D.EDGE_FUNCTIONS_URL}/ga4-donnees`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ periode: periode.cle }),
-      });
-      r = await reponse.json();
-      if (!reponse.ok) {
+      r = await D.statsGa4(periode.cle);
+    } catch (err) {
+      const messageErreur = err.donnees?.error || err.message || '';
+      if (messageErreur) {
         vider(zone);
-        const manqueId = r.error === 'ID de propriete GA4 non renseigne.';
+        const manqueId = messageErreur === 'ID de propriete GA4 non renseigne.';
         zone.append(carteVide(
           manqueId ? "Il manque l'identifiant de votre propriete Analytics" : 'Statistiques momentanement indisponibles',
           manqueId
@@ -89,7 +93,6 @@ export async function rendre(page, etat) {
           manqueId ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au parametrage') : null));
         return;
       }
-    } catch {
       vider(zone);
       zone.append(carteVide('Statistiques momentanement indisponibles', 'Verifiez votre connexion et reessayez.'));
       souffler('Impossible de recuperer les statistiques Google.', 'alerte');
@@ -147,12 +150,16 @@ export async function rendre(page, etat) {
 
     const duo = h('div.grille-duo');
 
+    // Camembert pour ces deux-la : ce sont des parts d'un tout (100 %
+    // des visiteurs se repartissent entre les appareils, entre les
+    // villes). Les pages et les jours, eux, restent en barres — ce sont
+    // des classements, pas des parts.
     if (rep.appareils?.length) {
-      duo.append(carteRepartition('Telephone ou ordinateur', 'appareils',
+      duo.append(carteCamembert('Telephone ou ordinateur', 'appareils',
         rep.appareils.map((a) => ({ nom: APPAREILS[a.cle] || a.cle, valeur: a.valeur }))));
     }
     if (rep.villes?.length) {
-      duo.append(carteRepartition("D'ou viennent vos visiteurs", 'villes',
+      duo.append(carteCamembert("D'ou viennent vos visiteurs", 'villes',
         rep.villes.filter((v) => v.cle && v.cle !== '(not set)')
           .map((v) => ({ nom: v.cle, valeur: v.valeur }))));
     }
@@ -214,20 +221,12 @@ const AIDE_GBP = {
 async function chargerGbp(zone, periode) {
   vider(zone);
   const attente = blocPliable('Performance de votre fiche Google');
-  attente.corps.append(h('div.grille-kpi', ...[0, 1, 2, 3].map(() =>
-    h('div.squelette', { style: { height: '132px', borderRadius: '16px' } }))));
+  attente.corps.append(h('div.grille-kpi', ...[0, 1, 2, 3].map(() => h('div.squelette.sq-kpi'))));
   zone.append(attente.bloc);
 
   let r;
   try {
-    const { data: { session } } = await D.sb.auth.getSession();
-    const reponse = await fetch(`${D.EDGE_FUNCTIONS_URL}/gbp-donnees`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ periode }),
-    });
-    r = await reponse.json();
-    if (!reponse.ok) throw new Error(r.error || 'refus');
+    r = await D.statsGbp(periode);
   } catch (e) {
     vider(zone);
     const echec = blocPliable('Performance de votre fiche Google');
@@ -316,6 +315,12 @@ function blocPliable(titre, ouvert = true) {
       h('span.bloc-chevron', { html: '&rsaquo;' })),
     corps);
   return { bloc, corps };
+}
+
+function carteCamembert(titre, cleAide, entrees) {
+  return h('div.section',
+    h('div.section-tete', avecAide(h('h2', titre), EXPLICATIONS[cleAide])),
+    h('div.section-corps', { style: { paddingTop: '18px' } }, camembert(entrees)));
 }
 
 function carteRepartition(titre, cleAide, entrees) {

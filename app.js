@@ -128,6 +128,14 @@ async function apresConnexion() {
   if (!etat.profil || !etat.profil.complete_le) {
     await rendreAccueilOnboarding();
   } else {
+    // Chauffe le cache avant meme que l'utilisateur ne navigue : les
+    // appels Google partent maintenant, la premiere page qui en a besoin
+    // trouvera la reponse deja prete. Volontairement sans `await` — rien
+    // ici ne doit retarder l'affichage.
+    D.prechargerStats(etat.profil);
+    charger('demandes', () => D.listerDemandes(client.id));
+    charger('contenu', () => D.lireContenu(client.id));
+
     await router();
     rafraichirPastille();
   }

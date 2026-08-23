@@ -200,3 +200,58 @@ export async function demanderCampagne(clientId, champs) {
   const { error } = await sb.from('campagnes').insert({ client_id: clientId, statut: 'demandee', ...champs });
   if (error) throw error;
 }
+
+/* ---------- statistiques Google, avec cache partage ----------
+
+   Accueil et Performances demandaient chacun leurs propres chiffres,
+   soit deux appels identiques a quelques secondes d'intervalle. Le cache
+   ci-dessous les met en commun et permet surtout de PRECHARGER des la
+   connexion : quand l'utilisateur arrive sur une page, la reponse est
+   deja la.
+
+   Une entree = une promesse, pas un resultat : deux appels simultanes
+   pour la meme periode partagent donc le meme aller-retour reseau. */
+const cacheStats = new Map();
+
+async function appelStats(fonction, periode) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) throw new Error('Session absente.');
+  const reponse = await fetch(`${EDGE_FUNCTIONS_URL}/${fonction}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ periode }),
+  });
+  const donnees = await reponse.json();
+  if (!reponse.ok) throw Object.assign(new Error(donnees.error || 'Requete refusee.'), { donnees });
+  return donnees;
+}
+
+export function statsGa4(periode = '7j') {
+  const cle = `ga4:${periode}`;
+  if (!cacheStats.has(cle)) {
+    cacheStats.set(cle, appelStats('ga4-donnees', periode).catch((e) => { cacheStats.delete(cle); throw e; }));
+  }
+  return cacheStats.get(cle);
+}
+
+export function statsGbp(periode = '30j') {
+  const cle = `gbp:${periode}`;
+  if (!cacheStats.has(cle)) {
+    cacheStats.set(cle, appelStats('gbp-donnees', periode).catch((e) => { cacheStats.delete(cle); throw e; }));
+  }
+  return cacheStats.get(cle);
+}
+
+export function oublierStats() { cacheStats.clear(); }
+
+/* Lance les requetes sans attendre le resultat : elles chaufferont le
+   cache pendant que l'utilisateur regarde la premiere page. Les echecs
+   sont volontairement avales — c'est du confort, pas une etape critique,
+   et la vue reaffichera l'erreur proprement si elle survient. */
+export function prechargerStats(profil) {
+  if (profil?.acces_ga4) {
+    statsGa4('30j').catch(() => {});
+    statsGa4('7j').catch(() => {});
+  }
+  if (profil?.acces_google_business) statsGbp('30j').catch(() => {});
+}

@@ -181,6 +181,63 @@ export function grapheAires(valeurs, { hauteur = 64, couleur = 'var(--encre-douc
   });
 }
 
+/* Camembert (anneau) + legende.
+
+   Anneau plutot que disque plein : le trou central accueille le total,
+   et les arcs restent plus faciles a comparer que des parts pointues.
+   Nuances de gris plutot que couleurs : la teinte ne porte aucune
+   information ici, seule la taille de l'arc compte. */
+const NUANCES = ['1', '.72', '.52', '.36', '.24', '.15'];
+
+export function camembert(entrees, { taille = 132, trou = 0.62 } = {}) {
+  const total = entrees.reduce((s, e) => s + e.valeur, 0);
+  const R = 50, r = R * trou;
+  const cx = 60, cy = 60;
+
+  let angle = -Math.PI / 2; // demarre en haut, comme une horloge
+  let arcs = '';
+
+  entrees.forEach((e, i) => {
+    if (!e.valeur) return;
+    const part = e.valeur / total;
+    const fin = angle + part * Math.PI * 2;
+    const grand = part > 0.5 ? 1 : 0;
+
+    // Une part unique ne peut pas se dessiner en arc (debut = fin) :
+    // on trace alors deux demi-anneaux qui forment le cercle complet.
+    if (part >= 0.999) {
+      arcs += `<path d="M ${cx} ${cy - R} A ${R} ${R} 0 1 1 ${cx - 0.01} ${cy - R} L ${cx - 0.01} ${cy - r} A ${r} ${r} 0 1 0 ${cx} ${cy - r} Z"
+                 fill="var(--encre)" fill-opacity="${NUANCES[i] || '.12'}" />`;
+      angle = fin;
+      return;
+    }
+
+    const p = (rayon, a) => `${(cx + rayon * Math.cos(a)).toFixed(2)} ${(cy + rayon * Math.sin(a)).toFixed(2)}`;
+    arcs += `<path d="M ${p(R, angle)} A ${R} ${R} 0 ${grand} 1 ${p(R, fin)} L ${p(r, fin)} A ${r} ${r} 0 ${grand} 0 ${p(r, angle)} Z"
+               fill="var(--encre)" fill-opacity="${NUANCES[i] || '.12'}" />`;
+    angle = fin;
+  });
+
+  const svg = h('svg', {
+    viewBox: '0 0 120 120',
+    style: { width: taille + 'px', height: taille + 'px', flex: 'none' },
+    html: `${arcs}
+      <text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="19" font-weight="700" fill="var(--encre)">${nombre(total)}</text>
+      <text x="${cx}" y="${cy + 13}" text-anchor="middle" font-size="8.5" fill="var(--sourdine)">au total</text>`,
+  });
+
+  const legende = h('div.camembert-legende');
+  entrees.forEach((e, i) => {
+    const part = total ? Math.round((e.valeur / total) * 100) : 0;
+    legende.append(h('div.camembert-ligne',
+      h('span.camembert-puce', { style: { opacity: NUANCES[i] || '.12' } }),
+      h('span.camembert-nom', { title: e.nom }, e.nom),
+      h('span.camembert-val', `${nombre(e.valeur)} · ${part} %`)));
+  });
+
+  return h('div.camembert', svg, legende);
+}
+
 /* Graphe complet : axe des valeurs a gauche, grille horizontale, labels
    de dates dessous. Dessine en SVG sans librairie — une trentaine de
    points ne justifie pas d'embarquer Chart.js et ses 200 Ko. */

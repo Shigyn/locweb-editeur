@@ -629,6 +629,34 @@ button.entete-avatar{ cursor:pointer; border:0; }
   top:auto; bottom:100%; border-top-color:transparent; border-bottom-color: var(--encre);
 }
 
+/* ---------- squelettes calibres ----------
+   Chaque squelette occupe exactement la hauteur de l'element qu'il
+   remplace : la page ne bouge pas quand les donnees arrivent. */
+/* Hauteurs relevees sur le rendu reel, pas estimees : une carte de
+   repartition complete mesure 253 px (titre + corps + camembert). */
+.sq-kpi{ height:158px; border-radius:16px; margin-bottom:0; }
+.sq-graphe{ height:302px; border-radius:12px; margin:18px 0; }
+.sq-carte{ height:253px; border-radius:12px; margin-bottom:0; }
+
+/* Hauteur minimale garantie : le contenu reel occupe au moins la place
+   du squelette, donc rien ne remonte au moment de la substitution. */
+.kpi{ min-height:158px; }
+.camembert{ min-height:156px; }
+
+/* ---------- camembert (anneau + legende) ---------- */
+
+.camembert{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+.camembert-legende{ flex:1; min-width:150px; display:grid; gap:9px; }
+.camembert-ligne{ display:flex; align-items:center; gap:9px; font-size:.86rem; }
+.camembert-puce{
+  width:11px; height:11px; border-radius:3px; flex:none; background: var(--encre);
+}
+.camembert-nom{ font-weight:550; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.camembert-val{
+  margin-left:auto; color: var(--sourdine); font-size:.82rem;
+  font-variant-numeric: tabular-nums; white-space:nowrap;
+}
+
 /* ---------- repartitions (barres horizontales) ---------- */
 
 .repartition{ display:grid; gap:11px; }

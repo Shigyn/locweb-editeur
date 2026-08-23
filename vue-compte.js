@@ -109,9 +109,25 @@ export async function rendre(page, etat) {
       grilleReseaux.append(h('label.champ', { style: { margin: '0' } }, h('span', libelle), saisie));
     });
 
+    // L'adresse du site est affichee ici mais pas modifiable : c'est
+    // LocWeb qui heberge et qui pointe le domaine. Un champ que le
+    // client pourrait changer sans que rien ne bouge cote hebergement
+    // ne ferait que casser le bouton "Voir mon site".
+    const url = client.domaine
+      ? (/^https?:\/\//.test(client.domaine) ? client.domaine : `https://${client.domaine}`)
+      : null;
+
     zone.append(h('div.section',
-      h('div.section-tete', h('h2', 'Mes réseaux')),
-      h('div.section-corps', { style: { paddingTop: '14px' } }, grilleReseaux)));
+      h('div.section-tete', h('h2', 'Mon site et mes réseaux')),
+      h('div.section-corps', { style: { paddingTop: '14px' } },
+        h('div.champ-lecture',
+          h('span.champ-lecture-etiq', 'Adresse de votre site'),
+          url
+            ? h('a.champ-lecture-val', { href: url, target: '_blank', rel: 'noopener noreferrer' },
+                client.domaine)
+            : h('span.champ-lecture-val.vide', 'Pas encore en ligne'),
+          h('span.champ-lecture-note', 'Géré par LocWeb')),
+        h('div', { style: { marginTop: '18px' } }, grilleReseaux))));
 
     /* ---------- abonnement et compte ---------- */
 

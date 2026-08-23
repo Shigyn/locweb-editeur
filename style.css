@@ -1312,28 +1312,16 @@ kbd{
   body{ background:#fff; }
 }
 
-/* Champ en lecture seule : le client doit voir la valeur sans croire
-   qu'il peut la changer. Volontairement sans bordure de champ de
-   saisie — un encadre appelle le clic, et un clic sans effet est une
-   petite trahison. */
-.champ-lecture{
-  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
-  padding:14px 16px; border-radius:10px;
-  background: var(--surface-creux); border:1px solid var(--trait);
+
+/* Champ en lecture seule : meme forme qu'un champ normal, mais le fond
+   creux et l'absence d'anneau de focus disent qu'il ne se modifie pas.
+   Un clic sans effet sur un champ qui a l'air actif est une trahison. */
+input[readonly]{
+  background: var(--surface-creux);
+  color: var(--encre-douce);
+  cursor: default;
 }
-.champ-lecture-etiq{
-  font-size:.8rem; font-weight:600; color: var(--encre-douce);
-  flex:0 0 100%;
-}
-.champ-lecture-val{
-  flex:1 1 auto; min-width:0; font-size:.95rem; font-weight:650;
-  color: var(--encre); overflow-wrap:anywhere;
-}
-a.champ-lecture-val{ text-decoration:none; }
-a.champ-lecture-val:hover{ text-decoration:underline; }
-.champ-lecture-val.vide{ font-weight:500; font-style:italic; color: var(--sourdine); }
-.champ-lecture-note{
-  flex:none; font-size:.72rem; font-weight:600; color: var(--sourdine);
-  padding:3px 9px; border-radius:20px;
-  background: var(--surface); border:1px solid var(--trait);
+input[readonly]:focus{
+  border-color: var(--trait-fort);
+  box-shadow: none;
 }

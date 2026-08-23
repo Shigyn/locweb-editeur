@@ -109,15 +109,27 @@ export async function rendre(page, etat) {
       grilleReseaux.append(h('label.champ', { style: { margin: '0' } }, h('span', libelle), saisie));
     });
 
-    // Meme case que les reseaux, en lecture seule : c'est LocWeb qui
-    // heberge et qui pointe le domaine. Le champ a l'air d'un champ
-    // parce que c'en est un — il est juste verrouille.
-    const champSite = h('input', {
-      type: 'text', readonly: true,
-      value: client.domaine || 'Pas encore en ligne',
-      title: client.domaine ? 'Modifiable par LocWeb uniquement' : '',
-    });
-    grilleReseaux.prepend(h('label.champ', { style: { margin: '0' } },
+    // Meme case que les reseaux, mais un lien plutot qu'un champ : le
+    // domaine ne se modifie pas ici (c'est LocWeb qui heberge), en
+    // revanche le client veut souvent aller voir son site. Un lien
+    // repond a l'envie reelle sans laisser croire a une saisie.
+    const urlSite = client.domaine
+      ? (/^https?:\/\//.test(client.domaine) ? client.domaine : `https://${client.domaine}`)
+      : null;
+
+    const champSite = urlSite
+      ? h('a.champ-lien', {
+          href: urlSite, target: '_blank', rel: 'noopener noreferrer',
+          title: 'Ouvrir mon site dans un nouvel onglet',
+        },
+          client.domaine,
+          h('svg.champ-lien-icone', {
+            viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+            'stroke-width': '1.9', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+            html: '<path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+          }))
+      : h('span.champ-lien.vide', 'Pas encore en ligne');
+    grilleReseaux.prepend(h('div.champ', { style: { margin: '0' } },
       h('span', 'Adresse de votre site'), champSite));
 
     zone.append(h('div.section',

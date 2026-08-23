@@ -302,58 +302,61 @@ export async function rendre(page, etat) {
 
       vider(zoneChoix);
 
-      if (comptes.proprietes?.length) {
-        zoneChoix.append(listeChoix({
-          libelle: 'Propriété Analytics',
-          options: comptes.proprietes.map((p) => ({
-            valeur: p.id,
-            libelle: p.mesure ? `${p.nom} — ${p.mesure}` : p.nom,
-            brut: p,
-          })),
-          valeur: profil.ga4_property_id,
-          surChoix: async (id, p) => {
-            await D.majProfilTolerant(client.id, {
-              ga4_property_id: id,
-              ga4_measurement_id: p?.mesure || null,
-            });
-            profil.ga4_property_id = id;
-            souffler('Propriété reliée.', 'bien');
-          },
-        }));
-      }
+      // Chaque cote est traite separement : Analytics peut repondre
+      // pendant que la fiche echoue. Les melanger, c'est afficher une
+      // liste et faire disparaitre l'autre sans un mot d'explication.
+      zoneChoix.append(bloc({
+        titre: 'Propriété Analytics',
+        options: (comptes.proprietes || []).map((p) => ({
+          valeur: p.id,
+          libelle: p.mesure ? `${p.nom} — ${p.mesure}` : p.nom,
+          brut: p,
+        })),
+        valeur: profil.ga4_property_id,
+        souci: comptes.soucis?.analytics,
+        manuel: () => champGa4(),
+        surChoix: async (id, p) => {
+          await D.majProfilTolerant(client.id, {
+            ga4_property_id: id,
+            ga4_measurement_id: p?.mesure || null,
+          });
+          profil.ga4_property_id = id;
+          souffler('Propriété reliée.', 'bien');
+        },
+      }));
 
-      if (comptes.fiches?.length) {
-        zoneChoix.append(listeChoix({
-          libelle: 'Fiche Google Business',
-          options: comptes.fiches.map((f) => ({
-            valeur: f.id,
-            libelle: f.adresse ? `${f.nom} — ${f.adresse}` : f.nom,
-            brut: f,
-          })),
-          valeur: profil.gbp_location_id,
-          surChoix: async (id, f) => {
-            await D.majProfilTolerant(client.id, { gbp_location_id: id });
-            profil.gbp_location_id = id;
-            souffler('Fiche reliée.', 'bien');
-            if (f) proposerReprise(f);
-          },
-        }));
-      }
+      zoneChoix.append(bloc({
+        titre: 'Fiche Google Business',
+        options: (comptes.fiches || []).map((f) => ({
+          valeur: f.id,
+          libelle: f.adresse ? `${f.nom} — ${f.adresse}` : f.nom,
+          brut: f,
+        })),
+        valeur: profil.gbp_location_id,
+        souci: comptes.soucis?.fiche,
+        manuel: () => champGbp(),
+        surChoix: async (id, f) => {
+          await D.majProfilTolerant(client.id, { gbp_location_id: id });
+          profil.gbp_location_id = id;
+          souffler('Fiche reliée.', 'bien');
+          if (f) proposerReprise(f);
+        },
+      }));
+    }
 
-      if (!zoneChoix.children.length) {
-        // Quand Google refuse, on montre POURQUOI. "Aucune propriete
-        // trouvee" laisse croire que le compte est vide, alors que
-        // neuf fois sur dix c'est une API a activer cote Google Cloud.
-        const detail = comptes.soucis
-          ? Object.entries(comptes.soucis).map(([quoi, message]) => `${quoi} : ${message}`).join(' — ')
-          : null;
-        zoneChoix.append(
-          h('p.aide', { style: { marginBottom: '10px' } },
-            detail
-              ? `Google a refusé la liste. ${detail}`
-              : "Aucune propriété ni fiche trouvée sur ce compte Google."),
-          champsManuels());
+    /* Une liste quand Google repond, le champ manuel sinon — et dans ce
+       cas on dit pourquoi. "Rien ici" laisse croire a un compte vide,
+       alors que neuf fois sur dix c'est une API a activer. */
+    function bloc({ titre, options, valeur, souci, manuel, surChoix }) {
+      if (options.length) {
+        return listeChoix({ libelle: titre, options, valeur, surChoix });
       }
+      return h('div', { style: { marginBottom: '14px' } },
+        h('p.aide', { style: { marginBottom: '8px' } },
+          souci
+            ? `${titre} — Google a refusé la liste : ${souci}`
+            : `${titre} — rien trouvé sur ce compte Google. Saisie manuelle :`),
+        manuel());
     }
 
     function listeChoix({ libelle, options, valeur, surChoix }) {
@@ -401,8 +404,8 @@ export async function rendre(page, etat) {
       zoneChoix.prepend(banniere);
     }
 
-    function champsManuels() {
-      const proprieteGa4 = champVerrouille({
+    function champGa4() {
+      return champVerrouille({
         valeur: profil.ga4_property_id,
         placeholder: 'ex : 123456789',
         aide: 'ID de propriété GA4 — dans GA4 : Admin puis Paramètres de la propriété.',
@@ -411,8 +414,10 @@ export async function rendre(page, etat) {
           profil.ga4_property_id = v;
         },
       });
+    }
 
-      const ficheGbp = champVerrouille({
+    function champGbp() {
+      return champVerrouille({
         valeur: profil.gbp_location_id,
         placeholder: 'ex : 16711969773629618707',
         aide: 'Identifiant de votre fiche Google Business.',
@@ -421,10 +426,12 @@ export async function rendre(page, etat) {
           profil.gbp_location_id = v;
         },
       });
+    }
 
+    function champsManuels() {
       return h('div',
-        h('div', proprieteGa4),
-        h('div', { style: { marginTop: '12px' } }, ficheGbp));
+        h('div', champGa4()),
+        h('div', { style: { marginTop: '12px' } }, champGbp()));
     }
 
     return h('div.champ-inline',

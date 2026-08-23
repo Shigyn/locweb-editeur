@@ -497,6 +497,42 @@ select{ cursor: pointer; }
 .conversion-jauge{ height:100%; border-radius:100px; background: var(--accent); transition: width .5s var(--detente, ease); }
 .conversion-repere{ font-size:.8rem; color: var(--sourdine); margin-top:10px; }
 
+/* ---------- bulle d'aide au survol ---------- */
+
+.a-aide{ position:relative; }
+.bulle{
+  position:absolute; bottom:calc(100% + 8px); left:0; z-index:60;
+  width:max-content; max-width:270px;
+  background: var(--encre); color:#fff;
+  font-size:.79rem; font-style:italic; font-weight:400; line-height:1.45;
+  padding:9px 12px; border-radius:9px; box-shadow: var(--ombre-haute);
+  opacity:0; visibility:hidden; transform: translateY(4px);
+  transition: opacity .16s, transform .16s, visibility .16s;
+  pointer-events:none; white-space:normal; text-transform:none; letter-spacing:0;
+}
+.bulle::after{
+  content:''; position:absolute; top:100%; left:18px;
+  border:5px solid transparent; border-top-color: var(--encre);
+}
+.a-aide:hover > .bulle, .a-aide:focus-visible > .bulle{
+  opacity:1; visibility:visible; transform: translateY(0);
+}
+/* Sur les dernieres colonnes, la bulle sortirait de l'ecran a droite :
+   on l'ancre a droite pour ces cas-la. */
+.a-aide.aide-droite > .bulle{ left:auto; right:0; }
+.a-aide.aide-droite > .bulle::after{ left:auto; right:18px; }
+
+/* ---------- repartitions (barres horizontales) ---------- */
+
+.repartition{ display:grid; gap:11px; }
+.repartition-ligne{ display:grid; grid-template-columns: minmax(78px,26%) 1fr auto; gap:12px; align-items:center; }
+.repartition-nom{ font-size:.86rem; font-weight:550; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.repartition-piste{ height:8px; border-radius:100px; background: var(--surface-creux); overflow:hidden; }
+.repartition-barre{ height:100%; border-radius:100px; background: var(--encre); }
+.repartition-val{ font-size:.82rem; color: var(--sourdine); font-variant-numeric: tabular-nums; min-width:34px; text-align:right; }
+
+.grille-duo{ display:grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+
 /* ---------- mon editeur : sections depliables ---------- */
 
 .section-pliable{ overflow:hidden; }

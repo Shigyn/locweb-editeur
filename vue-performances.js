@@ -1,31 +1,40 @@
 // ===================================================================
-//  Performances — les vraies statistiques GA4, avec variation par
-//  rapport a la periode precedente. Aucun chiffre n'est invente : si
-//  GA4 n'est pas branche, on le dit au lieu d'afficher des zeros.
+//  Performances — les vraies statistiques GA4.
+//
+//  Choix de fond : un seul graphique dans le temps (les visiteurs).
+//  Visiteurs, sessions et pages vues mesurent le meme trafic, donc
+//  leurs courbes se ressemblent forcement — trois fois le meme dessin
+//  n'apprend rien. La place est donnee aux repartitions (appareil,
+//  ville, pages, jours), qui disent chacune quelque chose de different.
 // ===================================================================
 
-import { h, vider, nombre, grapheComplet, grapheAires, souffler } from './outils.js';
+import {
+  h, vider, nombre, grapheComplet, souffler, EXPLICATIONS, avecAide,
+} from './outils.js';
 import * as D from './donnees.js';
 
 const PERIODES = [
-  { cle: '24h', libelle: '24 h',  compare: 'la veille' },
+  { cle: '24h', libelle: '24 h',     compare: 'la veille' },
   { cle: '7j',  libelle: '7 jours',  compare: 'les 7 jours precedents' },
   { cle: '30j', libelle: '30 jours', compare: 'les 30 jours precedents' },
 ];
 
 const METRIQUES = [
   { cle: 'visiteurs',       libelle: 'Visiteurs',         icone: 'personnes' },
-  { cle: 'sessions',        libelle: 'Sessions',          icone: 'cycle' },
   { cle: 'pages_vues',      libelle: 'Pages vues',        icone: 'page' },
-  { cle: 'taux_engagement', libelle: "Taux d'engagement", icone: 'cible', pourcent: true },
+  { cle: 'duree_moyenne',   libelle: 'Duree moyenne',     icone: 'horloge', duree: true },
+  { cle: 'taux_engagement', libelle: "Taux d'engagement", icone: 'cible',   pourcent: true },
 ];
 
 const ICONES = {
   personnes: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.3 2.9-5.8 6.5-5.8s6.5 2.5 6.5 5.8"/><circle cx="17.5" cy="7.5" r="2.4"/><path d="M16 13.6c2.6.5 4.5 2.7 4.5 5.6"/>',
-  cycle:     '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
   page:      '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+  horloge:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
   cible:     '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8" fill="currentColor" stroke="none"/>',
 };
+
+const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const APPAREILS = { mobile: 'Telephone', desktop: 'Ordinateur', tablet: 'Tablette' };
 
 export async function rendre(page, etat) {
   vider(page);
@@ -60,7 +69,7 @@ export async function rendre(page, etat) {
     vider(zone);
     zone.append(h('div.grille-kpi', ...METRIQUES.map(() => h('div.squelette', { style: { height: '148px', borderRadius: '16px' } }))));
 
-    let resultat;
+    let r;
     try {
       const { data: { session } } = await D.sb.auth.getSession();
       const reponse = await fetch(`${D.EDGE_FUNCTIONS_URL}/ga4-donnees`, {
@@ -68,14 +77,14 @@ export async function rendre(page, etat) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ periode: periode.cle }),
       });
-      resultat = await reponse.json();
+      r = await reponse.json();
       if (!reponse.ok) {
         vider(zone);
-        const manqueId = resultat.error === 'ID de propriete GA4 non renseigne.';
+        const manqueId = r.error === 'ID de propriete GA4 non renseigne.';
         zone.append(carteVide(
           manqueId ? "Il manque l'identifiant de votre propriete Analytics" : 'Statistiques momentanement indisponibles',
           manqueId
-            ? 'Renseignez-le dans Parametrage — vous le trouverez dans GA4, Admin puis Parametres de la propriete.'
+            ? 'Renseignez-le dans Parametrage — dans GA4 : Admin puis Parametres de la propriete.'
             : 'Reessayez dans quelques instants. Si ca persiste, contactez-nous.',
           manqueId ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au parametrage') : null));
         return;
@@ -87,46 +96,84 @@ export async function rendre(page, etat) {
       return;
     }
 
-    const serie = resultat.series || [];
-    const totaux = resultat.totaux || {};
-    const variations = resultat.variations;
+    const serie = r.series || [];
+    const totaux = r.totaux || {};
+    const variations = r.variations || {};
+    const rep = r.repartitions || {};
     vider(zone);
 
     /* ---------- cartes KPI ---------- */
 
     const grille = h('div.grille-kpi');
-    METRIQUES.forEach((m) => {
+    METRIQUES.forEach((m, i) => {
       const brut = totaux[m.cle] ?? 0;
-      const valeur = m.pourcent ? (brut * 100).toFixed(1) + ' %' : nombre(brut);
-      const varia = variations ? variations[m.cle] : null;
+      const valeur = m.pourcent ? (brut * 100).toFixed(1) + ' %'
+        : m.duree ? formaterDuree(brut)
+        : nombre(brut);
+
+      const etiquette = avecAide(
+        h('p.kpi-etiq', m.libelle),
+        EXPLICATIONS[m.cle]);
+      // Les deux dernieres colonnes ancrent leur bulle a droite pour ne
+      // pas deborder de l'ecran.
+      if (i >= 2) etiquette.classList.add('aide-droite');
 
       grille.append(h('div.kpi',
-        h('span.kpi-icone', h('svg', {
-          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
-          'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-          html: ICONES[m.icone] || '',
-        })),
-        h('p.kpi-etiq', m.libelle),
+        h('div.kpi-haut',
+          h('span.kpi-icone', h('svg', {
+            viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+            'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+            html: ICONES[m.icone] || '',
+          })),
+          badgeVariation(variations[m.cle])),
         h('p.kpi-val', valeur),
-        h('div.kpi-pied',
-          h('span.kpi-periode', `vs ${periode.compare}`),
-          badgeVariation(varia))));
+        etiquette,
+        h('p.kpi-sous', `vs ${periode.compare}`)));
     });
     zone.append(grille);
 
-    /* ---------- graphique principal ---------- */
+    /* ---------- un seul graphique dans le temps ---------- */
 
     if (serie.length > 1) {
-      const etiquettes = serie.map((l) => formaterJour(l.date));
-      const valeurs = serie.map((l) => l.visiteurs);
       zone.append(h('div.section',
-        h('div.section-tete', h('h2', 'Visiteurs'), h('p', `Evolution sur ${periode.libelle.toLowerCase()}`)),
-        h('div.section-corps', { style: { paddingTop: '18px' } }, grapheComplet(valeurs, etiquettes))));
+        h('div.section-tete',
+          h('h2', 'Visiteurs'),
+          h('p', `Evolution sur ${periode.libelle.toLowerCase()}`)),
+        h('div.section-corps', { style: { paddingTop: '18px' } },
+          grapheComplet(serie.map((l) => l.visiteurs), serie.map((l) => formaterJour(l.date))))));
+    }
 
-      zone.append(h('div.grille-duo',
-        carteGraphe('Sessions', serie.map((l) => l.sessions), etiquettes),
-        carteGraphe('Pages vues', serie.map((l) => l.pages_vues), etiquettes)));
-    } else if (!serie.length) {
+    /* ---------- repartitions ---------- */
+
+    const duo = h('div.grille-duo');
+
+    if (rep.appareils?.length) {
+      duo.append(carteRepartition('Telephone ou ordinateur', 'appareils',
+        rep.appareils.map((a) => ({ nom: APPAREILS[a.cle] || a.cle, valeur: a.valeur }))));
+    }
+    if (rep.villes?.length) {
+      duo.append(carteRepartition("D'ou viennent vos visiteurs", 'villes',
+        rep.villes.filter((v) => v.cle && v.cle !== '(not set)')
+          .map((v) => ({ nom: v.cle, valeur: v.valeur }))));
+    }
+    if (duo.children.length) zone.append(duo);
+
+    const duo2 = h('div.grille-duo');
+    if (rep.pages?.length) {
+      duo2.append(carteRepartition('Pages les plus vues', 'pages',
+        rep.pages.map((p) => ({ nom: p.cle === '/' ? "Page d'accueil" : p.cle, valeur: p.valeur }))));
+    }
+    if (rep.jours_semaine?.length) {
+      // GA4 renvoie 0=dimanche. On reordonne pour commencer au lundi,
+      // comme une semaine francaise.
+      const ordre = [1, 2, 3, 4, 5, 6, 0];
+      const parJour = new Map(rep.jours_semaine.map((j) => [Number(j.cle), j.valeur]));
+      duo2.append(carteRepartition('Jours de la semaine', 'jours_semaine',
+        ordre.map((n) => ({ nom: JOURS_SEMAINE[n], valeur: parJour.get(n) || 0 }))));
+    }
+    if (duo2.children.length) zone.append(duo2);
+
+    if (!serie.length) {
       zone.append(carteVide('Aucune donnee sur cette periode',
         "Votre site n'a pas encore recu de visite sur la periode choisie."));
     }
@@ -135,21 +182,34 @@ export async function rendre(page, etat) {
   await charger(PERIODES.find((p) => p.cle === periodeActive));
 }
 
-function carteGraphe(titre, valeurs, etiquettes) {
+function carteRepartition(titre, cleAide, entrees) {
+  const max = Math.max(1, ...entrees.map((e) => e.valeur));
+  const corps = h('div.repartition');
+  entrees.forEach((e) => {
+    corps.append(h('div.repartition-ligne',
+      h('span.repartition-nom', { title: e.nom }, e.nom),
+      h('div.repartition-piste',
+        h('div.repartition-barre', { style: { width: `${(e.valeur / max * 100).toFixed(1)}%` } })),
+      h('span.repartition-val', nombre(e.valeur))));
+  });
+
   return h('div.section',
-    h('div.section-tete', h('h2', titre)),
-    h('div.section-corps', { style: { paddingTop: '16px' } },
-      grapheComplet(valeurs, etiquettes, { hauteur: 180 })));
+    h('div.section-tete', avecAide(h('h2', titre), EXPLICATIONS[cleAide])),
+    h('div.section-corps', { style: { paddingTop: '16px' } }, corps));
 }
 
 function badgeVariation(v) {
-  if (v === null || v === undefined || !Number.isFinite(v)) {
-    return h('span.badge-var.neutre', '—');
-  }
+  if (v === null || v === undefined || !Number.isFinite(v)) return null;
   const hausse = v >= 0;
   return h('span.badge-var', { class: `badge-var ${hausse ? 'hausse' : 'baisse'}` },
     h('span.badge-fleche', { html: hausse ? '&uarr;' : '&darr;' }),
     `${Math.abs(v).toFixed(1)} %`);
+}
+
+function formaterDuree(secondes) {
+  const s = Math.round(secondes || 0);
+  if (s < 60) return `${s} s`;
+  return `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')}`;
 }
 
 // GA4 renvoie les dates au format YYYYMMDD

@@ -7,7 +7,7 @@
 //  manque, on le dit — jamais de chiffre de demonstration.
 // ===================================================================
 
-import { h, vider, nombre, grapheAires, souffler } from './outils.js';
+import { h, vider, nombre, grapheAires, souffler, EXPLICATIONS, avecAide } from './outils.js';
 import * as D from './donnees.js';
 
 const CARTES = [
@@ -161,7 +161,7 @@ async function remplirAvecGa4(zone, demandes30, nouvelles) {
       h('div.section-corps', { style: { padding: '20px 22px' } },
         h('div.conversion-tete',
           h('div',
-            h('p.conversion-etiq', 'Votre taux de conversion'),
+            avecAide(h('p.conversion-etiq', 'Votre taux de conversion'), EXPLICATIONS.conversion),
             h('p.conversion-val', `${taux.toFixed(1)} %`)),
           h('p.conversion-aide', 'Part de vos visiteurs qui vous contactent')),
         h('div.conversion-barre', h('div.conversion-jauge', { style: { width: `${largeur.toFixed(1)}%` } })),
@@ -169,7 +169,7 @@ async function remplirAvecGa4(zone, demandes30, nouvelles) {
   }
 }
 
-function carteKpi(icone, libelle, valeur, sous, variation, serie) {
+function carteKpi(icone, libelle, valeur, sous, variation, serie, cleAide) {
   return h('div.kpi',
     h('div.kpi-haut',
       h('span.kpi-icone', h('svg', {
@@ -179,7 +179,7 @@ function carteKpi(icone, libelle, valeur, sous, variation, serie) {
       })),
       badgeVariation(variation)),
     h('p.kpi-val', valeur),
-    h('p.kpi-etiq', libelle),
+    avecAide(h('p.kpi-etiq', libelle), EXPLICATIONS[cleAide || icone]),
     h('p.kpi-sous', sous),
     serie && serie.length > 1 ? h('div.kpi-graphe', grapheAires(serie, { hauteur: 34 })) : null);
 }

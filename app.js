@@ -144,12 +144,14 @@ async function apresConnexion() {
   // Les modules transverses se greffent sur l'entete — laquelle est
   // masquee pendant l'onboarding. Rien a installer tant qu'on y est.
   if (espace.classList.contains('mode-onboarding')) return;
-  const [{ installerCloche }, { installerPalette }] = await Promise.all([
+  const [{ installerCloche }, { installerPalette }, installation] = await Promise.all([
     import('./notifications.js'),
     import('./palette.js'),
+    import('./installation.js'),
   ]);
   installerCloche(etat);
   installerPalette(etat);
+  installation.installerBoutonInstallation();
 }
 
 /* ---------- onboarding en 5 etapes, a la premiere connexion ---------- */
@@ -232,6 +234,13 @@ export async function rafraichirPastille() {
     el.hidden = n === 0;
   } catch { /* le rail n'est pas critique */ }
 }
+
+/* ---------- installation sur le telephone ---------- */
+
+// Avant meme la connexion : la page de connexion fait partie de la
+// coquille mise en cache, sinon un client hors ligne ouvrirait une
+// icone sur une page blanche.
+import('./installation.js').then((m) => m.installerServiceWorker());
 
 /* ---------- reprise de session ---------- */
 

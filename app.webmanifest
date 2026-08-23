@@ -1,0 +1,40 @@
+{
+  "name": "Mon espace LocWeb",
+  "short_name": "LocWeb",
+  "description": "Gérez votre site, suivez vos visiteurs et vos demandes de devis.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/#/accueil",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F5F3EF",
+  "theme_color": "#F5F3EF",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mes demandes",
+      "short_name": "Demandes",
+      "url": "/#/activite"
+    },
+    {
+      "name": "Mon éditeur",
+      "short_name": "Éditeur",
+      "url": "/#/mon-site"
+    }
+  ]
+}

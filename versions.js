@@ -12,6 +12,16 @@
 
 export const VERSIONS = [
   {
+    version: '1.6',
+    date: '2026-08-23',
+    titre: 'Votre espace sur votre téléphone',
+    points: [
+      "Installez l'espace comme une application : menu du compte, puis Installer l'application.",
+      'Une fois installé, il s’ouvre en plein écran et reste consultable même sans réseau.',
+      'Vos coordonnées et vos réponses au questionnaire sont maintenant vraiment enregistrées.',
+    ],
+  },
+  {
     version: '1.5',
     date: '2026-08-23',
     titre: 'Un espace complet',

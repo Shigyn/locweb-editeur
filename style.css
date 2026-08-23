@@ -1245,3 +1245,22 @@ kbd{
   display:flex; align-items:baseline; justify-content:space-between;
   gap:12px; flex-wrap:wrap;
 }
+
+/* Marche a suivre iOS : une liste numerotee, pas un paragraphe. */
+.install-etapes{
+  margin-top:16px; padding-left:0; list-style:none;
+  display:flex; flex-direction:column; gap:10px; counter-reset: etape;
+}
+.install-etapes li{
+  position:relative; padding-left:32px;
+  font-size:.9rem; color: var(--encre-douce); line-height:1.5;
+  counter-increment: etape;
+}
+.install-etapes li::before{
+  content: counter(etape);
+  position:absolute; left:0; top:0;
+  width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background: var(--surface-creux); border:1px solid var(--trait);
+  font-size:.72rem; font-weight:700; color: var(--encre);
+}

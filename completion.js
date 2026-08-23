@@ -20,10 +20,14 @@ export const champsProfil = {
     { cle: 'contact_email',     libelle: 'E-mail',    type: 'email', indice: 'vous@exemple.fr' },
     { cle: 'contact_telephone', libelle: 'Téléphone', type: 'tel',   indice: '06 12 34 56 78' },
   ],
+  // Volontairement les MEMES colonnes que le questionnaire d'accueil
+  // (vue-onboarding.js) : le client a ete prevenu qu'il pourrait
+  // completer plus tard, il doit retrouver ses reponses, pas un second
+  // jeu de champs vides a cote.
   activite: [
-    { cle: 'metier',            libelle: 'Votre métier',        type: 'text', indice: 'Plombier, coiffeur, restaurateur...' },
+    { cle: 'metier_precis',     libelle: 'Votre métier',        type: 'text', indice: 'Plombier, coiffeur, restaurateur...' },
+    { cle: 'localisation',      libelle: 'Votre ville',         type: 'text', indice: 'Béziers' },
     { cle: 'zone_intervention', libelle: "Zone d'intervention", type: 'text', indice: 'Béziers et 20 km autour' },
-    { cle: 'ville',             libelle: 'Ville',               type: 'text', indice: 'Béziers' },
   ],
 };
 
@@ -42,14 +46,14 @@ const ETAPES = [
     titre: 'Votre métier et votre zone',
     pourquoi: 'Sert à cibler vos campagnes et à rédiger vos textes.',
     ou: '#/mes-infos',
-    fait: (p) => Boolean(p.metier && p.zone_intervention),
+    fait: (p) => Boolean(p.metier_precis && p.zone_intervention),
   },
   {
-    id: 'google',
-    titre: 'Connecter Google',
+    id: 'ga4',
+    titre: 'Connecter Google Analytics',
     pourquoi: 'Sans ça, aucune statistique de visite ne peut s\'afficher.',
     ou: '#/parametrage',
-    fait: (p) => Boolean(p.acces_ga4 || p.acces_google_business),
+    fait: (p) => Boolean(p.acces_ga4),
   },
   {
     id: 'reseaux',
@@ -59,11 +63,11 @@ const ETAPES = [
     fait: (p) => Object.values(p.reseaux || {}).some(Boolean),
   },
   {
-    id: 'site',
-    titre: 'Publier votre site',
-    pourquoi: 'Votre première publication met vos textes en ligne.',
-    ou: '#/mon-site',
-    fait: (p, c) => Boolean(c?.derniere_publication || c?.domaine),
+    id: 'gbp',
+    titre: 'Connecter votre fiche Google',
+    pourquoi: 'Chez un artisan, la fiche amène souvent plus d\'appels que le site.',
+    ou: '#/parametrage',
+    fait: (p) => Boolean(p.acces_google_business),
   },
 ];
 

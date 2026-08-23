@@ -54,6 +54,14 @@ export async function rendre(page, etat, { charger }) {
   const demandes30 = demandes.filter((d) => new Date(d.date_creation) >= limite);
   const nouvelles = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
 
+  // La progression passe avant les chiffres tant qu'il reste des
+  // etapes : un chiffre incomplet se lit mal, et l'utilisateur doit
+  // savoir pourquoi avant de le regarder.
+  const { barreCompletion, completion } = await import('./completion.js');
+  if (completion(etat.profil || {}, client).reste.length) {
+    page.append(barreCompletion(etat.profil || {}, client, { compact: true }));
+  }
+
   const zoneSynthese = h('div');
   page.append(zoneSynthese);
 

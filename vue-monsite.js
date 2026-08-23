@@ -8,7 +8,20 @@ import { h, vider, differer, souffler, certain, depuis, prettifyKey } from './ou
 import * as D from './donnees.js';
 import { MANIFEST, GROUP_ORDER } from './manifest.js?v=6';
 
-const GROUPES_AUTORISES = ['Horaires', 'Footer'];
+/* Ce que le client peut modifier depend de sa formule :
+     aucun     — rien, tout passe par LocWeb ;
+     essentiel — ce qui change souvent et ne casse rien (horaires, bas
+                 de page, contact) ;
+     complet   — l'ensemble de son site, plus ses produits.
+   Un restaurant ou une boutique a besoin de "complet" : sa carte et ses
+   prix bougent trop souvent pour passer par nous a chaque fois. */
+const GROUPES_ESSENTIELS = ['Horaires', 'Footer', 'Contact'];
+
+function groupesAutorises(acces, groupesPresents) {
+  if (acces === 'aucun') return [];
+  if (acces === 'complet') return [...groupesPresents];
+  return GROUPES_ESSENTIELS;
+}
 const JOURS = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi', dimanche: 'Dimanche' };
 
 export async function rendre(page, etat, { charger }) {
@@ -26,13 +39,12 @@ export async function rendre(page, etat, { charger }) {
   const textes = contenu.filter((l) => l.type === 'texte');
   const images = contenu.filter((l) => l.type === 'image');
   const groupesPresents = new Set([...textes, ...images].map((l) => MANIFEST[l.cle_bloc]?.groupe || 'Autres'));
-  const groupesVerrouilles = [...groupesPresents].filter(
-    (g) => client.acces_client === 'aucun' || !GROUPES_AUTORISES.includes(g),
-  );
+  const autorises = groupesAutorises(client.acces_client, groupesPresents);
+  const groupesVerrouilles = [...groupesPresents].filter((g) => !autorises.includes(g));
 
   const enAttente = new Set(
     [...textes, ...images]
-      .filter((l) => l.valeur_brouillon !== null && GROUPES_AUTORISES.includes(MANIFEST[l.cle_bloc]?.groupe || 'Autres'))
+      .filter((l) => l.valeur_brouillon !== null && autorises.includes(MANIFEST[l.cle_bloc]?.groupe || 'Autres'))
       .map((l) => l.id),
   );
 
@@ -82,7 +94,11 @@ export async function rendre(page, etat, { charger }) {
       h('div.section-corps', { style: { paddingTop: '14px' } },
         h('p', { style: { color: 'var(--sourdine)' } }, "L'ensemble de votre site est gere par LocWeb. Contactez-nous pour toute modification."))));
   } else {
-    for (const groupe of GROUP_ORDER.filter((g) => GROUPES_AUTORISES.includes(g) && groupesPresents.has(g))) {
+    // GROUP_ORDER d'abord (l'ordre d'affichage du site), puis les
+    // groupes hors liste pour ne rien perdre en route.
+    const ordre = [...GROUP_ORDER.filter((g) => autorises.includes(g) && groupesPresents.has(g)),
+                   ...autorises.filter((g) => !GROUP_ORDER.includes(g))];
+    for (const groupe of ordre) {
       const lignesTexte = textes.filter((l) => (MANIFEST[l.cle_bloc]?.groupe || 'Autres') === groupe);
       const lignesImage = images.filter((l) => (MANIFEST[l.cle_bloc]?.groupe || 'Autres') === groupe);
       if (!lignesTexte.length && !lignesImage.length) continue;
@@ -105,9 +121,41 @@ export async function rendre(page, etat, { charger }) {
 // Une icone et une phrase par section : le client reconnait la partie de
 // son site dont on parle sans avoir a deviner ce que "Footer" recouvre.
 const SECTIONS = {
+  Hero: {
+    icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h7M7 13h5"/>',
+    texte: 'Le grand titre en haut de votre site',
+  },
+  Services: {
+    icone: '<path d="M14.7 6.3a4 4 0 0 0 5 5l-9.4 9.4a2.8 2.8 0 0 1-4-4Z"/><path d="m18 4 2 2"/>',
+    texte: 'Vos prestations',
+  },
+  'À propos': {
+    icone: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
+    texte: 'Votre presentation',
+  },
+  Engagement: {
+    icone: '<path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/>',
+    texte: 'Vos engagements',
+  },
+  Expertise: {
+    icone: '<path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9Z"/>',
+    texte: 'Votre savoir-faire',
+  },
+  'Preuve sociale': {
+    icone: '<path d="M8 10h8M8 14h5"/><path d="M4 5h16v12H8l-4 4V5Z"/>',
+    texte: 'Avis et chiffres cles',
+  },
+  Offre: {
+    icone: '<path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7"/><path d="M2 7h20v5H2z"/><path d="M12 21V7"/>',
+    texte: 'Vos tarifs et formules',
+  },
   Horaires: {
     icone: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
     texte: 'Ouverture jour par jour',
+  },
+  Contact: {
+    icone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
+    texte: 'Telephone, e-mail, adresse',
   },
   Footer: {
     icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h18"/>',

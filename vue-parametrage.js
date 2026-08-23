@@ -1,8 +1,12 @@
 // ===================================================================
-//  Parametrage — mon profil, connexion des comptes (Google Business,
-//  Google Ads, pixels publicitaires). Objectif : connecter tout ca en
-//  quelques clics, sans jamais demander de mot de passe ni de cle —
-//  seulement une date de confirmation.
+//  Parametrage — le technique : connexion des comptes Google Business,
+//  Google Analytics, Google Ads, pixels publicitaires. Objectif :
+//  connecter tout ca en quelques clics, sans jamais demander de mot de
+//  passe ni de cle — seulement une date de confirmation.
+//
+//  Les coordonnees du client, elles, vivent dans vue-mes-infos.js :
+//  ce sont deux usages differents (une adresse e-mail se change souvent,
+//  un identifiant de propriete GA4 se pose une fois pour toutes).
 // ===================================================================
 
 import { h, vider, differer, souffler, depuis } from './outils.js';
@@ -19,30 +23,8 @@ export async function rendre(page, etat) {
   let profil = etat.profil || {};
 
   vider(page);
-  page.append(h('h1', 'Parametrage'));
-
-  /* ---------- profil ---------- */
-
-  const zone = h('input', { type: 'text', value: profil.zone_intervention || '' });
-  const facebook = h('input', { type: 'text', value: profil.reseaux?.facebook || '' });
-  const instagram = h('input', { type: 'text', value: profil.reseaux?.instagram || '' });
-  const sauverProfil = differer(async () => {
-    try {
-      await D.majProfil(client.id, {
-        zone_intervention: zone.value || null,
-        reseaux: { facebook: facebook.value || null, instagram: instagram.value || null },
-      });
-      souffler('Enregistre.', 'bien');
-    } catch { souffler('Enregistrement impossible.', 'alerte'); }
-  });
-  [zone, facebook, instagram].forEach((el) => el.addEventListener('input', sauverProfil));
-
-  page.append(h('div.section',
-    h('div.section-tete', h('h2', 'Mon profil'), h('p', 'Ces informations nous aident a mieux vous representer.')),
-    h('div.section-corps', { style: { paddingTop: '14px' } },
-      h('label.champ', h('span', "Ou intervenez-vous ?"), zone),
-      h('label.champ', h('span', 'Facebook'), facebook),
-      h('label.champ', h('span', 'Instagram'), instagram))));
+  page.append(h('h1', 'Parametrage'),
+    h('p.sous-titre', 'Les comptes techniques relies a votre espace.'));
 
   /* ---------- retour d'une tentative de connexion Google ---------- */
 
@@ -83,12 +65,6 @@ export async function rendre(page, etat) {
 
   page.append(h('div.section', h('div.section-tete', h('h2', 'Connecter mes comptes')), corpsComptes));
 
-  /* ---------- deconnexion (visible ici en plus du rail, masque sur mobile) ---------- */
-
-  page.append(h('div.section',
-    h('div.section-corps', { style: { paddingTop: '14px' } },
-      h('button.bt.bt-nu', { onclick: () => { D.deconnexion().then(() => location.reload()); } }, 'Se deconnecter'))));
-
   function carteGoogle(client, profil) {
     const connecteGbp = profil.acces_google_business;
     const connecteGa4 = profil.acces_ga4;
@@ -111,23 +87,33 @@ export async function rendre(page, etat) {
       location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
     } }, tousConnectes ? 'Reconnecter mon compte Google' : 'Se connecter avec Google');
 
-    const proprieteGa4 = h('input', {
-      type: 'text', placeholder: 'ID de propriete GA4 (ex : 123456789)', value: profil.ga4_property_id || '',
-      style: { marginTop: '10px' },
+    const proprieteGa4 = champVerrouille({
+      valeur: profil.ga4_property_id,
+      placeholder: 'ex : 123456789',
+      surValidation: async (v) => {
+        await D.majProfil(client.id, { ga4_property_id: v });
+        profil.ga4_property_id = v;
+      },
     });
-    const sauverPropriete = differer(async () => {
-      try { await D.majProfil(client.id, { ga4_property_id: proprieteGa4.value || null }); profil.ga4_property_id = proprieteGa4.value || null; souffler('Enregistre.', 'bien'); }
-      catch { souffler('Enregistrement impossible.', 'alerte'); }
+
+    const ficheGbp = champVerrouille({
+      valeur: profil.gbp_location_id,
+      placeholder: 'ex : 16711969773629618707',
+      surValidation: async (v) => {
+        await D.majProfilTolerant(client.id, { gbp_location_id: v });
+        profil.gbp_location_id = v;
+      },
     });
-    proprieteGa4.addEventListener('input', sauverPropriete);
 
     return h('div.champ-inline',
       h('label', 'Google Business + Analytics'),
       h('p.aide', "Un seul clic connecte votre fiche Google Business et vos statistiques GA4 — LocWeb pourra afficher vos vraies performances ici. Aucun mot de passe ne nous est jamais communique."),
       lignesEtat,
       h('div', { style: { marginTop: '12px' } }, bouton),
-      h('p.aide', { style: { marginTop: '12px' } }, "ID de propriete GA4 (different du code G-XXXXX) — dans GA4 : Admin -> Parametres de la propriete."),
-      proprieteGa4);
+      h('p.aide', { style: { marginTop: '14px' } }, "ID de propriete GA4 (different du code G-XXXXX) — dans GA4 : Admin puis Parametres de la propriete."),
+      proprieteGa4,
+      h('p.aide', { style: { marginTop: '14px' } }, "Identifiant de votre fiche Google Business, pour afficher vues, appels et avis."),
+      ficheGbp);
   }
 
   function ligneEtat(libelle, valeur) {
@@ -137,13 +123,60 @@ export async function rendre(page, etat) {
         : h('span', { style: { color: 'var(--sourdine)' } }, `${libelle} — pas encore connecte`));
   }
 
+  /* Champ verrouille : un identifiant technique (cle GA4, ID de fiche
+     Google...) se saisit une fois et ne se retouche presque jamais. Le
+     laisser modifiable en permanence, c'est prendre le risque de l'effacer
+     d'un coup de clavier malheureux — et de casser les statistiques sans
+     comprendre pourquoi. On passe donc explicitement en mode edition. */
+  function champVerrouille({ valeur, placeholder, aide, surValidation }) {
+    const bloc = h('div.champ-verrou');
+    let enEdition = false;
+
+    function dessiner() {
+      vider(bloc);
+      if (!enEdition) {
+        bloc.append(
+          h('span.champ-verrou-val', { class: valeur ? 'champ-verrou-val' : 'champ-verrou-val vide' },
+            valeur || 'Non renseigne'),
+          h('button.bt.bt-plein.bt-mini', { onclick: () => { enEdition = true; dessiner(); } },
+            valeur ? 'Modifier' : 'Renseigner'));
+        return;
+      }
+
+      const saisie = h('input', { type: 'text', placeholder, value: valeur || '' });
+      const valider = async () => {
+        const nouvelle = saisie.value.trim() || null;
+        try { await surValidation(nouvelle); }
+        catch { souffler('Enregistrement impossible.', 'alerte'); return; }
+        valeur = nouvelle;
+        enEdition = false;
+        dessiner();
+        souffler('Enregistre.', 'bien');
+      };
+      saisie.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); valider(); }
+        if (e.key === 'Escape') { enEdition = false; dessiner(); }
+      });
+
+      bloc.append(saisie,
+        h('button.bt.bt-vif.bt-mini', { onclick: valider }, 'Valider'),
+        h('button.bt.bt-nu.bt-mini', { onclick: () => { enEdition = false; dessiner(); } }, 'Annuler'));
+      saisie.focus();
+      saisie.select();
+    }
+
+    dessiner();
+    return h('div', aide ? h('p.aide', aide) : null, bloc);
+  }
+
   function carteCompte(client, profil, { titre, aide, champ, placeholder, accorde }) {
-    const saisie = h('input', { type: 'text', placeholder, value: profil[champ] || '' });
-    const sauverChamp = differer(async () => {
-      try { await D.majProfil(client.id, { [champ]: saisie.value || null }); profil[champ] = saisie.value || null; }
-      catch { souffler('Enregistrement impossible.', 'alerte'); }
+    const saisie = champVerrouille({
+      valeur: profil[champ], placeholder,
+      surValidation: async (v) => {
+        await D.majProfil(client.id, { [champ]: v });
+        profil[champ] = v;
+      },
     });
-    saisie.addEventListener('input', sauverChamp);
 
     const etatTexte = h('span');
     function peindre(v) {
@@ -167,6 +200,7 @@ export async function rendre(page, etat) {
     return h('div.champ-inline',
       h('label', titre, etatTexte),
       h('p.aide', aide),
-      h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' } }, saisie, bouton));
+      h('div', { style: { marginTop: '10px' } }, saisie),
+      h('div', { style: { marginTop: '10px' } }, bouton));
   }
 }

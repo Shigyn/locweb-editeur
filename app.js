@@ -109,6 +109,7 @@ async function apresConnexion() {
 
   ecranConnexion.style.display = 'none';
   espace.style.display = 'block';
+  installerBoutonMaj();
   const nom = client.nom_site || 'votre site';
   $('#nom-site').textContent = nom;
   $('#entete-nom').textContent = nom;
@@ -139,6 +140,16 @@ async function apresConnexion() {
     await router();
     rafraichirPastille();
   }
+
+  // Les modules transverses se greffent sur l'entete — laquelle est
+  // masquee pendant l'onboarding. Rien a installer tant qu'on y est.
+  if (espace.classList.contains('mode-onboarding')) return;
+  const [{ installerCloche }, { installerPalette }] = await Promise.all([
+    import('./notifications.js'),
+    import('./palette.js'),
+  ]);
+  installerCloche(etat);
+  installerPalette(etat);
 }
 
 /* ---------- onboarding en 5 etapes, a la premiere connexion ---------- */
@@ -171,7 +182,10 @@ const VUES = {
   'mon-site':  () => import('./vue-monsite.js'),
   acquisition: () => import('./vue-acquisition.js'),
   activite:    () => import('./vue-activite.js'),
+  rapports:    () => import('./vue-rapports.js'),
+  'mes-infos': () => import('./vue-mes-infos.js'),
   parametrage: () => import('./vue-parametrage.js'),
+  parrainage:  () => import('./vue-parrainage.js'),
   aide:        () => import('./vue-aide.js'),
 };
 
@@ -188,7 +202,7 @@ export async function router() {
   const mien = ++jeton;
   squelette();
 
-  document.querySelectorAll('.rail-nav a[data-route]').forEach((a) => {
+  document.querySelectorAll('a[data-route]').forEach((a) => {
     a.setAttribute('aria-current', a.dataset.route === nom ? 'page' : 'false');
   });
 
@@ -222,3 +236,74 @@ export async function rafraichirPastille() {
 /* ---------- reprise de session ---------- */
 
 D.session().then((s) => { if (s) apresConnexion(); else ecranConnexion.style.display = 'grid'; });
+
+/* ---------- bouton "Nouveautes" ----------
+
+   Un point rouge tant que la derniere version n'a pas ete ouverte. La
+   version vue est gardee dans le navigateur : elle n'a de sens que pour
+   cet appareil, et la stocker en base ferait une requete de plus au
+   demarrage pour une information sans enjeu. */
+
+import { VERSIONS, VERSION_ACTUELLE } from './versions.js';
+
+const CLE_VUE = 'locweb-version-vue';
+
+function versionVue() {
+  try { return localStorage.getItem(CLE_VUE); } catch { return VERSION_ACTUELLE; }
+}
+
+function marquerVue() {
+  try { localStorage.setItem(CLE_VUE, VERSION_ACTUELLE); } catch { /* navigation privee */ }
+}
+
+function installerBoutonMaj() {
+  if (document.querySelector('.maj-bouton')) return;
+  const aDuNeuf = versionVue() !== VERSION_ACTUELLE;
+
+  const pastille = h('span.maj-pastille', { hidden: !aDuNeuf });
+  const bouton = h('button.maj-bouton', {
+    title: 'Nouveautes',
+    'aria-label': 'Voir les nouveautes',
+    onclick: () => { ouvrirNouveautes(); },
+  },
+    h('svg', {
+      viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+      'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      html: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+    }),
+    pastille);
+
+  document.body.append(bouton);
+
+  function ouvrirNouveautes() {
+    marquerVue();
+    pastille.hidden = true;
+
+    const liste = h('div.maj-liste');
+    VERSIONS.forEach((v, i) => {
+      liste.append(h('div.maj-version',
+        h('div.maj-entete',
+          h('span.maj-num', `Version ${v.version}`),
+          i === 0 && aDuNeuf ? h('span.etat', { 'data-ton': 'bien' }, 'Nouveau') : null,
+          h('span.maj-date', new Date(v.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }))),
+        h('p.maj-titre', v.titre),
+        h('ul.maj-points', ...v.points.map((p) => h('li', p)))));
+    });
+
+    const fond = h('div.fond-modale', { onclick: (e) => { if (e.target === fond) fond.remove(); } },
+      h('div.modale.modale-large', { role: 'dialog', 'aria-modal': 'true' },
+        h('p.modale-titre', 'Nouveautes de votre espace'),
+        h('p.modale-texte', "Ce qui a change recemment, du plus recent au plus ancien."),
+        liste,
+        h('div.modale-pied', h('button.bt.bt-vif', { onclick: () => fond.remove() }, 'Compris'))));
+
+    const surTouche = (e) => {
+      if (e.key !== 'Escape') return;
+      fond.remove();
+      document.removeEventListener('keydown', surTouche);
+    };
+    document.addEventListener('keydown', surTouche);
+    document.body.append(fond);
+  }
+}
+

@@ -104,6 +104,8 @@ export async function rendre(page, etat) {
 
     /* ---------- cartes KPI ---------- */
 
+    zone.append(h('p.titre-section', 'Performance de votre site'));
+
     const grille = h('div.grille-kpi');
     METRIQUES.forEach((m, i) => {
       const brut = totaux[m.cle] ?? 0;
@@ -114,9 +116,6 @@ export async function rendre(page, etat) {
       const etiquette = avecAide(
         h('p.kpi-etiq', m.libelle),
         EXPLICATIONS[m.cle]);
-      // Les deux dernieres colonnes ancrent leur bulle a droite pour ne
-      // pas deborder de l'ecran.
-      if (i >= 2) etiquette.classList.add('aide-droite');
 
       grille.append(h('div.kpi',
         h('div.kpi-haut',
@@ -180,6 +179,126 @@ export async function rendre(page, etat) {
   }
 
   await charger(PERIODES.find((p) => p.cle === periodeActive));
+
+  // La fiche Google se charge a part : elle a sa propre connexion, sa
+  // propre API, et peut echouer sans empecher le reste d'exister.
+  if (etat.profil?.acces_google_business) {
+    const zoneGbp = h('div');
+    page.append(zoneGbp);
+    chargerGbp(zoneGbp, periodeActive);
+  }
+}
+
+const ICONES_GBP = {
+  vues:        '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  appels:      '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
+  itineraires: '<path d="m3 11 19-9-9 19-2-8-8-2Z"/>',
+  clics_site:  '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+};
+
+const LIBELLES_GBP = {
+  vues: 'Vues de la fiche',
+  appels: 'Appels recus',
+  itineraires: 'Itineraires demandes',
+  clics_site: 'Clics vers le site',
+};
+
+const AIDE_GBP = {
+  vues: "Nombre de fois ou votre fiche est apparue dans Google ou sur Maps.",
+  appels: "Personnes ayant appuye sur le bouton Appeler de votre fiche Google. Ce sont des appels que vous devez a votre presence en ligne.",
+  itineraires: "Personnes ayant demande l'itineraire vers votre adresse.",
+  clics_site: "Personnes venues sur votre site depuis votre fiche Google.",
+};
+
+async function chargerGbp(zone, periode) {
+  vider(zone);
+  zone.append(h('p.titre-section', 'Performance de votre fiche Google'));
+  zone.append(h('div.grille-kpi', ...[0, 1, 2, 3].map(() =>
+    h('div.squelette', { style: { height: '132px', borderRadius: '16px' } }))));
+
+  let r;
+  try {
+    const { data: { session } } = await D.sb.auth.getSession();
+    const reponse = await fetch(`${D.EDGE_FUNCTIONS_URL}/gbp-donnees`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ periode }),
+    });
+    r = await reponse.json();
+    if (!reponse.ok) throw new Error(r.error || 'refus');
+  } catch (e) {
+    vider(zone);
+    zone.append(h('p.titre-section', 'Performance de votre fiche Google'));
+    zone.append(carteVide(
+      String(e.message).includes('Identifiant')
+        ? "Il manque l'identifiant de votre fiche Google"
+        : 'Statistiques de la fiche indisponibles',
+      String(e.message).includes('Identifiant')
+        ? "Renseignez-le dans Parametrage pour voir les vues, les appels et les avis de votre fiche."
+        : "Cette section reapparaitra des que Google reprendra la main.",
+      String(e.message).includes('Identifiant')
+        ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au parametrage') : null));
+    return;
+  }
+
+  const t = r.totaux || {};
+  vider(zone);
+  zone.append(h('p.titre-section', 'Performance de votre fiche Google'));
+
+  const grille = h('div.grille-kpi');
+  ['vues', 'appels', 'itineraires', 'clics_site'].forEach((cle, i) => {
+    const etiquette = avecAide(h('p.kpi-etiq', LIBELLES_GBP[cle]), AIDE_GBP[cle]);
+    grille.append(h('div.kpi',
+      h('div.kpi-haut', h('span.kpi-icone', h('svg', {
+        viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+        'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        html: ICONES_GBP[cle],
+      }))),
+      h('p.kpi-val', nombre(t[cle] || 0)),
+      etiquette));
+  });
+  zone.append(grille);
+
+  /* ---------- avis ---------- */
+
+  if (r.avis) {
+    const a = r.avis;
+    const corps = h('div.section-corps', { style: { paddingTop: '16px' } });
+
+    if (a.note_moyenne) {
+      corps.append(h('div.note-globale',
+        h('p.note-chiffre', Number(a.note_moyenne).toFixed(1)),
+        h('div',
+          h('p.note-etoiles', etoiles(a.note_moyenne)),
+          h('p.note-compte', `${nombre(a.nombre)} avis au total`))));
+    }
+
+    if (a.derniers?.length) {
+      const liste = h('div.avis-liste');
+      a.derniers.forEach((av) => {
+        liste.append(h('div.avis',
+          h('div.avis-tete',
+            h('span.avis-auteur', av.auteur),
+            h('span.avis-note', etoiles(av.note)),
+            av.repondu
+              ? h('span.etat', { 'data-ton': 'bien' }, 'Repondu')
+              : h('span.etat', { 'data-ton': 'veille' }, 'Sans reponse')),
+          av.texte ? h('p.avis-texte', av.texte) : null));
+      });
+      corps.append(liste);
+    } else {
+      corps.append(h('p', { style: { color: 'var(--sourdine)', fontSize: '.9rem' } },
+        "Aucun avis pour le moment."));
+    }
+
+    zone.append(h('div.section',
+      h('div.section-tete', h('h2', 'Vos avis Google')), corps));
+  }
+}
+
+function etoiles(note) {
+  const n = Math.round(Number(note) || 0);
+  return '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n));
 }
 
 function carteRepartition(titre, cleAide, entrees) {

@@ -129,10 +129,11 @@ function sectionGroupe(client, groupe, lignesTexte, lignesImage, enAttente, majB
   const total = lignesTexte.length + lignesImage.length;
   const modifies = [...lignesTexte, ...lignesImage].filter((l) => l.valeur_brouillon !== null).length;
 
-  // Depliable : la premiere section s'ouvre, les suivantes restent
-  // fermees. Tout ouvrir d'un coup noierait le client sous cinquante
-  // champs des l'arrivee sur la page.
-  const bloc = h('details.section.section-pliable', { open: groupe === 'Horaires' });
+  // Tout ferme au depart : la page se lit alors comme un sommaire, une
+  // ligne par section. On n'ouvre que ce qu'on vient modifier.
+  // Exception : une section qui contient des modifications non publiees
+  // s'ouvre d'office, sinon on risque de publier sans avoir relu.
+  const bloc = h('details.section.section-pliable', { open: modifies > 0 });
   bloc.append(
     h('summary.section-resume',
       h('span.section-icone', h('svg', {

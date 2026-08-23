@@ -640,6 +640,25 @@ button.entete-avatar{ cursor:pointer; border:0; }
 
 .grille-duo{ display:grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
 
+/* ---------- avis Google ---------- */
+
+.note-globale{
+  display:flex; align-items:center; gap:16px; padding-bottom:16px;
+  border-bottom:1px solid var(--trait); margin-bottom:4px;
+}
+.note-chiffre{ font-size:2.4rem; font-weight:700; letter-spacing:-.04em; line-height:1; }
+.note-etoiles{ color: var(--ambre); font-size:1.05rem; letter-spacing:.08em; }
+.note-compte{ font-size:.84rem; color: var(--sourdine); margin-top:3px; }
+
+.avis-liste{ display:grid; gap:2px; }
+.avis{ padding:14px 0; border-bottom:1px solid var(--trait); }
+.avis:last-child{ border-bottom:0; }
+.avis-tete{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.avis-auteur{ font-size:.9rem; font-weight:650; }
+.avis-note{ color: var(--ambre); font-size:.86rem; letter-spacing:.06em; }
+.avis-tete .etat{ margin-left:auto; }
+.avis-texte{ font-size:.88rem; color: var(--encre-douce); margin-top:6px; line-height:1.55; }
+
 /* ---------- mon editeur : sections depliables ---------- */
 
 .section-pliable{ overflow:hidden; }

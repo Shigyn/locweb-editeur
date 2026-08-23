@@ -34,7 +34,7 @@ export async function rendre(page, etat, { charger }) {
   ]);
 
   vider(page);
-  page.append(h('h1', 'Mon editeur'));
+  page.append(h('h1', 'Mon éditeur'));
 
   const textes = contenu.filter((l) => l.type === 'texte');
   const images = contenu.filter((l) => l.type === 'image');
@@ -56,15 +56,15 @@ export async function rendre(page, etat, { charger }) {
     const n = enAttente.size;
     vider(texteBarre);
     texteBarre.append(n
-      ? h('span', h('b', String(n)), ` modification${n > 1 ? 's' : ''} non publiee${n > 1 ? 's' : ''}`)
-      : h('span', { style: { color: 'var(--sourdine)' } }, 'Votre site est a jour.'));
+      ? h('span', h('b', String(n)), ` modification${n > 1 ? 's' : ''} non publiée${n > 1 ? 's' : ''}`)
+      : h('span', { style: { color: 'var(--sourdine)' } }, 'Votre site est à jour.'));
     btPublier.disabled = n === 0;
   }
 
   async function publier() {
     const nb = enAttente.size;
     if (!await certain(
-      `${nb} modification${nb > 1 ? 's' : ''} ${nb > 1 ? 'seront publiees' : 'sera publiee'} sur votre site, visible${nb > 1 ? 's' : ''} immediatement par vos visiteurs.`,
+      `${nb} modification${nb > 1 ? 's' : ''} ${nb > 1 ? 'seront publiees' : 'sera publiee'} sur votre site, visible${nb > 1 ? 's' : ''} immédiatement par vos visiteurs.`,
       { titre: 'Publier vos modifications ?', action: 'Publier' })) return;
     btPublier.disabled = true;
     btPublier.textContent = 'Publication...';
@@ -77,10 +77,10 @@ export async function rendre(page, etat, { charger }) {
       ligne.valeur = ligne.valeur_brouillon; ligne.valeur_brouillon = null;
       enAttente.delete(id);
     }
-    if (echec) souffler("Certaines modifications n'ont pas pu etre publiees.", 'alerte');
+    if (echec) souffler("Certaines modifications n'ont pas pu être publiées.", 'alerte');
     else {
       document.querySelectorAll('.champ-inline.modifie, .ligne-horaire.modifie').forEach((el) => el.classList.remove('modifie'));
-      souffler('Votre site est a jour.', 'bien');
+      souffler('Votre site est à jour.', 'bien');
     }
     btPublier.textContent = 'Publier mes modifications';
     majBarre();
@@ -92,7 +92,7 @@ export async function rendre(page, etat, { charger }) {
     page.append(h('div.section',
       h('div.section-tete', h('h2', 'Contenu de votre site')),
       h('div.section-corps', { style: { paddingTop: '14px' } },
-        h('p', { style: { color: 'var(--sourdine)' } }, "L'ensemble de votre site est gere par LocWeb. Contactez-nous pour toute modification."))));
+        h('p', { style: { color: 'var(--sourdine)' } }, "L'ensemble de votre site est géré par LocWeb. Contactez-nous pour toute modification."))));
   } else {
     // GROUP_ORDER d'abord (l'ordre d'affichage du site), puis les
     // groupes hors liste pour ne rien perdre en route.
@@ -109,8 +109,8 @@ export async function rendre(page, etat, { charger }) {
 
   if (groupesVerrouilles.length && client.acces_client !== 'aucun') {
     page.append(h('div.hors-portee',
-      h('strong', 'Gere par LocWeb'),
-      `Le reste de votre site (${groupesVerrouilles.join(', ').toLowerCase()}) est mis a jour par notre equipe — dites-nous ce qu'il faut changer et on s'en occupe.`));
+      h('strong', 'Gère par LocWeb'),
+      `Le reste de votre site (${groupesVerrouilles.join(', ').toLowerCase()}) est mis à jour par notre équipe — dites-nous ce qu'il faut changer et on s'en occupe.`));
   }
 
   if (historique.length) page.append(carteHistorique(historique));
@@ -131,7 +131,7 @@ const SECTIONS = {
   },
   'À propos': {
     icone: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
-    texte: 'Votre presentation',
+    texte: 'Votre présentation',
   },
   Engagement: {
     icone: '<path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/>',
@@ -143,7 +143,7 @@ const SECTIONS = {
   },
   'Preuve sociale': {
     icone: '<path d="M8 10h8M8 14h5"/><path d="M4 5h16v12H8l-4 4V5Z"/>',
-    texte: 'Avis et chiffres cles',
+    texte: 'Avis et chiffres clés',
   },
   Offre: {
     icone: '<path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7"/><path d="M2 7h20v5H2z"/><path d="M12 21V7"/>',
@@ -155,11 +155,11 @@ const SECTIONS = {
   },
   Contact: {
     icone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
-    texte: 'Telephone, e-mail, adresse',
+    texte: 'Téléphone, e-mail, adresse',
   },
   Footer: {
     icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h18"/>',
-    texte: 'Bas de page, mentions legales',
+    texte: 'Bas de page, mentions légales',
   },
   Autres: {
     icone: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>',
@@ -225,7 +225,7 @@ function champHoraire(ligne, enAttente, majBarre) {
   const jourCle = Object.keys(JOURS).find((j) => ligne.cle_bloc.includes(j));
   const enLigne = ligne.valeur ?? '';
   const courant = ligne.valeur_brouillon ?? enLigne;
-  const saisie = h('input', { type: 'text', placeholder: 'ex : 9h - 12h, 14h - 19h ou Ferme', value: courant });
+  const saisie = h('input', { type: 'text', placeholder: 'ex : 9h - 12h, 14h - 19h ou Fermé', value: courant });
   const bloc = h('div.ligne-horaire', h('span.jour', JOURS[jourCle] || prettifyKey(ligne.cle_bloc)), saisie);
   if (ligne.valeur_brouillon !== null) bloc.classList.add('modifie');
 
@@ -262,7 +262,7 @@ function champImage(client, ligne, enAttente, majBarre) {
     preview.src = url;
     enAttente.add(ligne.id);
     majBarre();
-    souffler('Photo prete a etre publiee.', 'bien');
+    souffler('Photo prête à être publiée.', 'bien');
   });
   return bloc;
 }
@@ -285,7 +285,7 @@ function sectionProduits(client, produits) {
 
   corps.append(h('button.bt.bt-plein', { onclick: async () => {
     let p;
-    try { p = await D.creerProduit(client.id); } catch { souffler('Impossible de creer le produit.', 'alerte'); return; }
+    try { p = await D.creerProduit(client.id); } catch { souffler('Impossible de créer le produit.', 'alerte'); return; }
     produits.push(p);
     dessiner();
     await D.syncProduitStripe(p.id);
@@ -330,13 +330,13 @@ function carteProduit(client, p, surSuppression) {
     h('div.produit-grille',
       h('label.champ', h('span', 'Nom'), nom),
       h('label.champ', h('span', 'Prix (EUR)'), prix),
-      h('label.champ.produit-desc', h('span', 'Categorie'), categorie),
+      h('label.champ.produit-desc', h('span', 'Catégorie'), categorie),
       h('label.champ.produit-desc', h('span', 'Description'), desc)),
     h('div.produit-bas',
-      h('label.produit-dispo', dispo, 'Disponible a la vente'),
+      h('label.produit-dispo', dispo, 'Disponible à la vente'),
       h('button.bt.bt-nu', { onclick: async () => {
         if (!await certain(
-          `"${p.nom || 'Ce produit'}" sera definitivement retire de votre site. Cette action est irreversible.`,
+          `"${p.nom || 'Ce produit'}" sera définitivement retiré de votre site. Cette action est irréversible.`,
           { titre: 'Supprimer ce produit ?', action: 'Supprimer', danger: true })) return;
         await D.supprimerProduit(p.id);
         surSuppression();

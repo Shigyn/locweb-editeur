@@ -25,7 +25,7 @@ export async function rendre(page, etat, { charger } = {}) {
 
   vider(page);
   page.append(h('h1', 'Rapports'),
-    h('p.sous-titre', "Le bilan de votre presence en ligne, pret a lire."));
+    h('p.sous-titre', "Le bilan de votre présence en ligne, prêt à lire."));
 
   let periode = 'mois';
 
@@ -94,21 +94,21 @@ function synthese(def, stats, dansPeriode, avant, profil) {
   let phrase;
   let ton = 'neutre';
   if (!stats && !nbDemandes) {
-    phrase = "Pas encore assez de donnees pour tirer un bilan. Reliez Google dans Parametrage pour suivre vos visites.";
+    phrase = "Pas encore assez de données pour tirer un bilan. Reliez Google dans Paramétrage pour suivre vos visites.";
   } else if (!nbDemandes) {
-    phrase = `Aucune demande recue sur cette periode. Vos visiteurs viennent, mais ne passent pas a l'acte : verifiez que votre telephone est bien visible sur le site.`;
+    phrase = `Aucune demande reçue sur cette période. Vos visiteurs viennent, mais ne passent pas à l'acte : vérifiez que votre téléphone est bien visible sur le site.`;
     ton = 'veille';
   } else if (ecart === null) {
-    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} recue${nbDemandes > 1 ? 's' : ''}. C'est votre premiere periode mesuree : elle servira de reference pour la suite.`;
+    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} reçue${nbDemandes > 1 ? 's' : ''}. C'est votre premiere periode mesuree : elle servira de reference pour la suite.`;
     ton = 'bien';
   } else if (ecart >= 10) {
-    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} recue${nbDemandes > 1 ? 's' : ''}, soit ${ecart}% de plus que la periode precedente. Ce qui est en place fonctionne : ne changez rien pour l'instant.`;
+    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} reçue${nbDemandes > 1 ? 's' : ''}, soit ${ecart}% de plus que la période précédente. Ce qui est en place fonctionne : ne changez rien pour l'instant.`;
     ton = 'bien';
   } else if (ecart <= -10) {
-    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} recue${nbDemandes > 1 ? 's' : ''}, soit ${Math.abs(ecart)}% de moins que la periode precedente. Une baisse peut etre saisonniere — regardez la courbe plus bas avant de conclure.`;
+    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} reçue${nbDemandes > 1 ? 's' : ''}, soit ${Math.abs(ecart)}% de moins que la période précédente. Une baisse peut être saisonnière — regardez la courbe plus bas avant de conclure.`;
     ton = 'alerte';
   } else {
-    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} recue${nbDemandes > 1 ? 's' : ''}, stable par rapport a la periode precedente.`;
+    phrase = `${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} reçue${nbDemandes > 1 ? 's' : ''}, stable par rapport a la periode precedente.`;
     ton = 'bien';
   }
 
@@ -118,7 +118,7 @@ function synthese(def, stats, dansPeriode, avant, profil) {
       h('p.rapport-phrase', phrase),
       !profil?.acces_ga4
         ? h('p.aide', { style: { marginTop: '10px' } },
-            "Vos statistiques de visite ne sont pas connectees : ce bilan ne repose que sur vos demandes recues.")
+            "Vos statistiques de visite ne sont pas connectées : ce bilan ne repose que sur vos demandes reçues.")
         : null));
 }
 
@@ -138,9 +138,9 @@ function mesure(valeur, etiquette, ecart, aide) {
 function chiffres(def, stats, dansPeriode, avant) {
   const grille = h('div.synthese');
 
-  grille.append(mesure(nombre(dansPeriode.length), 'Demandes recues',
+  grille.append(mesure(nombre(dansPeriode.length), 'Demandes reçues',
     evolution(dansPeriode.length, avant.length),
-    'Le nombre de formulaires remplis sur votre site pendant la periode.'));
+    'Le nombre de formulaires remplis sur votre site pendant la période.'));
 
   if (stats) {
     const t = stats.totaux || {};
@@ -154,7 +154,7 @@ function chiffres(def, stats, dansPeriode, avant) {
       ? Math.round((dansPeriode.length / t.visiteurs) * 1000) / 10
       : null;
     grille.append(mesure(taux === null ? '—' : `${taux}%`, 'Taux de contact', null,
-      'La part de vos visiteurs qui vous ont ecrit. Entre 1 % et 5 %, vous etes dans la norme des sites d\'artisans.'));
+      'La part de vos visiteurs qui vous ont écrit. Entre 1 % et 5 %, vous êtes dans la norme des sites d\'artisans.'));
   }
 
   return h('div.section',
@@ -164,7 +164,7 @@ function chiffres(def, stats, dansPeriode, avant) {
 
 function courbe(stats) {
   return h('div.section',
-    h('div.section-tete', h('h2', 'Evolution des visites')),
+    h('div.section-tete', h('h2', 'Évolution des visites')),
     h('div.section-corps', { style: { paddingTop: '16px' } },
       grapheComplet(stats.series.map((p) => p.visiteurs), stats.series.map((p) => p.date))));
 }
@@ -177,27 +177,27 @@ function actions(stats, dansPeriode, profil) {
   const conseils = [];
 
   if (!profil?.acces_ga4) {
-    conseils.push(['Connectez Google Analytics', 'Sans ca, impossible de savoir combien de personnes visitent votre site.', '#/parametrage']);
+    conseils.push(['Connectez Google Analytics', 'Sans ça, impossible de savoir combien de personnes visitent votre site.', '#/parametrage']);
   }
   if (!profil?.acces_google_business) {
-    conseils.push(['Connectez votre fiche Google Business', 'La majorite des appels d\'artisans viennent de la fiche, pas du site.', '#/parametrage']);
+    conseils.push(['Connectez votre fiche Google Business', 'La majorité des appels d\'artisans viennent de la fiche, pas du site.', '#/parametrage']);
   }
   if (stats && (stats.totaux?.visiteurs ?? 0) > 50 && dansPeriode.length === 0) {
-    conseils.push(['Rendez votre telephone plus visible', 'Vous avez des visiteurs mais aucune demande : le bouton d\'appel est peut-etre trop bas dans la page.', '#/mon-site']);
+    conseils.push(['Rendez votre téléphone plus visible', 'Vous avez des visiteurs mais aucune demande : le bouton d\'appel est peut-être trop bas dans la page.', '#/mon-site']);
   }
   if (dansPeriode.some((d) => (d.statut || 'nouvelle') === 'nouvelle')) {
     const n = dansPeriode.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
-    conseils.push([`${n} demande${n > 1 ? 's' : ''} sans reponse`, 'Un devis rappele dans l\'heure a beaucoup plus de chances d\'aboutir.', '#/activite']);
+    conseils.push([`${n} demande${n > 1 ? 's' : ''} sans réponse`, 'Un devis rappelé dans l\'heure a beaucoup plus de chances d\'aboutir.', '#/activite']);
   }
   if (stats && (stats.totaux?.visiteurs ?? 0) < 30) {
-    conseils.push(['Votre site est peu visite', 'Une campagne locale ciblee sur votre zone peut amorcer le trafic.', '#/acquisition']);
+    conseils.push(['Votre site est peu visité', 'Une campagne locale ciblée sur votre zone peut amorcer le trafic.', '#/acquisition']);
   }
 
   if (!conseils.length) {
     return h('div.section',
-      h('div.section-tete', h('h2', 'A faire')),
+      h('div.section-tete', h('h2', 'À faire')),
       h('div.section-corps', { style: { paddingTop: '14px' } },
-        h('p.aide', 'Rien de particulier a corriger sur cette periode.')));
+        h('p.aide', 'Rien de particulier à corriger sur cette période.')));
   }
 
   const liste = h('div.prog-liste');
@@ -209,7 +209,7 @@ function actions(stats, dansPeriode, profil) {
   });
 
   return h('div.section',
-    h('div.section-tete', h('h2', 'A faire'), h('p', 'Deduit de vos chiffres, pas de conseils generiques.')),
+    h('div.section-tete', h('h2', 'À faire'), h('p', 'Déduit de vos chiffres, pas de conseils génériques.')),
     liste);
 }
 
@@ -224,13 +224,13 @@ function telechargement(def, stats, dansPeriode) {
             exporterCsv(`rapport-${def.cle}`,
               ['Indicateur', 'Valeur'],
               [
-                ['Periode', def.libelle],
-                ['Demandes recues', dansPeriode.length],
+                ['Période', def.libelle],
+                ['Demandes reçues', dansPeriode.length],
                 ['Visiteurs', stats?.totaux?.visiteurs ?? 'non connecte'],
                 ['Pages vues', stats?.totaux?.pages_vues ?? 'non connecte'],
                 ["Taux d'engagement", stats?.totaux?.taux_engagement ?? 'non connecte'],
               ]);
           },
-        }, 'Telecharger en tableur'),
+        }, 'Télécharger en tableur'),
         h('button.bt.bt-nu', { onclick: () => window.print() }, 'Imprimer ou enregistrer en PDF'))));
 }

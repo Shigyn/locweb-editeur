@@ -23,18 +23,18 @@ export async function rendre(page, etat) {
   let profil = etat.profil || {};
 
   vider(page);
-  page.append(h('h1', 'Parametrage'),
-    h('p.sous-titre', 'Les comptes techniques relies a votre espace.'));
+  page.append(h('h1', 'Paramétrage'),
+    h('p.sous-titre', 'Les comptes techniques reliés à votre espace.'));
 
   /* ---------- retour d'une tentative de connexion Google ---------- */
 
   const statutRetour = new URLSearchParams(location.hash.split('?')[1] || '').get('google');
   if (statutRetour) {
     const messages = {
-      connecte: ['Compte Google connecte.', 'bien'],
-      refuse: ["Connexion annulee — vous n'avez pas termine le consentement Google.", 'veille'],
-      session_expiree: ['Votre session a expire, reconnectez-vous puis reessayez.', 'alerte'],
-      erreur: ['La connexion a echoue. Reessayez, ou contactez-nous si ca persiste.', 'alerte'],
+      connecte: ['Compte Google connecté.', 'bien'],
+      refuse: ["Connexion annulée — vous n'avez pas terminé le consentement Google.", 'veille'],
+      session_expiree: ['Votre session a expiré, reconnectez-vous puis réessayez.', 'alerte'],
+      erreur: ['La connexion a échoué. Réessayez, ou contactez-nous si ça persiste.', 'alerte'],
     };
     const [texte, ton] = messages[statutRetour] || messages.erreur;
     setTimeout(() => souffler(texte, ton), 200);
@@ -47,18 +47,18 @@ export async function rendre(page, etat) {
   corpsComptes.append(carteGoogle(client, profil));
   corpsComptes.append(
     carteCompte(client, profil, {
-      titre: 'Google Ads (publicite)',
-      aide: 'Donnez-nous votre identifiant client (10 chiffres, en haut a droite de votre compte Google Ads). On vous envoie une demande de liaison a accepter en un clic.',
+      titre: 'Google Ads (publicité)',
+      aide: 'Donnez-nous votre identifiant client (10 chiffres, en haut à droite de votre compte Google Ads). On vous envoie une demande de liaison à accepter en un clic.',
       champ: 'google_ads_id', placeholder: 'ex : 123-456-7890', accorde: 'acces_google_ads',
     }),
     carteCompte(client, profil, {
       titre: 'Pixel Meta (Facebook/Instagram Ads)',
-      aide: "Si vous faites de la publicite sur Facebook ou Instagram, collez ici l'identifiant de votre pixel (Gestionnaire d'evenements Meta).",
+      aide: "Si vous faites de la publicité sur Facebook ou Instagram, collez ici l'identifiant de votre pixel (Gestionnaire d'événements Meta).",
       champ: 'pixel_meta_id', placeholder: 'ex : 123456789012345', accorde: 'acces_pixel_meta',
     }),
     carteCompte(client, profil, {
       titre: 'Pixel Google Ads',
-      aide: "L'identifiant de conversion Google Ads (visible dans Outils > Conversions), si vous en avez deja un.",
+      aide: "L'identifiant de conversion Google Ads (visible dans Outils > Conversions), si vous en avez déjà un.",
       champ: 'pixel_google_id', placeholder: 'ex : AW-123456789', accorde: 'acces_pixel_google',
     }),
   );
@@ -77,7 +77,7 @@ export async function rendre(page, etat) {
     const bouton = h('button.bt.bt-vif', { onclick: async (e) => {
       e.target.disabled = true;
       const { data: { session } } = await D.sb.auth.getSession();
-      if (!session) { souffler('Session expiree, reconnectez-vous.', 'alerte'); e.target.disabled = false; return; }
+      if (!session) { souffler('Session expirée, reconnectez-vous.', 'alerte'); e.target.disabled = false; return; }
       const params = new URLSearchParams({
         client_id: GOOGLE_OAUTH_CLIENT_ID,
         redirect_uri: `${D.EDGE_FUNCTIONS_URL}/oauth-google-echange`,
@@ -107,10 +107,10 @@ export async function rendre(page, etat) {
 
     return h('div.champ-inline',
       h('label', 'Google Business + Analytics'),
-      h('p.aide', "Un seul clic connecte votre fiche Google Business et vos statistiques GA4 — LocWeb pourra afficher vos vraies performances ici. Aucun mot de passe ne nous est jamais communique."),
+      h('p.aide', "Un seul clic connecte votre fiche Google Business et vos statistiques GA4 — LocWeb pourra afficher vos vraies performances ici. Aucun mot de passe ne nous est jamais communiqué."),
       lignesEtat,
       h('div', { style: { marginTop: '12px' } }, bouton),
-      h('p.aide', { style: { marginTop: '14px' } }, "ID de propriete GA4 (different du code G-XXXXX) — dans GA4 : Admin puis Parametres de la propriete."),
+      h('p.aide', { style: { marginTop: '14px' } }, "ID de propriété GA4 (différent du code G-XXXXX) — dans GA4 : Admin puis Paramètres de la propriété."),
       proprieteGa4,
       h('p.aide', { style: { marginTop: '14px' } }, "Identifiant de votre fiche Google Business, pour afficher vues, appels et avis."),
       ficheGbp);
@@ -119,8 +119,8 @@ export async function rendre(page, etat) {
   function ligneEtat(libelle, valeur) {
     return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '.86rem' } },
       valeur
-        ? h('span', { style: { color: 'var(--vert)', fontWeight: '650' } }, `✓ ${libelle} — connecte ${depuis(valeur)}`)
-        : h('span', { style: { color: 'var(--sourdine)' } }, `${libelle} — pas encore connecte`));
+        ? h('span', { style: { color: 'var(--vert)', fontWeight: '650' } }, `✓ ${libelle} — connecté ${depuis(valeur)}`)
+        : h('span', { style: { color: 'var(--sourdine)' } }, `${libelle} — pas encore connecté`));
   }
 
   /* Champ verrouille : un identifiant technique (cle GA4, ID de fiche
@@ -137,7 +137,7 @@ export async function rendre(page, etat) {
       if (!enEdition) {
         bloc.append(
           h('span.champ-verrou-val', { class: valeur ? 'champ-verrou-val' : 'champ-verrou-val vide' },
-            valeur || 'Non renseigne'),
+            valeur || 'Non renseigné'),
           h('button.bt.bt-plein.bt-mini', { onclick: () => { enEdition = true; dessiner(); } },
             valeur ? 'Modifier' : 'Renseigner'));
         return;
@@ -182,7 +182,7 @@ export async function rendre(page, etat) {
     function peindre(v) {
       vider(etatTexte);
       etatTexte.append(v
-        ? h('span', { style: { color: 'var(--vert)', fontWeight: '650', fontSize: '.86rem' } }, `✓ Connecte (${depuis(v)})`)
+        ? h('span', { style: { color: 'var(--vert)', fontWeight: '650', fontSize: '.86rem' } }, `✓ Connecté (${depuis(v)})`)
         : h('span', { style: { color: 'var(--sourdine)', fontSize: '.86rem' } }, 'Pas encore fait'));
     }
     peindre(profil[accorde]);
@@ -194,11 +194,11 @@ export async function rendre(page, etat) {
       profil[accorde] = nouvelle;
       peindre(nouvelle);
       bouton.textContent = nouvelle ? 'Annuler' : "C'est fait";
-      souffler(nouvelle ? 'Merci !' : 'Marque comme non fait.', nouvelle ? 'bien' : 'veille');
+      souffler(nouvelle ? 'Merci !' : 'Marqué comme non fait.', nouvelle ? 'bien' : 'veille');
     } }, profil[accorde] ? 'Annuler' : "C'est fait");
 
     return h('div.champ-inline',
-      h('label', titre, etatTexte),
+      h('label.champ-tete', h('span', titre), etatTexte),
       h('p.aide', aide),
       h('div', { style: { marginTop: '10px' } }, saisie),
       h('div', { style: { marginTop: '10px' } }, bouton));

@@ -15,14 +15,14 @@ import * as D from './donnees.js';
 
 const PERIODES = [
   { cle: '24h', libelle: '24 h',     compare: 'la veille' },
-  { cle: '7j',  libelle: '7 jours',  compare: 'les 7 jours precedents' },
-  { cle: '30j', libelle: '30 jours', compare: 'les 30 jours precedents' },
+  { cle: '7j',  libelle: '7 jours',  compare: 'les 7 jours précédents' },
+  { cle: '30j', libelle: '30 jours', compare: 'les 30 jours précédents' },
 ];
 
 const METRIQUES = [
   { cle: 'visiteurs',       libelle: 'Visiteurs',         icone: 'personnes' },
   { cle: 'pages_vues',      libelle: 'Pages vues',        icone: 'page' },
-  { cle: 'duree_moyenne',   libelle: 'Duree moyenne',     icone: 'horloge', duree: true },
+  { cle: 'duree_moyenne',   libelle: 'Durée moyenne',     icone: 'horloge', duree: true },
   { cle: 'taux_engagement', libelle: "Taux d'engagement", icone: 'cible',   pourcent: true },
 ];
 
@@ -34,7 +34,7 @@ const ICONES = {
 };
 
 const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-const APPAREILS = { mobile: 'Telephone', desktop: 'Ordinateur', tablet: 'Tablette' };
+const APPAREILS = { mobile: 'Téléphone', desktop: 'Ordinateur', tablet: 'Tablette' };
 
 export async function rendre(page, etat) {
   vider(page);
@@ -43,8 +43,8 @@ export async function rendre(page, etat) {
   if (!etat.profil?.acces_ga4) {
     page.append(carteVide(
       'Connectez Google Analytics pour voir vos statistiques',
-      'Rendez-vous dans Parametrage pour connecter votre compte Google en un clic.',
-      h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au parametrage')));
+      'Rendez-vous dans Paramétrage pour connecter votre compte Google en un clic.',
+      h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au paramétrage')));
     return;
   }
 
@@ -84,18 +84,21 @@ export async function rendre(page, etat) {
       const messageErreur = err.donnees?.error || err.message || '';
       if (messageErreur) {
         vider(zone);
-        const manqueId = messageErreur === 'ID de propriete GA4 non renseigne.';
+        // On teste le code renvoye par la fonction ; le repli sur le
+        // message couvre la version encore deployee, qui n'en a pas.
+        const manqueId = err.donnees?.code === 'ga4_property_manquant'
+          || /propriet[ée] GA4/i.test(messageErreur);
         zone.append(carteVide(
-          manqueId ? "Il manque l'identifiant de votre propriete Analytics" : 'Statistiques momentanement indisponibles',
+          manqueId ? "Il manque l'identifiant de votre propriété Analytics" : 'Statistiques momentanément indisponibles',
           manqueId
-            ? 'Renseignez-le dans Parametrage — dans GA4 : Admin puis Parametres de la propriete.'
-            : 'Reessayez dans quelques instants. Si ca persiste, contactez-nous.',
-          manqueId ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au parametrage') : null));
+            ? 'Renseignez-le dans Paramétrage — dans GA4 : Admin puis Paramètres de la propriété.'
+            : 'Réessayez dans quelques instants. Si ça persiste, contactez-nous.',
+          manqueId ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au paramétrage') : null));
         return;
       }
       vider(zone);
-      zone.append(carteVide('Statistiques momentanement indisponibles', 'Verifiez votre connexion et reessayez.'));
-      souffler('Impossible de recuperer les statistiques Google.', 'alerte');
+      zone.append(carteVide('Statistiques momentanément indisponibles', 'Vérifiez votre connexion et réessayez.'));
+      souffler('Impossible de récupérer les statistiques Google.', 'alerte');
       return;
     }
 
@@ -141,7 +144,7 @@ export async function rendre(page, etat) {
       site.corps.append(h('div.section',
         h('div.section-tete',
           h('h2', 'Visiteurs'),
-          h('p', `Evolution sur ${periode.libelle.toLowerCase()}`)),
+          h('p', `Évolution sur ${periode.libelle.toLowerCase()}`)),
         h('div.section-corps', { style: { paddingTop: '18px' } },
           grapheComplet(serie.map((l) => l.visiteurs), serie.map((l) => formaterJour(l.date))))));
     }
@@ -155,11 +158,11 @@ export async function rendre(page, etat) {
     // villes). Les pages et les jours, eux, restent en barres — ce sont
     // des classements, pas des parts.
     if (rep.appareils?.length) {
-      duo.append(carteCamembert('Telephone ou ordinateur', 'appareils',
+      duo.append(carteCamembert('Téléphone ou ordinateur', 'appareils',
         rep.appareils.map((a) => ({ nom: APPAREILS[a.cle] || a.cle, valeur: a.valeur }))));
     }
     if (rep.villes?.length) {
-      duo.append(carteCamembert("D'ou viennent vos visiteurs", 'villes',
+      duo.append(carteCamembert("D'où viennent vos visiteurs", 'villes',
         rep.villes.filter((v) => v.cle && v.cle !== '(not set)')
           .map((v) => ({ nom: v.cle, valeur: v.valeur }))));
     }
@@ -181,8 +184,8 @@ export async function rendre(page, etat) {
     if (duo2.children.length) site.corps.append(duo2);
 
     if (!serie.length) {
-      site.corps.append(carteVide('Aucune donnee sur cette periode',
-        "Votre site n'a pas encore recu de visite sur la periode choisie."));
+      site.corps.append(carteVide('Aucune donnée sur cette période',
+        "Votre site n'a pas encore reçu de visite sur la période choisie."));
     }
   }
 
@@ -206,15 +209,15 @@ const ICONES_GBP = {
 
 const LIBELLES_GBP = {
   vues: 'Vues de la fiche',
-  appels: 'Appels recus',
-  itineraires: 'Itineraires demandes',
+  appels: 'Appels reçus',
+  itineraires: 'Itinéraires demandes',
   clics_site: 'Clics vers le site',
 };
 
 const AIDE_GBP = {
-  vues: "Nombre de fois ou votre fiche est apparue dans Google ou sur Maps.",
-  appels: "Personnes ayant appuye sur le bouton Appeler de votre fiche Google. Ce sont des appels que vous devez a votre presence en ligne.",
-  itineraires: "Personnes ayant demande l'itineraire vers votre adresse.",
+  vues: "Nombre de fois où votre fiche est apparue dans Google ou sur Maps.",
+  appels: "Personnes ayant appuyé sur le bouton Appeler de votre fiche Google. Ce sont des appels que vous devez à votre présence en ligne.",
+  itineraires: "Personnes ayant demandé l'itinéraire vers votre adresse.",
   clics_site: "Personnes venues sur votre site depuis votre fiche Google.",
 };
 
@@ -236,10 +239,10 @@ async function chargerGbp(zone, periode) {
         ? "Il manque l'identifiant de votre fiche Google"
         : 'Statistiques de la fiche indisponibles',
       String(e.message).includes('Identifiant')
-        ? "Renseignez-le dans Parametrage pour voir les vues, les appels et les avis de votre fiche."
-        : "Cette section reapparaitra des que Google reprendra la main.",
+        ? "Renseignez-le dans Paramétrage pour voir les vues, les appels et les avis de votre fiche."
+        : "Cette section réapparaîtra dès que Google reprendra la main.",
       String(e.message).includes('Identifiant')
-        ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au parametrage') : null));
+        ? h('a.bt.bt-vif', { href: '#/parametrage' }, 'Aller au paramétrage') : null));
     return;
   }
 
@@ -284,8 +287,8 @@ async function chargerGbp(zone, periode) {
             h('span.avis-auteur', av.auteur),
             h('span.avis-note', etoiles(av.note)),
             av.repondu
-              ? h('span.etat', { 'data-ton': 'bien' }, 'Repondu')
-              : h('span.etat', { 'data-ton': 'veille' }, 'Sans reponse')),
+              ? h('span.etat', { 'data-ton': 'bien' }, 'Répondu')
+              : h('span.etat', { 'data-ton': 'veille' }, 'Sans réponse')),
           av.texte ? h('p.avis-texte', av.texte) : null));
       });
       corps.append(liste);

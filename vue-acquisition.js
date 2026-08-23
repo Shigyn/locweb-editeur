@@ -22,18 +22,18 @@ const OBJECTIFS = [
 ];
 
 const METHODE = [
-  { n: '1', titre: 'Analyse de votre marche',  texte: 'Nous regardons votre metier, votre zone et vos concurrents.' },
-  { n: '2', titre: 'Recherche de mots-cles',   texte: 'Nous identifions les recherches de vos clients potentiels.' },
-  { n: '3', titre: 'Optimisation du budget',   texte: 'Nous repartissons votre budget sur ce qui convertit le mieux.' },
-  { n: '4', titre: 'Lancement et suivi',       texte: 'Nous lancons la campagne et surveillons les resultats.' },
+  { n: '1', titre: 'Analyse de votre marché',  texte: 'Nous regardons votre métier, votre zone et vos concurrents.' },
+  { n: '2', titre: 'Recherche de mots-clés',   texte: 'Nous identifions les recherches de vos clients potentiels.' },
+  { n: '3', titre: 'Optimisation du budget',   texte: 'Nous répartissons votre budget sur ce qui convertit le mieux.' },
+  { n: '4', titre: 'Lancement et suivi',       texte: 'Nous lançons la campagne et surveillons les résultats.' },
 ];
 
 const ETAPES_ANALYSE = [
-  'Analyse de votre activite',
-  'Analyse de la zone geographique',
-  'Recherche de mots-cles',
+  'Analyse de votre activité',
+  'Analyse de la zone géographique',
+  'Recherche de mots-clés',
   'Estimation du budget',
-  'Preparation de la campagne',
+  'Préparation de la campagne',
 ];
 
 export async function rendre(page, etat, { charger, oublier }) {
@@ -49,7 +49,7 @@ export async function rendre(page, etat, { charger, oublier }) {
     vider(page);
     page.append(
       h('h1', 'Obtenez plus de clients'),
-      h('p.sous-titre', 'Nous vous aidons a attirer de nouveaux clients grace a votre presence en ligne.'),
+      h('p.sous-titre', 'Nous vous aidons à attirer de nouveaux clients grâce à votre présence en ligne.'),
     );
 
     page.append(h('div.appel-action',
@@ -58,11 +58,11 @@ export async function rendre(page, etat, { charger, oublier }) {
         'stroke-linecap': 'round', 'stroke-linejoin': 'round',
         html: '<path d="m12 3 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/><path d="M19 15v4M17 17h4"/>',
       })),
-      h('p.appel-titre', 'Pret a attirer plus de clients ?'),
-      h('p.appel-texte', "Une campagne Google Ads pensee pour votre activite, votre zone et votre budget. En 5 etapes simples."),
+      h('p.appel-titre', 'Prêt à attirer plus de clients ?'),
+      h('p.appel-texte', "Une campagne Google Ads pensée pour votre activité, votre zone et votre budget. En 5 étapes simples."),
       h('button.bt.bt-vif', { onclick: () => lancerAssistant() }, 'Lancer ma campagne')));
 
-    page.append(h('p.titre-section', 'Comment ca marche'));
+    page.append(h('p.titre-section', 'Comment ça marche'));
     const methode = h('div.methode');
     METHODE.forEach((m) => {
       methode.append(h('div.methode-etape',
@@ -84,7 +84,7 @@ export async function rendre(page, etat, { charger, oublier }) {
     return h('div.ligne-liste',
       h('div.principal',
         h('strong', c.nom),
-        h('span', `${c.zone || 'zone non definie'} · demandee ${depuis(c.date_creation)}`)),
+        h('span', `${c.zone || 'zone non definie'} · demandée ${depuis(c.date_creation)}`)),
       pastilleEtat(c.statut, ETATS_CAMPAGNE),
       h('span', { style: { fontSize: '.86rem', color: 'var(--sourdine)' } },
         c.budget_mensuel ? `${euros(c.budget_mensuel)}/mois` : ''));
@@ -107,7 +107,7 @@ export async function rendre(page, etat, { charger, oublier }) {
     // Pas de barre de marque ici : le menu lateral et l'entete sont deja
     // affiches, la repeter ferait trois fois "LocWeb" au meme ecran.
     page.append(
-      h('button.lien-retour', { onclick: afficherAccueil }, '← Retour a l\'acquisition'),
+      h('button.lien-retour', { onclick: afficherAccueil }, '← Retour à l\'acquisition'),
       hote);
 
     const ECRANS = [ecranCampagne, ecranMotsCles, ecranEstimation, null, ecranRecap];
@@ -116,7 +116,7 @@ export async function rendre(page, etat, { charger, oublier }) {
       vider(hote);
       const c = ECRANS[etape - 1]();
       hote.append(
-        h('p.onb-compteur', `ETAPE ${etape} / ${TOTAL}`),
+        h('p.onb-compteur', `ÉTAPE ${etape} / ${TOTAL}`),
         h('h1', c.titre),
         c.sous ? h('p.onb-sous', c.sous) : null,
         c.corps,
@@ -143,7 +143,7 @@ export async function rendre(page, etat, { charger, oublier }) {
       const corps = h('div');
 
       corps.append(h('div.recap-ligne',
-        blocInfo('Activite', etat.profil?.metier_precis || client.metier || 'Non renseignee'),
+        blocInfo('Activité', etat.profil?.metier_precis || client.metier || 'Non renseignée'),
         blocInfo('Zone', reponses.zone),
         blocInfo('Budget conseille', '50 EUR / semaine')));
 
@@ -174,7 +174,7 @@ export async function rendre(page, etat, { charger, oublier }) {
 
       return {
         titre: 'Votre campagne',
-        sous: 'Voici ce que nous savons deja de votre activite.',
+        sous: 'Voici ce que nous savons déjà de votre activité.',
         corps,
       };
     }
@@ -195,11 +195,11 @@ export async function rendre(page, etat, { charger, oublier }) {
       redessiner();
       corps.append(zonePuces);
 
-      const saisie = h('input', { type: 'text', placeholder: 'Ajouter un mot-cle' });
+      const saisie = h('input', { type: 'text', placeholder: 'Ajouter un mot-clé' });
       const ajouter = () => {
         const v = saisie.value.trim().toLowerCase();
         if (!v) return;
-        if (reponses.mots_cles.includes(v)) { souffler('Ce mot-cle est deja dans la liste.', 'veille'); return; }
+        if (reponses.mots_cles.includes(v)) { souffler('Ce mot-clé est déjà dans la liste.', 'veille'); return; }
         reponses.mots_cles.push(v);
         saisie.value = '';
         redessiner();
@@ -225,8 +225,8 @@ export async function rendre(page, etat, { charger, oublier }) {
       }
 
       return {
-        titre: 'Mots-cles',
-        sous: 'Nous ciblons les recherches les plus pertinentes pour votre activite.',
+        titre: 'Mots-clés',
+        sous: 'Nous ciblons les recherches les plus pertinentes pour votre activité.',
         corps,
       };
     }
@@ -259,13 +259,13 @@ export async function rendre(page, etat, { charger, oublier }) {
           h('p.estim-etiq', 'demandes potentielles / semaine'))));
 
       corps.append(h('p.note-prudence',
-        "Ces chiffres sont des estimations basees sur des campagnes comparables dans votre metier. Ils ne constituent pas une garantie de resultat."));
+        "Ces chiffres sont des estimations basées sur des campagnes comparables dans votre métier. Ils ne constituent pas une garantie de résultat."));
 
       return {
         titre: 'Estimation de votre campagne',
-        sous: 'Une fourchette realiste — pas une garantie.',
+        sous: 'Une fourchette réaliste — pas une garantie.',
         corps,
-        action: 'Preparer ma campagne',
+        action: 'Préparer ma campagne',
       };
     }
 
@@ -279,7 +279,7 @@ export async function rendre(page, etat, { charger, oublier }) {
         liste.append(l);
         return l;
       });
-      hote.append(h('div.prepa', h('span.prepa-rond'), h('h1', 'Analyse de votre activite...'), liste));
+      hote.append(h('div.prepa', h('span.prepa-rond'), h('h1', 'Analyse de votre activité...'), liste));
 
       // Chaque etape correspond a un vrai calcul local (croisement
       // metier x ville, estimation budgetaire). C'est rapide, d'ou le
@@ -301,10 +301,10 @@ export async function rendre(page, etat, { charger, oublier }) {
       ETAPES_ANALYSE.forEach((t) => liste.append(h('div.prepa-ligne.faite', h('span.prepa-puce'), h('span', t))));
       hote.append(h('div.prepa',
         h('span.prepa-coche', { html: '&check;' }),
-        h('h1', 'Votre campagne est prete.'),
+        h('h1', 'Votre campagne est prête.'),
         liste,
         h('button.bt.bt-vif', { style: { marginTop: '26px' }, onclick: () => { etape = 5; afficher(); } },
-          'Voir le recapitulatif')));
+          'Voir le récapitulatif')));
     }
 
     /* --- etape 5 : recapitulatif --- */
@@ -322,11 +322,11 @@ export async function rendre(page, etat, { charger, oublier }) {
         ligneRecap('Total', `${nombre(mensuel + gestion)} EUR / mois`, true)));
 
       corps.append(h('p.note-prudence',
-        "Aucun paiement n'est effectue depuis cette page. Apres validation, nous vous recontactons pour finaliser la mise en place de la campagne dans Google Ads."));
+        "Aucun paiement n'est effectué depuis cette page. Après validation, nous vous recontactons pour finaliser la mise en place de la campagne dans Google Ads."));
 
       return {
-        titre: 'Recapitulatif',
-        sous: 'Verifiez les informations avant de nous envoyer votre demande.',
+        titre: 'Récapitulatif',
+        sous: 'Vérifiez les informations avant de nous envoyer votre demande.',
         corps,
         action: 'Envoyer ma demande',
       };
@@ -350,9 +350,9 @@ export async function rendre(page, etat, { charger, oublier }) {
           mots_cles: reponses.mots_cles,
         });
         oublier('campagnes');
-        souffler('Demande envoyee — on revient vers vous rapidement.', 'bien');
+        souffler('Demande envoyée — on revient vers vous rapidement.', 'bien');
       } catch {
-        souffler("Envoi impossible. Reessayez ou contactez-nous.", 'alerte');
+        souffler("Envoi impossible. Réessayez ou contactez-nous.", 'alerte');
         return;
       }
       campagnes.unshift({
@@ -372,7 +372,7 @@ export async function rendre(page, etat, { charger, oublier }) {
     const ville = etat.profil?.localisation || client.ville;
     const zone = etat.profil?.zone_intervention;
     if (ville && zone) return `${ville} · ${zone}`;
-    return ville || zone || 'Zone a definir';
+    return ville || zone || 'Zone à définir';
   }
 
   function motsClesInitiaux() {
@@ -390,7 +390,7 @@ export async function rendre(page, etat, { charger, oublier }) {
     if (!metier) return [];
     const base = metier.split(/[\/,]/)[0].trim();
     return [
-      `depannage ${base} ${ville}`.trim(),
+      `dépannage ${base} ${ville}`.trim(),
       `${base} pas cher ${ville}`.trim(),
       `devis ${base} ${ville}`.trim(),
       `${base} rapide ${ville}`.trim(),

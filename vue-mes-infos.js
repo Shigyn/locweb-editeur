@@ -17,7 +17,7 @@ export async function rendre(page, etat) {
 
   vider(page);
   page.append(h('h1', 'Mes infos'),
-    h('p.sous-titre', 'Vos coordonnees et celles de votre activite.'));
+    h('p.sous-titre', 'Vos coordonnées et celles de votre activité.'));
 
   /* ---------- progression ----------
 
@@ -56,10 +56,10 @@ export async function rendre(page, etat) {
       h('div.section-corps', { style: { paddingTop: '14px' } }, grille));
   }
 
-  page.append(groupe('Qui contacter', 'En cas de probleme sur votre site, ou pour valider une campagne.',
+  page.append(groupe('Qui contacter', 'En cas de problème sur votre site, ou pour valider une campagne.',
     champsProfil.contact));
 
-  page.append(groupe('Mon activite', 'Ce qui sert a cibler vos campagnes et a rediger vos textes.',
+  page.append(groupe('Mon activité', 'Ce qui sert à cibler vos campagnes et à rédiger vos textes.',
     champsProfil.activite));
 
   /* ---------- reseaux ---------- */
@@ -86,7 +86,7 @@ export async function rendre(page, etat) {
   });
 
   page.append(h('div.section',
-    h('div.section-tete', h('h2', 'Mes reseaux'),
+    h('div.section-tete', h('h2', 'Mes réseaux'),
       h('p', 'Ils apparaissent dans le pied de page de votre site.')),
     h('div.section-corps', { style: { paddingTop: '14px' } }, grilleReseaux)));
 
@@ -103,7 +103,7 @@ export async function rendre(page, etat) {
         h('div.mesure', h('p.val', `${PRIX[formule] || 49} EUR`),
           h('p.etiq', 'Par mois, tout compris'))),
       h('p.aide', { style: { marginTop: '14px' } },
-        'Hebergement, nom de domaine, editeur de contenu, support direct et mises a jour sont inclus. Pour changer de formule, ecrivez-nous depuis la page Aide.'))));
+        'Hébergement, nom de domaine, éditeur de contenu, support direct et mises à jour sont inclus. Pour changer de formule, écrivez-nous depuis la page Aide.'))));
 
   /* ---------- compte ---------- */
 
@@ -111,19 +111,19 @@ export async function rendre(page, etat) {
   page.append(h('div.section',
     h('div.section-tete', h('h2', 'Mon compte')),
     h('div.section-corps', { style: { paddingTop: '14px' } },
-      h('p.aide', 'Connecte avec ', h('b', user?.email || '—'), '.'),
+      h('p.aide', 'Connecté avec ', h('b', user?.email || '—'), '.'),
       h('div', { style: { display: 'flex', gap: '10px', marginTop: '14px', flexWrap: 'wrap' } },
         h('button.bt.bt-plein', {
           onclick: async (e) => {
             e.target.disabled = true;
             await D.motDePasseOublie(user.email);
             e.target.disabled = false;
-            souffler('E-mail de changement de mot de passe envoye.', 'bien');
+            souffler('E-mail de changement de mot de passe envoyé.', 'bien');
           },
         }, 'Changer mon mot de passe'),
         h('button.bt.bt-nu', {
           onclick: () => { D.deconnexion().then(() => location.reload()); },
-        }, 'Se deconnecter')))));
+        }, 'Se déconnecter')))));
 }
 
 export { completion };

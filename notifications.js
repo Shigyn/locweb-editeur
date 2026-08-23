@@ -57,7 +57,7 @@ export async function fluxNotifications(etat) {
     evenements.push({
       type: 'publication',
       date: new Date(l.date_publication || Date.now()).getTime(),
-      titre: 'Modification publiee sur votre site',
+      titre: 'Modification publiée sur votre site',
       detail: l.cle_bloc || '',
       lien: '#/mon-site',
     });
@@ -67,7 +67,7 @@ export async function fluxNotifications(etat) {
     evenements.push({
       type: 'version',
       date: new Date(v.date).getTime(),
-      titre: `Nouveautes : ${v.titre}`,
+      titre: `Nouveautés : ${v.titre}`,
       detail: v.points[0] || '',
       lien: null,
       version: v.version,
@@ -80,7 +80,7 @@ export async function fluxNotifications(etat) {
     evenements.push({
       type: 'alerte',
       date: Date.now(),
-      titre: 'Vos statistiques ne sont pas connectees',
+      titre: 'Vos statistiques ne sont pas connectées',
       detail: 'Reliez Google pour voir vos visites et vos appels.',
       lien: '#/parametrage',
       urgent: true,

@@ -56,7 +56,7 @@ export async function majProfil(clientId, champs) {
 
 /* Enregistrement tolerant, pour l'onboarding.
 
-   PostgREST rejette la requete ENTIERE des qu'une seule colonne n'existe
+   PostgREST rejette la requete ENTIERE dès qu'une seule colonne n'existe
    pas encore en base. Resultat : une migration non passee faisait echouer
    la sauvegarde complete, `complete_le` n'etait jamais ecrit, et le
    questionnaire revenait a chaque connexion.
@@ -222,7 +222,7 @@ async function appelStats(fonction, periode) {
     body: JSON.stringify({ periode }),
   });
   const donnees = await reponse.json();
-  if (!reponse.ok) throw Object.assign(new Error(donnees.error || 'Requete refusee.'), { donnees });
+  if (!reponse.ok) throw Object.assign(new Error(donnees.error || 'Requête refusée.'), { donnees });
   return donnees;
 }
 

@@ -1237,3 +1237,11 @@ kbd{
   .prog-tete{ padding:16px; gap:14px; }
   .parrain-val{ font-size:1.1rem; }
 }
+
+/* L'etat d'un compte se lit a droite de son titre, pas colle contre.
+   Le selecteur reprend `.champ-inline label` : sans ca, la regle plus
+   specifique du bloc parent gagne et remet un display:block. */
+.champ-inline label.champ-tete{
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:12px; flex-wrap:wrap;
+}

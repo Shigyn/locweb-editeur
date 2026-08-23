@@ -23,17 +23,17 @@ const OBJECTIFS = [
 const CANAUX = [
   { cle: 'bouche',   libelle: 'Bouche a oreille',  icone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>' },
   { cle: 'google',   libelle: 'Recherche Google',  icone: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>' },
-  { cle: 'reseaux',  libelle: 'Reseaux sociaux',   icone: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>' },
-  { cle: 'ads',      libelle: 'Publicite en ligne', icone: '<path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/>' },
+  { cle: 'reseaux',  libelle: 'Réseaux sociaux',   icone: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>' },
+  { cle: 'ads',      libelle: 'Publicité en ligne', icone: '<path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/>' },
   { cle: 'annuaire', libelle: 'Annuaires, Pages Jaunes', icone: '<path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>' },
   { cle: 'autres',   libelle: 'Autrement',          icone: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>' },
 ];
 
 const ETAPES_PREPA = [
   'Enregistrement de vos informations',
-  'Verification de vos connexions',
-  'Configuration de votre editeur',
-  'Preparation de votre espace',
+  'Vérification de vos connexions',
+  'Configuration de votre éditeur',
+  'Préparation de votre espace',
 ];
 
 export async function rendre(page, etat, { terminer }) {
@@ -62,7 +62,7 @@ export async function rendre(page, etat, { terminer }) {
     try {
       await D.majProfilTolerant(client.id, { ...champsProfil(), complete_le: new Date().toISOString() });
       etat.profil = { ...(etat.profil || {}), complete_le: new Date().toISOString() };
-    } catch { souffler("Vos reponses n'ont pas pu etre enregistrees.", 'alerte'); }
+    } catch { souffler("Vos réponses n'ont pas pu être enregistrées.", 'alerte'); }
     await terminer();
   }
 
@@ -83,7 +83,7 @@ export async function rendre(page, etat, { terminer }) {
     vider(hote);
     const contenu = ECRANS[etape - 1]();
     hote.append(
-      h('p.onb-compteur', `ETAPE ${etape} / ${TOTAL}`),
+      h('p.onb-compteur', `ÉTAPE ${etape} / ${TOTAL}`),
       contenu.titre,
       contenu.sous ? h('p.onb-sous', contenu.sous) : null,
       contenu.corps,
@@ -108,10 +108,10 @@ export async function rendre(page, etat, { terminer }) {
 
   function etapeMetier() {
     return {
-      titre: h('h1', 'Quel est votre metier ?'),
-      sous: "Cela nous sert a proposer les bons mots-cles pour vos campagnes.",
+      titre: h('h1', 'Quel est votre métier ?'),
+      sous: "Cela nous sert à proposer les bons mots-clés pour vos campagnes.",
       corps: h('div.onb-grille',
-        champ('Votre metier', 'metier_precis', 'ex : Plombier chauffagiste')),
+        champ('Votre métier', 'metier_precis', 'ex : Plombier chauffagiste')),
     };
   }
 
@@ -120,10 +120,10 @@ export async function rendre(page, etat, { terminer }) {
   function etapeZone() {
     return {
       titre: h('h1', 'Ou intervenez-vous ?'),
-      sous: 'Votre ville et le rayon autour duquel vous vous deplacez.',
+      sous: 'Votre ville et le rayon autour duquel vous vous déplacez.',
       corps: h('div.onb-grille',
-        champ('Votre ville', 'localisation', 'ex : Beziers'),
-        champ("Jusqu'a quelle distance", 'zone_intervention', 'ex : 30 km autour')),
+        champ('Votre ville', 'localisation', 'ex : Béziers'),
+        champ("Jusqu'à quelle distance", 'zone_intervention', 'ex : 30 km autour')),
     };
   }
 
@@ -139,8 +139,8 @@ export async function rendre(page, etat, { terminer }) {
       ligneConnexion('Google Analytics', reponses.acces_ga4));
 
     return {
-      titre: h('h1', 'Vos reseaux et comptes Google'),
-      sous: 'Tout est facultatif — vous pourrez connecter vos comptes plus tard depuis Parametrage.',
+      titre: h('h1', 'Vos réseaux et comptes Google'),
+      sous: 'Tout est facultatif — vous pourrez connecter vos comptes plus tard depuis Paramétrage.',
       corps,
     };
   }
@@ -150,7 +150,7 @@ export async function rendre(page, etat, { terminer }) {
   function etapeAcquisition() {
     return {
       titre: h('h1', "Comment vos clients vous trouvent-ils aujourd'hui ?"),
-      sous: 'Plusieurs reponses possibles. Cela nous dit sur quel canal appuyer en priorite.',
+      sous: 'Plusieurs réponses possibles. Cela nous dit sur quel canal appuyer en priorité.',
       corps: cartesCochables(CANAUX, 'canaux'),
     };
   }
@@ -160,7 +160,7 @@ export async function rendre(page, etat, { terminer }) {
   function etapeObjectifs() {
     return {
       titre: h('h1', 'Que voulez-vous obtenir ?'),
-      sous: 'Plusieurs reponses possibles — vous pourrez changer plus tard.',
+      sous: 'Plusieurs réponses possibles — vous pourrez changer plus tard.',
       corps: cartesCochables(OBJECTIFS, 'objectifs'),
     };
   }
@@ -237,7 +237,7 @@ export async function rendre(page, etat, { terminer }) {
     return h('div.onb-connexion',
       h('span.onb-connexion-nom', libelle),
       connecte
-        ? h('span.etat', { 'data-ton': 'bien' }, 'Connecte')
+        ? h('span.etat', { 'data-ton': 'bien' }, 'Connecté')
         : h('a.bt.bt-plein.bt-mini', { href: '#/parametrage' }, '+ Connecter'));
   }
 
@@ -254,7 +254,7 @@ export async function rendre(page, etat, { terminer }) {
 
     hote.append(h('div.prepa',
       h('span.prepa-rond'),
-      h('h1', 'Preparation de votre espace...'),
+      h('h1', 'Préparation de votre espace...'),
       liste));
 
     // Plancher de 550 ms par etape : sans ca, une connexion rapide fait
@@ -280,7 +280,7 @@ export async function rendre(page, etat, { terminer }) {
       marquerLigne(lignes[0], !resultat.ok);
       if (!resultat.ok) echec = true;
       if (resultat.ignores?.length) {
-        console.warn('Colonnes absentes en base, ignorees :', resultat.ignores.join(', '));
+        console.warn('Colonnes absentes en base, ignorées :', resultat.ignores.join(', '));
       }
     } catch { echec = true; marquerLigne(lignes[0], true); }
 
@@ -306,7 +306,7 @@ export async function rendre(page, etat, { terminer }) {
     } catch { marquerLigne(lignes[3], true); }
 
     if (echec) {
-      souffler("Certaines informations n'ont pas pu etre enregistrees.", 'alerte');
+      souffler("Certaines informations n'ont pas pu être enregistrées.", 'alerte');
     }
     ecranFinal();
   }
@@ -322,13 +322,13 @@ export async function rendre(page, etat, { terminer }) {
     vider(hote);
     hote.append(h('div.prepa',
       h('span.prepa-coche', { html: '&check;' }),
-      h('h1', 'Votre espace est pret'),
+      h('h1', 'Votre espace est prêt'),
       h('p.onb-sous', { style: { textAlign: 'center' } },
-        `Le tableau de bord de ${client.nom_site || 'votre entreprise'} est configure et pret a l'emploi.`),
+        `Le tableau de bord de ${client.nom_site || 'votre entreprise'} est configuré et prêt à l'emploi.`),
       h('button.bt.bt-vif', {
         style: { marginTop: '22px' },
         onclick: terminer,
-      }, 'Acceder a mon tableau de bord →')));
+      }, 'Accéder à mon tableau de bord →')));
   }
 
   afficher();

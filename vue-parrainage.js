@@ -41,8 +41,8 @@ export async function rendre(page, etat) {
 
   const etapes = [
     ['Vous envoyez votre lien', 'Par SMS, WhatsApp, ou de vive voix avec votre code.'],
-    ['Il prend un abonnement', "On lui offre son premier mois, sans qu'il ait rien a demander."],
-    ['Vous etes credite', `${AVANTAGE[0].toUpperCase()}${AVANTAGE.slice(1)} deduit de votre prochaine facture.`],
+    ['Il prend un abonnement', "On lui offre son premier mois, sans qu'il ait rien à demander."],
+    ['Vous êtes crédité', `${AVANTAGE[0].toUpperCase()}${AVANTAGE.slice(1)} déduit de votre prochaine facture.`],
   ];
   const methode = h('div.methode');
   etapes.forEach(([titre, texte], i) => {
@@ -53,7 +53,7 @@ export async function rendre(page, etat) {
   });
 
   page.append(h('div.section',
-    h('div.section-tete', h('h2', 'Comment ca marche')),
+    h('div.section-tete', h('h2', 'Comment ça marche')),
     h('div.section-corps', { style: { paddingTop: '18px' } }, methode)));
 
   /* ---------- le code et le lien ---------- */
@@ -65,7 +65,7 @@ export async function rendre(page, etat) {
       await navigator.clipboard.writeText(texte);
       souffler(`${quoi} copie.`, 'bien');
     } catch {
-      souffler('Copie impossible — selectionnez le texte a la main.', 'alerte');
+      souffler('Copie impossible — sélectionnez le texte à la main.', 'alerte');
     }
   }
 
@@ -108,11 +108,11 @@ export async function rendre(page, etat) {
     vider(corpsSuivi);
     if (!data.length) {
       corpsSuivi.append(h('p.aide',
-        "Personne n'a encore utilise votre code. Le premier apparaitra ici des qu'il aura signe."));
+        "Personne n'a encore utilisé votre code. Le premier apparaîtra ici dès qu'il aura signé."));
     } else {
       const valides = data.filter((p) => p.statut === 'valide').length;
       corpsSuivi.append(h('div.synthese',
-        h('div.mesure', h('p.val', String(data.length)), h('p.etiq', 'Personnes parrainees')),
+        h('div.mesure', h('p.val', String(data.length)), h('p.etiq', 'Personnes parrainées')),
         h('div.mesure', h('p.val', String(valides)), h('p.etiq', 'Mois offerts'))));
       const table = h('div.liste-carte', { style: { marginTop: '18px', marginBottom: '0' } });
       data.forEach((p) => {
@@ -129,6 +129,6 @@ export async function rendre(page, etat) {
     // Table absente : on ne bluffe pas un compteur.
     vider(corpsSuivi);
     corpsSuivi.append(h('p.aide',
-      "Le suivi automatique de vos parrainages arrive bientot. En attendant, donnez votre code : on applique le mois offert a la main des qu'un filleul signe."));
+      "Le suivi automatique de vos parrainages arrive bientôt. En attendant, donnez votre code : on applique le mois offert à la main dès qu'un filleul signe."));
   }
 }

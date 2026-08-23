@@ -17,12 +17,12 @@ import * as D from './donnees.js';
 const PAGES = [
   { titre: 'Accueil', detail: 'Vue d\'ensemble', lien: '#/accueil', motsCles: 'tableau bord resume' },
   { titre: 'Performances', detail: 'Visites, appels, fiche Google', lien: '#/performances', motsCles: 'statistiques visiteurs analytics trafic' },
-  { titre: 'Mon editeur', detail: 'Modifier les textes du site', lien: '#/mon-site', motsCles: 'contenu textes photos horaires publier' },
+  { titre: 'Mon éditeur', detail: 'Modifier les textes du site', lien: '#/mon-site', motsCles: 'contenu textes photos horaires publier' },
   { titre: 'Acquisition', detail: 'Campagnes publicitaires', lien: '#/acquisition', motsCles: 'ads publicite google facebook budget' },
-  { titre: 'Mon activite', detail: 'Demandes de devis recues', lien: '#/activite', motsCles: 'leads clients messages devis contacts' },
+  { titre: 'Mon activité', detail: 'Demandes de devis reçues', lien: '#/activite', motsCles: 'leads clients messages devis contacts' },
   { titre: 'Rapports', detail: 'Bilan hebdomadaire et mensuel', lien: '#/rapports', motsCles: 'bilan resume mois semaine pdf' },
-  { titre: 'Mes infos', detail: 'Coordonnees, reseaux, abonnement', lien: '#/mes-infos', motsCles: 'profil telephone email nom formule prix' },
-  { titre: 'Parametrage', detail: 'Comptes Google, pixels', lien: '#/parametrage', motsCles: 'connexion ga4 analytics business ads pixel meta' },
+  { titre: 'Mes infos', detail: 'Coordonnées, réseaux, abonnement', lien: '#/mes-infos', motsCles: 'profil telephone email nom formule prix' },
+  { titre: 'Paramétrage', detail: 'Comptes Google, pixels', lien: '#/parametrage', motsCles: 'connexion ga4 analytics business ads pixel meta' },
   { titre: 'Parrainage', detail: 'Recommander LocWeb', lien: '#/parrainage', motsCles: 'offrir ami collegue mois offert' },
   { titre: 'Aide', detail: 'Nous contacter', lien: '#/aide', motsCles: 'support probleme question sos' },
 ];
@@ -133,7 +133,7 @@ export function installerPalette(etat) {
     actif = Math.min(actif, Math.max(visibles.length - 1, 0));
     vider(resultats);
     if (!visibles.length) {
-      resultats.append(h('p.palette-vide', 'Aucun resultat.'));
+      resultats.append(h('p.palette-vide', 'Aucun résultat.'));
       return;
     }
     visibles.forEach((e, i) => {

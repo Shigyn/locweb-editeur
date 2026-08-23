@@ -17,7 +17,7 @@ const CARTES = [
     icone: '<path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-5 3 3 5-7"/>',
   },
   {
-    route: '#/mon-site', titre: 'Mon editeur',
+    route: '#/mon-site', titre: 'Mon éditeur',
     texte: 'Horaires, textes et photos de votre site.',
     icone: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M7 6.5h.01M10 6.5h.01"/>',
   },
@@ -27,8 +27,8 @@ const CARTES = [
     icone: '<path d="M3 10v4h4l6 4V6L7 10H3Z"/><path d="M17 9a4 4 0 0 1 0 6"/>',
   },
   {
-    route: '#/activite', titre: 'Mon activite',
-    texte: 'Les demandes recues via votre site.',
+    route: '#/activite', titre: 'Mon activité',
+    texte: 'Les demandes reçues via votre site.',
     icone: '<path d="M4 5h16v12H8l-4 4V5Z"/>',
   },
 ];
@@ -47,7 +47,7 @@ export async function rendre(page, etat, { charger }) {
   vider(page);
   page.append(
     h('h1', `Bonjour, ${client.nom_site || 'bienvenue'}`),
-    h('p.sous-titre', 'Voici les performances de votre presence en ligne.'),
+    h('p.sous-titre', 'Voici les performances de votre présence en ligne.'),
   );
 
   const limite = Date.now() - 30 * 864e5;
@@ -71,12 +71,12 @@ export async function rendre(page, etat, { charger }) {
     zoneSynthese.append(h('div.invite',
       h('div',
         h('p.invite-titre', 'Connectez Google Analytics pour suivre votre trafic'),
-        h('p.invite-texte', "Vous verrez ici vos visiteurs, vos pages vues et l'evolution de votre presence en ligne.")),
+        h('p.invite-texte', "Vous verrez ici vos visiteurs, vos pages vues et l'évolution de votre présence en ligne.")),
       h('a.bt.bt-vif', { href: '#/parametrage' }, 'Connecter')));
 
     zoneSynthese.append(h('div.grille-kpi',
-      carteKpi('demandes', 'Demandes recues', nombre(demandes30.length), '30 derniers jours', null, null),
-      carteKpi('traiter', 'A traiter', nombre(nouvelles), nouvelles ? 'en attente de reponse' : 'tout est traite', null, null)));
+      carteKpi('demandes', 'Demandes reçues', nombre(demandes30.length), '30 derniers jours', null, null),
+      carteKpi('traiter', 'À traiter', nombre(nouvelles), nouvelles ? 'en attente de réponse' : 'tout est traité', null, null)));
   }
 
   page.append(h('p.titre-section', 'Vos sections'));
@@ -110,12 +110,12 @@ async function remplirAvecGa4(zone, demandes30, nouvelles) {
     vider(zone);
     zone.append(h('div.invite',
       h('div',
-        h('p.invite-titre', 'Statistiques momentanement indisponibles'),
+        h('p.invite-titre', 'Statistiques momentanément indisponibles'),
         h('p.invite-texte', "Vos demandes restent consultables ci-dessous.")),
-      h('a.bt.bt-plein', { href: '#/performances' }, 'Reessayer')));
+      h('a.bt.bt-plein', { href: '#/performances' }, 'Réessayer')));
     zone.append(h('div.grille-kpi',
-      carteKpi('demandes', 'Demandes recues', nombre(demandes30.length), '30 derniers jours', null, null),
-      carteKpi('traiter', 'A traiter', nombre(nouvelles), nouvelles ? 'en attente' : 'tout est traite', null, null)));
+      carteKpi('demandes', 'Demandes reçues', nombre(demandes30.length), '30 derniers jours', null, null),
+      carteKpi('traiter', 'À traiter', nombre(nouvelles), nouvelles ? 'en attente' : 'tout est traité', null, null)));
     return;
   }
 
@@ -135,17 +135,17 @@ async function remplirAvecGa4(zone, demandes30, nouvelles) {
 
   const enHausse = (variations.visiteurs ?? 0) > 0;
   zone.append(h('div.synthese-narrative',
-    h('p.synthese-badge', 'DONNEES SYNCHRONISEES A L\'INSTANT'),
+    h('p.synthese-badge', 'DONNÉES SYNCHRONISÉES À L\'INSTANT'),
     h('p.synthese-titre', visiteurs
-      ? (enHausse ? 'Votre presence en ligne progresse.' : 'Votre presence en ligne est stable.')
+      ? (enHausse ? 'Votre présence en ligne progresse.' : 'Votre présence en ligne est stable.')
       : 'Votre site attend ses premiers visiteurs.'),
     h('p.synthese-texte', visiteurs
-      ? `Sur les 30 derniers jours, votre site a recu ${nombre(visiteurs)} visiteur${visiteurs > 1 ? 's' : ''}` +
+      ? `Sur les 30 derniers jours, votre site a reçu ${nombre(visiteurs)} visiteur${visiteurs > 1 ? 's' : ''}` +
         (demandes30.length
-          ? ` et genere ${nombre(demandes30.length)} demande${demandes30.length > 1 ? 's' : ''}, soit un taux de conversion de ${taux.toFixed(1)} %.`
-          : ", mais aucune demande n'a encore ete envoyee via le formulaire.")
-      : "Des que votre site recevra des visites, vous verrez ici son evolution jour par jour."),
-    h('a.synthese-lien', { href: '#/performances' }, 'Voir le detail des performances →')));
+          ? ` et généré ${nombre(demandes30.length)} demande${demandes30.length > 1 ? 's' : ''}, soit un taux de conversion de ${taux.toFixed(1)} %.`
+          : ", mais aucune demande n'a encore été envoyée via le formulaire.")
+      : "Dès que votre site recevra des visites, vous verrez ici son évolution jour par jour."),
+    h('a.synthese-lien', { href: '#/performances' }, 'Voir le détail des performances →')));
 
   /* ---------- rangee de KPI ---------- */
 
@@ -154,8 +154,8 @@ async function remplirAvecGa4(zone, demandes30, nouvelles) {
       variations.visiteurs, serie.map((l) => l.visiteurs)),
     carteKpi('pages', 'Pages vues', nombre(totaux.pages_vues || 0), '30 derniers jours',
       variations.pages_vues, serie.map((l) => l.pages_vues)),
-    carteKpi('demandes', 'Demandes recues', nombre(demandes30.length), '30 derniers jours', null, null),
-    carteKpi('traiter', 'A traiter', nombre(nouvelles), nouvelles ? 'en attente de reponse' : 'tout est traite', null, null),
+    carteKpi('demandes', 'Demandes reçues', nombre(demandes30.length), '30 derniers jours', null, null),
+    carteKpi('traiter', 'À traiter', nombre(nouvelles), nouvelles ? 'en attente de réponse' : 'tout est traité', null, null),
   ));
 
   /* ---------- taux de conversion ---------- */

@@ -15,15 +15,15 @@ import { h } from './outils.js';
 
 export const champsProfil = {
   contact: [
-    { cle: 'contact_prenom',    libelle: 'Prenom',    type: 'text',  indice: '' },
+    { cle: 'contact_prenom',    libelle: 'Prénom',    type: 'text',  indice: '' },
     { cle: 'contact_nom',       libelle: 'Nom',       type: 'text',  indice: '' },
     { cle: 'contact_email',     libelle: 'E-mail',    type: 'email', indice: 'vous@exemple.fr' },
-    { cle: 'contact_telephone', libelle: 'Telephone', type: 'tel',   indice: '06 12 34 56 78' },
+    { cle: 'contact_telephone', libelle: 'Téléphone', type: 'tel',   indice: '06 12 34 56 78' },
   ],
   activite: [
-    { cle: 'metier',            libelle: 'Votre metier',        type: 'text', indice: 'Plombier, coiffeur, restaurateur...' },
-    { cle: 'zone_intervention', libelle: "Zone d'intervention", type: 'text', indice: 'Beziers et 20 km autour' },
-    { cle: 'ville',             libelle: 'Ville',               type: 'text', indice: 'Beziers' },
+    { cle: 'metier',            libelle: 'Votre métier',        type: 'text', indice: 'Plombier, coiffeur, restaurateur...' },
+    { cle: 'zone_intervention', libelle: "Zone d'intervention", type: 'text', indice: 'Béziers et 20 km autour' },
+    { cle: 'ville',             libelle: 'Ville',               type: 'text', indice: 'Béziers' },
   ],
 };
 
@@ -32,28 +32,28 @@ export const champsProfil = {
 const ETAPES = [
   {
     id: 'contact',
-    titre: 'Vos coordonnees',
+    titre: 'Vos coordonnées',
     pourquoi: 'Pour vous joindre si votre site a un souci.',
     ou: '#/mes-infos',
     fait: (p) => Boolean(p.contact_telephone && (p.contact_prenom || p.contact_nom)),
   },
   {
     id: 'activite',
-    titre: 'Votre metier et votre zone',
-    pourquoi: 'Sert a cibler vos campagnes et a rediger vos textes.',
+    titre: 'Votre métier et votre zone',
+    pourquoi: 'Sert à cibler vos campagnes et à rédiger vos textes.',
     ou: '#/mes-infos',
     fait: (p) => Boolean(p.metier && p.zone_intervention),
   },
   {
     id: 'google',
     titre: 'Connecter Google',
-    pourquoi: 'Sans ca, aucune statistique de visite ne peut s\'afficher.',
+    pourquoi: 'Sans ça, aucune statistique de visite ne peut s\'afficher.',
     ou: '#/parametrage',
     fait: (p) => Boolean(p.acces_ga4 || p.acces_google_business),
   },
   {
     id: 'reseaux',
-    titre: 'Vos reseaux sociaux',
+    titre: 'Vos réseaux sociaux',
     pourquoi: 'Ils apparaissent en pied de page de votre site.',
     ou: '#/mes-infos',
     fait: (p) => Object.values(p.reseaux || {}).some(Boolean),
@@ -61,7 +61,7 @@ const ETAPES = [
   {
     id: 'site',
     titre: 'Publier votre site',
-    pourquoi: 'Votre premiere publication met vos textes en ligne.',
+    pourquoi: 'Votre première publication met vos textes en ligne.',
     ou: '#/mon-site',
     fait: (p, c) => Boolean(c?.derniere_publication || c?.domaine),
   },
@@ -126,6 +126,6 @@ export function barreCompletion(profil, client, { compact = false } = {}) {
       anneau(pourcent),
       h('div',
         h('p.prog-titre', 'Terminer la configuration'),
-        h('p.prog-sous', `${faites} etape${faites > 1 ? 's' : ''} sur ${total}. Il reste ${reste.length} chose${reste.length > 1 ? 's' : ''} a faire.`))),
+        h('p.prog-sous', `${faites} étape${faites > 1 ? 's' : ''} sur ${total}. Il reste ${reste.length} chose${reste.length > 1 ? 's' : ''} à faire.`))),
     liste);
 }

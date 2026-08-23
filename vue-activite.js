@@ -13,18 +13,18 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
   const demandes = await charger('demandes', () => D.listerDemandes(client.id));
 
   vider(page);
-  page.append(h('h1', 'Mon activite'));
+  page.append(h('h1', 'Mon activité'));
 
   if (!demandes.length) {
     page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
-      h('p', { style: { color: 'var(--sourdine)' } }, "Aucune demande recue pour le moment."))));
+      h('p', { style: { color: 'var(--sourdine)' } }, "Aucune demande reçue pour le moment."))));
     return;
   }
 
   const nouvelles = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
   page.append(h('div.synthese',
-    h('div.mesure', h('p.val', nombre(demandes.length)), h('p.etiq', 'Total recu'), h('p.sous', 'depuis la mise en ligne')),
-    h('div.mesure', h('p.val', nombre(nouvelles)), h('p.etiq', 'A traiter'), h('p.sous', nouvelles ? 'sans reponse' : 'tout est traite'))));
+    h('div.mesure', h('p.val', nombre(demandes.length)), h('p.etiq', 'Total reçu'), h('p.sous', 'depuis la mise en ligne')),
+    h('div.mesure', h('p.val', nombre(nouvelles)), h('p.etiq', 'À traiter'), h('p.sous', nouvelles ? 'sans réponse' : 'tout est traité'))));
 
   // Export : un artisan qui veut relancer ses prospects dans son propre
   // tableur ne doit pas avoir a recopier a la main.
@@ -36,7 +36,7 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
           [
             { titre: 'Date', valeur: (d) => dateLongue(d.date_creation) },
             { titre: 'Nom', valeur: (d) => d.nom },
-            { titre: 'Telephone', valeur: (d) => d.telephone },
+            { titre: 'Téléphone', valeur: (d) => d.telephone },
             { titre: 'Email', valeur: (d) => d.email },
             { titre: 'Ville', valeur: (d) => d.ville },
             { titre: 'Besoin', valeur: (d) => d.besoin },
@@ -44,7 +44,7 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
             { titre: 'Statut', valeur: (d) => ETATS_DEMANDE[d.statut || 'nouvelle']?.libelle },
           ],
           demandes);
-        souffler('Fichier telecharge.', 'bien');
+        souffler('Fichier télécharge.', 'bien');
       },
     }, 'Exporter en CSV')));
 
@@ -68,7 +68,7 @@ function ligneDemande(d, oublier, rafraichirPastille) {
 
   const detail = h('div', { hidden: true, style: { padding: '0 20px 15px', color: 'var(--sourdine)', fontSize: '.86rem', whiteSpace: 'pre-wrap' } },
     d.message || '(pas de message)',
-    h('div', { style: { marginTop: '6px', fontSize: '.8rem' } }, `Recue le ${dateLongue(d.date_creation)}`));
+    h('div', { style: { marginTop: '6px', fontSize: '.8rem' } }, `Reçue le ${dateLongue(d.date_creation)}`));
 
   const ligne = h('div.ligne-liste', { style: { cursor: 'pointer', flexWrap: 'wrap' }, onclick: (e) => {
     if (e.target.closest('select')) return;

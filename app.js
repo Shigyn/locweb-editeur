@@ -44,7 +44,7 @@ $('#bt-oubli').addEventListener('click', async () => {
   if (!email) { erreurConnexion.textContent = "Renseignez d'abord votre e-mail ci-dessus."; return; }
   await D.motDePasseOublie(email);
   erreurConnexion.style.color = '';
-  erreurConnexion.textContent = `E-mail envoye a ${email} si ce compte existe.`;
+  erreurConnexion.textContent = `E-mail envoyé à ${email} si ce compte existe.`;
 });
 
 $('#bt-deconnexion').addEventListener('click', async () => { await D.deconnexion(); location.reload(); });
@@ -100,7 +100,7 @@ $('#bt-theme')?.addEventListener('click', () => {
 async function apresConnexion() {
   const client = await D.monClient();
   if (!client) {
-    erreurConnexion.textContent = 'Aucun client associe a ce compte.';
+    erreurConnexion.textContent = 'Aucun client associé à ce compte.';
     await D.deconnexion();
     return;
   }
@@ -217,7 +217,7 @@ export async function router() {
     vider(page);
     page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
       h('p.mot', { 'data-ton': 'alerte' }, 'Impossible de charger cette page.'),
-      h('button.bt.bt-plein', { onclick: () => { oublier(); router(); }, style: { marginTop: '10px' } }, 'Reessayer'))));
+      h('button.bt.bt-plein', { onclick: () => { oublier(); router(); }, style: { marginTop: '10px' } }, 'Réessayer'))));
   }
 }
 
@@ -262,8 +262,8 @@ function installerBoutonMaj() {
 
   const pastille = h('span.maj-pastille', { hidden: !aDuNeuf });
   const bouton = h('button.maj-bouton', {
-    title: 'Nouveautes',
-    'aria-label': 'Voir les nouveautes',
+    title: 'Nouveautés',
+    'aria-label': 'Voir les nouveautés',
     onclick: () => { ouvrirNouveautes(); },
   },
     h('svg', {
@@ -292,8 +292,8 @@ function installerBoutonMaj() {
 
     const fond = h('div.fond-modale', { onclick: (e) => { if (e.target === fond) fond.remove(); } },
       h('div.modale.modale-large', { role: 'dialog', 'aria-modal': 'true' },
-        h('p.modale-titre', 'Nouveautes de votre espace'),
-        h('p.modale-texte', "Ce qui a change recemment, du plus recent au plus ancien."),
+        h('p.modale-titre', 'Nouveautés de votre espace'),
+        h('p.modale-texte', "Ce qui a changé récemment, du plus récent au plus ancien."),
         liste,
         h('div.modale-pied', h('button.bt.bt-vif', { onclick: () => fond.remove() }, 'Compris'))));
 

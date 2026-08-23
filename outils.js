@@ -164,7 +164,7 @@ export function joursGlissants(n) {
   return sortie;
 }
 
-/* Graphe en aire, une seule serie, toujours a partir de vraies valeurs. */
+/* Graphe en aire, une seule série, toujours à partir de vraies valeurs. */
 export function grapheAires(valeurs, { hauteur = 64, couleur = 'var(--encre-douce)', voile = 'var(--surface-creux)' } = {}) {
   const L = 100, H = hauteur, marge = 2;
   const n = valeurs.length;
@@ -181,11 +181,11 @@ export function grapheAires(valeurs, { hauteur = 64, couleur = 'var(--encre-douc
   });
 }
 
-/* Camembert (anneau) + legende.
+/* Camembert (anneau) + légende.
 
-   Anneau plutot que disque plein : le trou central accueille le total,
-   et les arcs restent plus faciles a comparer que des parts pointues.
-   Nuances de gris plutot que couleurs : la teinte ne porte aucune
+   Anneau plutôt que disque plein : le trou central accueille le total,
+   et les arcs restent plus faciles à comparer que des parts pointues.
+   Nuances de gris plutôt que couleurs : la teinte ne porte aucune
    information ici, seule la taille de l'arc compte. */
 const NUANCES = ['1', '.72', '.52', '.36', '.24', '.15'];
 
@@ -307,18 +307,18 @@ function abrege(v) {
    d'engagement". Chaque chiffre affiche porte donc sa definition en
    une phrase, en clair, sans vocabulaire d'analyste. */
 export const EXPLICATIONS = {
-  visiteurs: "Nombre de personnes differentes venues sur votre site. Une meme personne qui revient trois fois compte pour une.",
+  visiteurs: "Nombre de personnes différentes venues sur votre site. Une même personne qui revient trois fois compte pour une.",
   sessions: "Nombre de visites au total. Si un visiteur revient le lendemain, cela fait deux sessions.",
-  pages_vues: "Nombre total de pages consultees, toutes visites confondues.",
-  taux_engagement: "Part des visiteurs qui ont vraiment regarde votre site, au lieu de repartir aussitot.",
-  duree_moyenne: "Temps passe en moyenne sur votre site a chaque visite.",
-  conversion: "Part de vos visiteurs qui vous ont contacte via le formulaire. C'est le chiffre qui relie votre site a votre chiffre d'affaires.",
-  demandes: "Demandes de devis ou de contact recues via le formulaire de votre site.",
-  traiter: "Demandes auxquelles vous n'avez pas encore repondu.",
-  appareils: "Repartition entre telephone, ordinateur et tablette. Chez la plupart des artisans, le telephone domine largement.",
-  villes: "Villes d'ou viennent vos visiteurs. Utile pour verifier que votre zone d'intervention est bien couverte.",
-  pages: "Les pages les plus consultees de votre site — donc les prestations qui interessent le plus.",
-  jours_semaine: "Les jours ou l'on vous cherche le plus.",
+  pages_vues: "Nombre total de pages consultées, toutes visites confondues.",
+  taux_engagement: "Part des visiteurs qui ont vraiment regardé votre site, au lieu de repartir aussitôt.",
+  duree_moyenne: "Temps passé en moyenne sur votre site à chaque visite.",
+  conversion: "Part de vos visiteurs qui vous ont contacté via le formulaire. C'est le chiffre qui relie votre site à votre chiffre d'affaires.",
+  demandes: "Demandes de devis ou de contact reçues via le formulaire de votre site.",
+  traiter: "Demandes auxquelles vous n'avez pas encore répondu.",
+  appareils: "Répartition entre téléphone, ordinateur et tablette. Chez la plupart des artisans, le téléphone domine largement.",
+  villes: "Villes d'où viennent vos visiteurs. Utile pour vérifier que votre zone d'intervention est bien couverte.",
+  pages: "Les pages les plus consultées de votre site — donc les prestations qui intéressent le plus.",
+  jours_semaine: "Les jours où l'on vous cherche le plus.",
 };
 
 /* Bulle d'aide au survol.
@@ -386,18 +386,18 @@ addEventListener('scroll', cacher, true);
 export const ETATS_DEMANDE = {
   nouvelle:     { libelle: 'Nouvelle',      ton: 'action' },
   vue:          { libelle: 'Vue',           ton: '' },
-  devis_envoye: { libelle: 'Devis envoye',  ton: 'veille' },
-  gagnee:       { libelle: 'Gagnee',        ton: 'bien' },
+  devis_envoye: { libelle: 'Devis envoyé',  ton: 'veille' },
+  gagnee:       { libelle: 'Gagnée',        ton: 'bien' },
   perdue:       { libelle: 'Perdue',        ton: '' },
-  indesirable:  { libelle: 'Indesirable',   ton: '' },
+  indesirable:  { libelle: 'Indésirable',   ton: '' },
 };
 
 export const ETATS_CAMPAGNE = {
-  demandee:       { libelle: 'Demandee',       ton: 'action' },
-  en_preparation: { libelle: 'En preparation', ton: 'veille' },
+  demandee:       { libelle: 'Demandée',       ton: 'action' },
+  en_preparation: { libelle: 'En préparation', ton: 'veille' },
   active:         { libelle: 'Active',         ton: 'bien' },
   en_pause:       { libelle: 'En pause',       ton: '' },
-  terminee:       { libelle: 'Terminee',       ton: '' },
+  terminee:       { libelle: 'Terminée',       ton: '' },
 };
 
 export function pastilleEtat(cle, table) {

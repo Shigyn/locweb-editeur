@@ -311,15 +311,18 @@ async function chargerGbp(zone, periode) {
     vider(zone);
     const echec = blocPliable('Performance de votre fiche Google');
     zone.append(echec.bloc);
+    // "Cette section reapparaitra des que Google reprendra la main"
+    // sonne bien mais ne dit rien : neuf fois sur dix Google a refuse
+    // pour une raison precise, et cette raison est deja dans la reponse.
+    // La cacher, c'est se condamner a deviner.
+    const manqueId = String(e.message).includes('Identifiant');
+    const detail = e.donnees?.detail;
     echec.corps.append(carteVide(
-      String(e.message).includes('Identifiant')
-        ? "Il manque l'identifiant de votre fiche Google"
-        : 'Statistiques de la fiche indisponibles',
-      String(e.message).includes('Identifiant')
-        ? "Renseignez-le dans Mon compte pour voir vues, appels et avis."
-        : "Cette section réapparaîtra dès que Google reprendra la main.",
-      String(e.message).includes('Identifiant')
-        ? h('a.bt.bt-vif', { href: '#/compte?onglet=connexions' }, 'Connecter') : null));
+      manqueId ? "Il manque l'identifiant de votre fiche Google" : 'Statistiques de la fiche indisponibles',
+      manqueId
+        ? 'Renseignez-le dans Mon compte pour voir vues, appels et avis.'
+        : (detail || "Réessayez dans un moment."),
+      manqueId ? h('a.bt.bt-vif', { href: '#/compte?onglet=connexions' }, 'Connecter') : null));
     return;
   }
 

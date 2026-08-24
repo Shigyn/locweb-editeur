@@ -1514,11 +1514,15 @@ a.op-client-lien:hover{ color: var(--encre); text-decoration: underline; }
    la couleur : c'est le texte qui informe, la teinte ne fait que
    confirmer. */
 .op-jetons{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+/* Le jeton dit l'etat ET ouvre le detail : il doit donc avoir l'air
+   cliquable, sans pour autant crier comme un bouton d'action. */
 .op-jeton{
-  font-size: .74rem; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  font-size: .74rem; font-weight: 600; padding: 5px 11px; border-radius: 20px;
   border: 1px solid var(--trait); background: var(--surface-creux);
-  color: var(--sourdine);
+  color: var(--sourdine); cursor: pointer;
+  transition: border-color .14s, background-color .14s, color .14s;
 }
+.op-jeton:hover{ border-color: var(--accent); color: var(--encre); background: var(--surface); }
 .op-jeton[data-ok="oui"]{
   color: var(--vert); border-color: var(--vert-voile); background: var(--vert-voile);
 }
@@ -1548,3 +1552,24 @@ details.op-client[open] .op-client-nom{ color: var(--encre); }
 .op-resume-etiq{ font-size: .8rem; color: var(--sourdine); margin-top: 2px; }
 .op-resume-graphe{ margin-top: 14px; opacity: .5; }
 .op-resume-actions{ display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+/* On rappelle en permanence de qui on regarde la page : sans ce
+   bandeau, l'operateur peut croire modifier son propre site. */
+.op-banniere{
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin: 14px 0 20px; padding: 12px 16px; border-radius: 10px;
+  background: var(--surface-creux); border: 1px dashed var(--trait-fort);
+}
+.op-banniere-etiq{
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--sourdine);
+}
+.op-banniere b{ font-size: .98rem; }
+
+.op-ligne{
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--trait);
+}
+.op-ligne:last-child{ border-bottom: 0; }
+.op-ligne-etiq{ font-size: .84rem; color: var(--sourdine); flex: none; }
+.op-ligne-val{ font-size: .9rem; font-weight: 600; text-align: right; overflow-wrap: anywhere; }

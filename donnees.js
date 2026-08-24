@@ -88,6 +88,8 @@ export async function majProfilTolerant(clientId, champs) {
 
 /* ---------- contenu du site ---------- */
 
+/* Le contenu d'un client vu par l'operateur : meme table, la policy
+   `est_operateur()` autorise la lecture de toutes les fiches. */
 export async function lireContenu(clientId) {
   const { data, error } = await sb
     .from('contenu_site')
@@ -307,10 +309,11 @@ export function statsGa4(periode = '7j', clientId = null) {
   return cacheStats.get(cle);
 }
 
-export function statsGbp(periode = '30j') {
-  const cle = `gbp:${periode}`;
+export function statsGbp(periode = '30j', clientId = null) {
+  const cle = `gbp:${periode}:${clientId || 'moi'}`;
   if (!cacheStats.has(cle)) {
-    cacheStats.set(cle, appelStats('gbp-donnees', periode).catch((e) => { cacheStats.delete(cle); throw e; }));
+    cacheStats.set(cle, appelStats('gbp-donnees', periode, clientId)
+      .catch((e) => { cacheStats.delete(cle); throw e; }));
   }
   return cacheStats.get(cle);
 }

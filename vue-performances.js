@@ -70,7 +70,10 @@ const FIDELITE = { new: 'Première visite', returning: 'Déjà venus' };
 const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const APPAREILS = { mobile: 'Téléphone', desktop: 'Ordinateur', tablet: 'Tablette' };
 
-export async function rendre(page, etat, { charger: cache } = {}) {
+/* `clientId` : quand l'operateur consulte la page d'un autre client.
+   Nul le reste du temps, et la fonction serveur refuse de toute facon
+   le parametre a qui n'est pas operateur. */
+export async function rendre(page, etat, { charger: cache, clientId = null } = {}) {
   const { client } = etat;
 
   // Chargees une fois pour toute la page : la rangee de chiffres du haut
@@ -138,7 +141,7 @@ export async function rendre(page, etat, { charger: cache } = {}) {
 
     let r;
     try {
-      r = await D.statsGa4(periode.cle);
+      r = await D.statsGa4(periode.cle, clientId);
     } catch (err) {
       const messageErreur = err.donnees?.error || err.message || '';
       if (messageErreur) {
@@ -310,7 +313,7 @@ export async function rendre(page, etat, { charger: cache } = {}) {
   if (etat.profil?.acces_google_business) {
     const zoneGbp = h('div');
     page.append(zoneGbp);
-    chargerGbp(zoneGbp, periodeActive);
+    chargerGbp(zoneGbp, periodeActive, clientId);
   }
 }
 
@@ -335,7 +338,7 @@ const AIDE_GBP = {
   clics_site: "Personnes venues sur votre site depuis votre fiche Google.",
 };
 
-async function chargerGbp(zone, periode) {
+async function chargerGbp(zone, periode, clientId) {
   vider(zone);
   const attente = blocPliable('Performance de votre fiche Google');
   attente.corps.append(h('div.grille-kpi', ...[0, 1, 2, 3].map(() => h('div.squelette.sq-kpi'))));
@@ -343,7 +346,7 @@ async function chargerGbp(zone, periode) {
 
   let r;
   try {
-    r = await D.statsGbp(periode);
+    r = await D.statsGbp(periode, clientId);
   } catch (e) {
     vider(zone);
     const echec = blocPliable('Performance de votre fiche Google');

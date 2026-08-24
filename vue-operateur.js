@@ -127,10 +127,10 @@ export async function rendre(page, etat, { oublier } = {}) {
     // Ce qui compte d'un coup d'oeil : est-ce branche, et quelqu'un
     // attend-il une reponse. Le detail se charge en ouvrant la fiche.
     const jetons = h('div.op-jetons',
-      jeton('Analytics', Boolean(p.acces_ga4)),
-      jeton('Fiche Google', Boolean(p.acces_google_business)),
-      jeton('Questionnaire', Boolean(p.complete_le)),
-      jeton('Éditeur complet', c.acces_client === 'complet'));
+      jeton('Analytics', Boolean(p.acces_ga4), () => ouvrir(c, 'statistiques')),
+      jeton('Fiche Google', Boolean(p.acces_google_business), () => ouvrir(c, 'fiche')),
+      jeton('Questionnaire', Boolean(p.complete_le), () => ouvrir(c, 'profil')),
+      jeton('Éditeur', c.acces_client === 'complet', () => ouvrir(c, 'site')));
 
     const nouvelles = compte?.nouvelles || 0;
     const resume = h('div.op-resume');
@@ -226,8 +226,105 @@ export async function rendre(page, etat, { oublier } = {}) {
         : null);
   }
 
-  function jeton(libelle, ok) {
-    return h('span.op-jeton', { 'data-ok': ok ? 'oui' : 'non' }, libelle);
+  /* Un jeton dit l'etat ET donne acces au detail.
+
+     Une pastille qui affiche "Analytics ✓" sans rien derriere oblige a
+     aller chercher ailleurs ce qu'elle annonce. Ici elle ouvre
+     directement la page correspondante du client. */
+  function jeton(libelle, ok, surClic) {
+    return h('button.op-jeton', {
+      type: 'button', 'data-ok': ok ? 'oui' : 'non',
+      onclick: (e) => { e.preventDefault(); e.stopPropagation(); surClic(); },
+    }, libelle);
+  }
+
+  /* ================= la page d'un client ================= */
+
+  /* On reutilise les vraies pages du client plutot que d'en refaire des
+     resumes : ce sont les memes donnees, la meme mise en page, et une
+     seule version a maintenir. `etat` est reconstruit autour du client
+     regarde, et le cache est nomme par client pour ne pas melanger les
+     fiches. */
+  async function ouvrir(c, quoi) {
+    const etatClient = { client: c, profil: profil(c) };
+    const cacheClient = new Map();
+    const chargerClient = (cle, fabrique) => {
+      const k = `${c.id}:${cle}`;
+      if (!cacheClient.has(k)) cacheClient.set(k, fabrique());
+      return cacheClient.get(k);
+    };
+
+    vider(page);
+    page.append(h('button.lien-retour', {
+      onclick: () => { rendre(page, etat, { oublier }); },
+    }, '← Tous les clients'));
+
+    const banniere = h('div.op-banniere',
+      h('span.op-banniere-etiq', 'Vous regardez'),
+      h('b', c.nom_site || 'ce client'));
+    page.append(banniere);
+
+    const hote = h('div');
+    page.append(hote);
+
+    try {
+      if (quoi === 'statistiques' || quoi === 'fiche') {
+        const m = await import('./vue-performances.js');
+        await m.rendre(hote, etatClient, { charger: chargerClient, clientId: c.id });
+        if (quoi === 'fiche') {
+          // Le bloc fiche est en bas de la page : on y descend plutot
+          // que de laisser le client chercher.
+          setTimeout(() => {
+            const bloc = [...hote.querySelectorAll('.bloc-pliable')]
+              .find((b) => b.textContent.includes('fiche Google'));
+            bloc?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 600);
+        }
+      } else if (quoi === 'site') {
+        const m = await import('./vue-monsite.js');
+        await m.rendre(hote, etatClient, { charger: chargerClient });
+      } else {
+        hote.append(ficheProfil(c));
+      }
+    } catch (err) {
+      console.error(`Ouverture ${quoi} de ${c.nom_site} :`, err);
+      hote.append(h('div.section', h('div.section-corps', { style: { padding: '24px 22px' } },
+        h('p.mot', { 'data-ton': 'alerte' }, 'Affichage impossible.'),
+        h('p.aide', { style: { marginTop: '8px' } }, err?.message || ''))));
+    }
+  }
+
+  /* Les reponses du questionnaire, en lecture. */
+  function ficheProfil(c) {
+    const p = profil(c);
+    const lignes = [
+      ['Questionnaire', p.complete_le ? `terminé ${depuis(p.complete_le)}` : 'jamais terminé'],
+      ['Secteur', p.secteur],
+      ['Métier', p.metier_precis || c.metier],
+      ['Ville', p.localisation || c.ville],
+      ['Zone', p.zone_intervention],
+      ['Contact', [p.contact_prenom, p.contact_nom].filter(Boolean).join(' ')],
+      ['Téléphone', p.contact_telephone || c.telephone],
+      ['E-mail', p.contact_email || c.email],
+      ['Objectifs', (p.objectifs || []).join(', ')],
+      ['Canaux actuels', (p.canaux_actuels || []).join(', ')],
+      ['Réseaux', Object.entries(p.reseaux || {}).filter(([, v]) => v).map(([k]) => k).join(', ')],
+      ['Formule', FORMULES[c.formule] || c.formule],
+      ['Accès éditeur', c.acces_client],
+      ['ID propriété GA4', p.ga4_property_id],
+      ['ID fiche Google', p.gbp_location_id],
+    ].filter(([, v]) => v);
+
+    const corpsFiche = h('div.section-corps', { style: { paddingTop: '10px' } });
+    lignes.forEach(([etiquette, valeur]) => {
+      corpsFiche.append(h('div.op-ligne',
+        h('span.op-ligne-etiq', etiquette),
+        h('span.op-ligne-val', String(valeur))));
+    });
+
+    return h('div.section',
+      h('div.section-tete', h('h2', 'Ses informations')),
+      corpsFiche);
   }
 
   /* ================= onglet 2 : les campagnes ================= */

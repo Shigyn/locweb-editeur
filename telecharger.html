@@ -2,6 +2,18 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<script>
+  /* Meme filet que dans index.html : une page http sortie du cache ne
+     repasse pas par le serveur et ne voit donc pas sa redirection.
+     Ici c'est doublement genant — sans https, le navigateur ne propose
+     jamais d'installer, et cette page ne sert plus a rien. */
+  if (location.protocol === 'http:'
+      && location.hostname !== 'localhost'
+      && location.hostname !== '127.0.0.1') {
+    location.replace('https://' + location.host + location.pathname
+      + location.search + location.hash);
+  }
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Installer Mon espace LocWeb</title>

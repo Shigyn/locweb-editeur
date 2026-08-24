@@ -2,6 +2,24 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<script>
+  /* Filet de securite, place avant tout le reste.
+
+     GitHub Pages redirige deja http vers https. Mais un navigateur qui
+     a garde l'ancienne page http en cache ne repasse pas par le
+     serveur, et ne voit donc jamais cette redirection : il reaffiche
+     « Non securise » indefiniment. Ici la page se redirige elle-meme,
+     puisqu'elle s'execute meme sortie du cache.
+
+     Sans https, pas de service worker, donc ni installation ni hors
+     ligne — et le mot de passe du client partirait en clair. */
+  if (location.protocol === 'http:'
+      && location.hostname !== 'localhost'
+      && location.hostname !== '127.0.0.1') {
+    location.replace('https://' + location.host + location.pathname
+      + location.search + location.hash);
+  }
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Mon espace LocWeb</title>

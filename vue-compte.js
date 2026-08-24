@@ -1,5 +1,10 @@
 // ===================================================================
-//  Mon compte — trois onglets : Mes infos, Connexions, Parrainage.
+//  Mon compte — deux onglets : Mes infos, Connexions.
+//
+//  Le parrainage a ete retire le 2026-08-24 : ce n'est pas un tableau
+//  de bord public, l'offre n'a pas a y figurer pour l'instant. Le code
+//  reste dans l'historique git si elle revient un jour, et la table
+//  `parrainages` en base ne gene personne.
 //
 //  Avant, c'etaient trois entrees de menu distinctes pour des pages
 //  visitees deux fois par an. Elles occupaient un tiers de la
@@ -34,7 +39,6 @@ const FORMULES = {
 const ONGLETS = [
   { cle: 'infos',      libelle: 'Mes infos' },
   { cle: 'connexions', libelle: 'Connexions' },
-  { cle: 'parrainage', libelle: 'Parrainage' },
 ];
 
 export async function rendre(page, etat) {
@@ -83,9 +87,7 @@ export async function rendre(page, etat) {
 
   async function dessiner() {
     vider(corps);
-    if (actif === 'infos') corps.append(await ongletInfos());
-    else if (actif === 'connexions') corps.append(ongletConnexions());
-    else corps.append(await ongletParrainage());
+    corps.append(actif === 'connexions' ? ongletConnexions() : await ongletInfos());
   }
 
   await dessiner();
@@ -532,86 +534,4 @@ export async function rendre(page, etat) {
       h('div', { style: { marginTop: '10px' } }, bouton));
   }
 
-  /* ================= onglet 3 : parrainage ================= */
-
-  async function ongletParrainage() {
-    const zone = h('div');
-    const code = codeParrainage(client);
-    const lien = `https://locweb.fr/?parrain=${encodeURIComponent(code)}`;
-    const message = `Salut, je passe par LocWeb pour mon site internet (${client.domaine || 'locweb.fr'}). Avec mon code ${code} ton premier mois est offert : ${lien}`;
-
-    async function copier(texte, quoi) {
-      try {
-        await navigator.clipboard.writeText(texte);
-        souffler(`${quoi} copié.`, 'bien');
-      } catch { souffler('Copie impossible.', 'alerte'); }
-    }
-
-    zone.append(h('div.section',
-      h('div.section-tete',
-        h('h2', 'Un mois offert de chaque côté'),
-        h('p', 'Votre filleul a son premier mois offert, vous aussi.')),
-      h('div.section-corps', { style: { paddingTop: '18px' } },
-        h('div.parrain-code',
-          h('span.parrain-etiq', 'Votre code'),
-          h('b.parrain-val', code),
-          h('button.bt.bt-plein.bt-mini', { onclick: () => copier(code, 'Code') }, 'Copier')),
-        h('div', { style: { display: 'flex', gap: '10px', marginTop: '14px', flexWrap: 'wrap' } },
-          h('a.bt.bt-vif', {
-            href: `https://wa.me/?text=${encodeURIComponent(message)}`,
-            target: '_blank', rel: 'noopener noreferrer',
-          }, 'Envoyer par WhatsApp'),
-          h('a.bt.bt-plein', { href: `sms:?&body=${encodeURIComponent(message)}` }, 'Par SMS'),
-          h('button.bt.bt-nu', { onclick: () => copier(lien, 'Lien') }, 'Copier le lien')))));
-
-    const suivi = h('div.section',
-      h('div.section-tete', h('h2', 'Vos parrainages')),
-      h('div.section-corps', { style: { paddingTop: '16px' } }, h('div.squelette')));
-    zone.append(suivi);
-
-    const corpsSuivi = suivi.querySelector('.section-corps');
-    try {
-      const { data, error } = await D.sb
-        .from('parrainages')
-        .select('id, filleul_nom, statut, date_creation')
-        .eq('parrain_client_id', client.id)
-        .order('date_creation', { ascending: false });
-      if (error) throw error;
-
-      vider(corpsSuivi);
-      if (!data.length) {
-        corpsSuivi.append(h('p.aide', "Personne n'a encore utilisé votre code."));
-      } else {
-        const table = h('div.liste-carte', { style: { margin: '0' } });
-        data.forEach((p) => {
-          table.append(h('div.ligne-liste',
-            h('span.principal',
-              h('strong', p.filleul_nom || 'Un artisan'),
-              h('span', dateLongue(p.date_creation))),
-            h('span.etat', { 'data-ton': p.statut === 'valide' ? 'bien' : 'veille' },
-              p.statut === 'valide' ? 'Mois offert' : 'En attente')));
-        });
-        corpsSuivi.append(table);
-      }
-    } catch {
-      // Table absente : on ne bluffe pas un compteur.
-      vider(corpsSuivi);
-      corpsSuivi.append(h('p.aide',
-        'Le suivi arrive bientôt. En attendant, on applique le mois offert à la main.'));
-    }
-
-    return zone;
-  }
-}
-
-/** Code lisible et stable, derive du nom du site. */
-function codeParrainage(client) {
-  if (client.code_parrainage) return client.code_parrainage;
-  const base = (client.nom_site || 'locweb')
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'LOCWEB';
-  // Quatre chiffres tires de l'identifiant : deux clients homonymes ne
-  // peuvent pas tomber sur le meme code.
-  const suffixe = String(client.id || '').replace(/\D/g, '').slice(-4).padStart(4, '0');
-  return `${base}${suffixe}`;
 }

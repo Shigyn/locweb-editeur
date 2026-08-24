@@ -22,7 +22,6 @@ const PAGES = [
   { titre: 'Publicité', detail: 'Campagnes Google et Meta', lien: '#/publicite', motsCles: 'ads acquisition campagne budget facebook' },
   { titre: 'Mon compte', detail: 'Coordonnees, metier, abonnement', lien: '#/compte', motsCles: 'infos profil telephone email formule prix' },
   { titre: 'Connexions', detail: 'Google Analytics, fiche Google, pixels', lien: '#/compte?onglet=connexions', motsCles: 'parametrage ga4 business ads pixel meta connecter' },
-  { titre: 'Parrainage', detail: 'Un mois offert de chaque cote', lien: '#/compte?onglet=parrainage', motsCles: 'offrir ami collegue filleul' },
   { titre: 'Mode opérateur', detail: 'Tous les clients et leurs campagnes', lien: '#/operateur', motsCles: 'agence admin operateur clients campagnes ads suivi' },
   { titre: 'Aide', detail: 'Nous contacter', lien: '#/aide', motsCles: 'support probleme question sos' },
 ];

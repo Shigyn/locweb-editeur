@@ -215,7 +215,7 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '58';
+export const VERSION = '59';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {
@@ -240,7 +240,7 @@ const ALIAS = {
   rapports:     'statistiques',
   'mes-infos':  'compte',
   parametrage:  'compte?onglet=connexions',
-  parrainage:   'compte?onglet=parrainage',
+  parrainage:   'compte',
 };
 
 function squelette() {

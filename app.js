@@ -182,17 +182,28 @@ async function rendreAccueilOnboarding() {
   });
 }
 
+/* Le menu de Nico est celui d'un client, plus un bloc a part.
+
+   Il est client de LocWeb comme les autres — meme espace, memes pages.
+   Melanger l'outil d'agence a ses propres entrees brouillerait les deux
+   roles : on ajoute donc un groupe distinct, tout en bas, sous son
+   propre intitule. */
 function ajouterMenuOperateur() {
-  const pied = document.querySelector('.rail-pied .rail-nav');
+  const pied = document.querySelector('.rail-pied');
   if (!pied || pied.querySelector('[data-route="operateur"]')) return;
-  const lien = h('a', { href: '#/operateur', 'data-route': 'operateur' },
-    h('svg.ic', {
-      viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
-      'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-      html: '<path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-5"/>',
-    }),
-    'Demandes clients');
-  pied.insertBefore(lien, pied.firstChild);
+
+  const groupe = h('div.rail-operateur',
+    h('p.rail-titre', 'Agence'),
+    h('div.rail-nav',
+      h('a', { href: '#/operateur', 'data-route': 'operateur' },
+        h('svg.ic', {
+          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+          'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+          html: '<path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-5"/>',
+        }),
+        'Mode opérateur')));
+
+  pied.insertBefore(groupe, pied.firstChild);
 }
 
 /* ---------- routage ---------- */
@@ -204,7 +215,7 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '52';
+export const VERSION = '53';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {

@@ -218,6 +218,29 @@ export async function suisJeOperateur() {
   return !error && data === true;
 }
 
+/* Tous les clients avec leur profil. Les policies `est_operateur()`
+   font le tri : un client recevrait sa seule ligne, pas celles des
+   autres. */
+export async function tousLesClients() {
+  const { data, error } = await sb.from('clients')
+    .select('id, nom_site, domaine, formule, acces_client, statut, ville, telephone, date_creation,'
+      + ' profils_client(acces_ga4, acces_google_business, ga4_property_id, gbp_location_id,'
+      + ' contact_telephone, contact_email, metier_precis, complete_le)')
+    .order('nom_site');
+  if (error) throw error;
+  return data || [];
+}
+
+/* Toutes les demandes, pour compter par client sans une requete par
+   fiche. */
+export async function toutesLesDemandes() {
+  const { data, error } = await sb.from('leads')
+    .select('id, client_id, nom, statut, date_creation')
+    .order('date_creation', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export async function listerToutesCampagnes() {
   const { data, error } = await sb.from('campagnes')
     .select('id, nom, statut, objectif, budget_mensuel, zone, mots_cles, note, date_creation, client_id, clients(nom_site)')

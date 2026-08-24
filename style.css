@@ -1482,3 +1482,44 @@ a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
 .camembert-puce{ background: var(--encre-douce); }
 .repartition-barre{ background: var(--encre-douce); opacity: .55; }
 .zone svg polyline[stroke]{ stroke: var(--encre-douce); }
+
+/* ---------- mode operateur ---------- */
+
+/* Detache du menu client par un filet : ce sont deux roles differents,
+   et Nico doit voir d'un coup d'oeil quand il quitte son espace de
+   client pour son outil d'agence. */
+.rail-operateur{
+  padding-bottom: 12px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--trait);
+}
+.rail-operateur .rail-titre{ padding-top: 0; }
+
+/* Une fiche client dans la vue operateur : lisible en survolant la
+   liste, sans avoir a ouvrir quoi que ce soit. */
+.op-client{ padding: 16px 0; border-bottom: 1px solid var(--trait); }
+.op-client:last-child{ border-bottom: 0; }
+.op-client-tete{
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+}
+.op-client-nom{ font-size: 1rem; font-weight: 700; letter-spacing: -.02em; }
+.op-client-lien{
+  font-size: .84rem; color: var(--sourdine);
+  text-decoration: none; margin-top: 2px; display: inline-block;
+}
+a.op-client-lien:hover{ color: var(--encre); text-decoration: underline; }
+.op-client-pied{ font-size: .82rem; color: var(--sourdine); margin-top: 10px; }
+
+/* Les branchements, en un coup d'oeil. Le mot reste lisible meme sans
+   la couleur : c'est le texte qui informe, la teinte ne fait que
+   confirmer. */
+.op-jetons{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.op-jeton{
+  font-size: .74rem; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  border: 1px solid var(--trait); background: var(--surface-creux);
+  color: var(--sourdine);
+}
+.op-jeton[data-ok="oui"]{
+  color: var(--vert); border-color: var(--vert-voile); background: var(--vert-voile);
+}
+.op-jeton[data-ok="oui"]::before{ content: '✓ '; }

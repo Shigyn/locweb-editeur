@@ -14,7 +14,7 @@
 //  fraiches seraient pires que pas de donnees du tout.
 // ===================================================================
 
-const CACHE = 'locweb-espace-v1';
+const CACHE = 'locweb-espace-v2';
 
 // Le strict necessaire pour que l'app s'ouvre hors ligne. Le reste des
 // modules est mis en cache au fil de la navigation.
@@ -22,6 +22,7 @@ const COQUILLE = [
   '/',
   '/index.html',
   '/app.webmanifest',
+  '/icone-192.png',
   '/icone-512.png',
 ];
 

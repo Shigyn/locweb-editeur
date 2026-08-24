@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "fr.locweb.espace",
+      "sha256_cert_fingerprints": [
+        "8D:65:7A:6B:20:5E:6B:4B:1C:6E:9C:BC:F8:8E:7A:FF:E0:8C:74:62:C2:F7:8C:58:0E:98:A6:D6:A3:F3:B8:B8"
+      ]
+    }
+  }
+]

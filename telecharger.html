@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Installer Mon espace LocWeb</title>
+<link rel="manifest" href="app.webmanifest">
+<link rel="icon" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-512.png">
+<meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0E11" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fond: #FAF9F6; --surface: #FFFFFF; --creux: #F5F3EE;
+    --encre: #16161A; --encre-douce: #52525B; --sourdine: #8B8880;
+    --trait: #EAE6DE; --accent: #1A1A1E; --accent-fonce: #000;
+    --ombre: 0 1px 2px rgba(22,22,26,.04), 0 4px 12px rgba(22,22,26,.045);
+    --r: 12px; --r-s: 8px;
+    --police: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fond: #0E0E11; --surface: #17171B; --creux: #1D1D22;
+      --encre: #F4F3F0; --encre-douce: #A8A6A0; --sourdine: #77756F;
+      --trait: #2A2A31; --accent: #F4F3F0; --accent-fonce: #FFF;
+      --ombre: 0 1px 2px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.25);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: clamp(1.5rem, 5vw, 3.5rem) 1.25rem 4rem;
+    background: var(--fond); color: var(--encre);
+    font: 400 16px/1.6 var(--police);
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 46rem; margin: 0 auto; }
+
+  .marque { font-weight: 700; letter-spacing: -.02em; font-size: 1.05rem; margin: 0 0 2.5rem; }
+  .marque em { font-style: normal; color: #E8281E; }
+
+  h1 { font-size: clamp(1.6rem, 5vw, 2.1rem); font-weight: 700; letter-spacing: -.025em; margin: 0 0 .6rem; text-wrap: balance; }
+  .chapeau { color: var(--encre-douce); margin: 0 0 2.5rem; max-width: 42ch; }
+
+  .carte {
+    background: var(--surface); border: 1px solid var(--trait);
+    border-radius: var(--r); box-shadow: var(--ombre);
+    padding: clamp(1.25rem, 4vw, 1.75rem); margin-bottom: 1rem;
+  }
+  .carte-vedette { border-color: var(--accent); }
+
+  .etiquette {
+    display: inline-block; font-size: .7rem; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--sourdine); margin-bottom: .55rem;
+  }
+  .carte h2 { font-size: 1.1rem; font-weight: 600; letter-spacing: -.01em; margin: 0 0 .5rem; }
+  .carte p { margin: 0 0 1rem; color: var(--encre-douce); }
+  .carte p:last-child { margin-bottom: 0; }
+
+  ol { margin: 0; padding-left: 1.15rem; color: var(--encre-douce); }
+  ol li { margin-bottom: .4rem; }
+  ol li:last-child { margin-bottom: 0; }
+
+  .bt {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .7rem 1.15rem; border: 1px solid transparent; border-radius: var(--r-s);
+    background: var(--accent); color: var(--fond);
+    font: 600 .95rem var(--police); text-decoration: none; cursor: pointer;
+  }
+  .bt:hover { background: var(--accent-fonce); }
+  .bt-nu { background: transparent; color: var(--encre); border-color: var(--trait); }
+  .bt-nu:hover { background: var(--creux); }
+  .bt[hidden] { display: none; }
+  .rangee { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+  .note {
+    margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--trait);
+    font-size: .875rem; color: var(--sourdine);
+  }
+  .autres { margin-top: 2.5rem; }
+  .autres summary {
+    cursor: pointer; font-weight: 600; font-size: .95rem;
+    padding: .6rem 0; color: var(--encre-douce);
+  }
+  .autres summary::marker { color: var(--sourdine); }
+  .retour { display: inline-block; margin-top: 2.5rem; color: var(--sourdine); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <p class="marque">Loc<em>Web</em></p>
+
+  <h1>Installer votre espace</h1>
+  <p class="chapeau">
+    Une icône sur votre écran, une fenêtre sans barre d'adresse, et votre session
+    qui reste ouverte. C'est le même espace que dans le navigateur.
+  </p>
+
+  <!-- Rempli par le script selon l'appareil. Sans JavaScript, la liste
+       complete plus bas reste ouverte et rien n'est perdu. -->
+  <div id="recommande"></div>
+
+  <details class="autres" id="autres">
+    <summary>Les autres appareils</summary>
+
+    <div class="carte" data-systeme="windows">
+      <span class="etiquette">Windows</span>
+      <h2>Ordinateur Windows</h2>
+      <p>Ouvrez l'espace dans Chrome ou Edge, puis cliquez sur l'icône d'installation
+         à droite de la barre d'adresse. Ou téléchargez le programme d'installation.</p>
+      <div class="rangee">
+        <a class="bt bt-nu" href="https://github.com/Shigyn/locweb-app/releases/latest/download/LocWeb-Espace-Windows.exe">Télécharger pour Windows</a>
+      </div>
+    </div>
+
+    <div class="carte" data-systeme="android">
+      <span class="etiquette">Android</span>
+      <h2>Téléphone Android</h2>
+      <p>Ouvrez l'espace dans Chrome, touchez le menu ⋮ puis « Installer l'application ».</p>
+      <div class="rangee">
+        <a class="bt bt-nu" href="https://github.com/Shigyn/locweb-app/releases/latest/download/LocWeb-Espace-Android.apk">Télécharger l'apk</a>
+      </div>
+    </div>
+
+    <div class="carte" data-systeme="linux">
+      <span class="etiquette">Linux</span>
+      <h2>Ordinateur Linux</h2>
+      <p>L'AppImage fonctionne partout : rendez le fichier exécutable, puis lancez-le.
+         Le paquet .deb convient à Debian, Ubuntu et Mint.</p>
+      <div class="rangee">
+        <a class="bt bt-nu" href="https://github.com/Shigyn/locweb-app/releases/latest/download/LocWeb-Espace-Linux.AppImage">AppImage</a>
+        <a class="bt bt-nu" href="https://github.com/Shigyn/locweb-app/releases/latest/download/LocWeb-Espace-Linux.deb">Paquet .deb</a>
+      </div>
+    </div>
+
+    <div class="carte" data-systeme="ios">
+      <span class="etiquette">iPhone et iPad</span>
+      <h2>iPhone et iPad</h2>
+      <p>L'ajout se fait depuis Safari, en trois gestes :</p>
+      <ol>
+        <li>Touchez le bouton Partager, en bas de l'écran.</li>
+        <li>Faites défiler, puis touchez « Sur l'écran d'accueil ».</li>
+        <li>Touchez « Ajouter », en haut à droite.</li>
+      </ol>
+    </div>
+  </details>
+
+  <a class="retour" href="/#/accueil">← Revenir à mon espace</a>
+</main>
+
+<script type="module">
+/* ===================================================================
+   Un client d'artisan ne doit pas avoir a savoir ce qu'est un AppImage
+   ni ou se trouve le menu de Chrome. On detecte l'appareil, on met en
+   avant le seul chemin qui le concerne, et on range le reste.
+
+   L'installation par le navigateur passe avant le fichier a
+   telecharger : elle ne declenche aucun avertissement de securite,
+   alors qu'un programme non signe fait afficher a Windows un ecran
+   bleu « Windows a protege votre ordinateur », et qu'un apk installe
+   hors du Play Store fait passer par les reglages du telephone.
+   =================================================================== */
+
+// Le visiteur peut arriver ici sans etre jamais passe par l'espace :
+// le service worker doit donc etre enregistre depuis cette page aussi,
+// sans quoi le navigateur la juge non installable.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => { /* sans lui, il reste le telechargement */ });
+}
+
+const ua = navigator.userAgent;
+const systeme =
+  /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios'
+  : /Android/.test(ua) ? 'android'
+  : /Windows/.test(ua) ? 'windows'
+  : /Linux|X11/.test(ua) ? 'linux'
+  : /Mac/.test(ua) ? 'mac'
+  : null;
+
+const dejaInstallee = matchMedia('(display-mode: standalone)').matches
+  || navigator.standalone === true;
+
+/* L'invite native n'est proposee par le navigateur que s'il juge le
+   site installable. On la capture pour la declencher au clic. */
+let invite = null;
+addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  invite = e;
+  const bt = document.querySelector('#bt-installer');
+  if (bt) bt.hidden = false;
+});
+
+const RECOMMANDE = {
+  windows: {
+    etiquette: 'Windows',
+    titre: 'Installer sur cet ordinateur',
+    texte: "L'espace s'ajoute à votre menu Démarrer et s'ouvre dans sa propre fenêtre.",
+    second: { texte: 'Télécharger le programme (.exe)', lien: 'LocWeb-Espace-Windows.exe' },
+    note: "Windows peut afficher un avertissement à l'ouverture du fichier, parce que le programme n'est pas encore signé : cliquez sur « Informations complémentaires », puis « Exécuter quand même ». L'installation par le navigateur, elle, n'affiche rien.",
+  },
+  android: {
+    etiquette: 'Android',
+    titre: 'Installer sur ce téléphone',
+    texte: "L'espace s'ajoute à votre écran d'accueil et s'ouvre en plein écran, comme n'importe quelle application.",
+    second: { texte: "Télécharger l'apk", lien: 'LocWeb-Espace-Android.apk' },
+    note: "Si le bouton n'apparaît pas, ouvrez cette page dans Chrome : touchez le menu ⋮ puis « Installer l'application ».",
+    aide: ['Touchez le menu ⋮ en haut à droite de Chrome.', "Touchez « Installer l'application »."],
+  },
+  linux: {
+    etiquette: 'Linux',
+    titre: 'Installer sur cet ordinateur',
+    texte: "L'espace s'ajoute à votre menu d'applications et s'ouvre dans sa propre fenêtre.",
+    second: { texte: 'AppImage', lien: 'LocWeb-Espace-Linux.AppImage' },
+    tiers: { texte: 'Paquet .deb', lien: 'LocWeb-Espace-Linux.deb' },
+  },
+  ios: {
+    etiquette: 'iPhone et iPad',
+    titre: "Ajouter à votre écran d'accueil",
+    texte: 'Sur iPhone, la manœuvre se fait depuis Safari, en trois gestes :',
+    etapes: [
+      'Touchez le bouton Partager, en bas de l’écran.',
+      'Faites défiler, puis touchez « Sur l’écran d’accueil ».',
+      'Touchez « Ajouter », en haut à droite.',
+    ],
+  },
+  mac: {
+    etiquette: 'Mac',
+    titre: 'Installer sur ce Mac',
+    texte: "Dans Safari, menu Fichier puis « Ajouter au Dock ». Dans Chrome, cliquez sur l'icône d'installation à droite de la barre d'adresse.",
+  },
+};
+
+const BASE = 'https://github.com/Shigyn/locweb-app/releases/latest/download/';
+const hote = document.querySelector('#recommande');
+
+if (dejaInstallee) {
+  hote.innerHTML = '<div class="carte"><span class="etiquette">C’est fait</span>'
+    + '<h2>L’application est déjà installée</h2>'
+    + '<p>Vous la lisez depuis l’application. Rien de plus à faire.</p></div>';
+} else if (systeme && RECOMMANDE[systeme]) {
+  const r = RECOMMANDE[systeme];
+  const bouts = [];
+  bouts.push('<div class="carte carte-vedette">');
+  bouts.push('<span class="etiquette">' + r.etiquette + '</span>');
+  bouts.push('<h2>' + r.titre + '</h2>');
+  bouts.push('<p>' + r.texte + '</p>');
+
+  if (r.etapes) {
+    bouts.push('<ol>' + r.etapes.map((e) => '<li>' + e + '</li>').join('') + '</ol>');
+  } else {
+    bouts.push('<div class="rangee">');
+    // Cache jusqu'a ce que le navigateur confirme qu'il sait installer :
+    // un bouton qui ne fait rien est pire que pas de bouton.
+    bouts.push('<button class="bt" id="bt-installer" hidden>Installer l’application</button>');
+    if (r.second) bouts.push('<a class="bt bt-nu" href="' + BASE + r.second.lien + '">' + r.second.texte + '</a>');
+    if (r.tiers) bouts.push('<a class="bt bt-nu" href="' + BASE + r.tiers.lien + '">' + r.tiers.texte + '</a>');
+    bouts.push('</div>');
+  }
+  if (r.note) bouts.push('<p class="note">' + r.note + '</p>');
+  bouts.push('</div>');
+  hote.innerHTML = bouts.join('');
+
+  const bt = document.querySelector('#bt-installer');
+  if (bt) {
+    if (invite) bt.hidden = false;
+    bt.addEventListener('click', async () => {
+      if (!invite) return;
+      invite.prompt();
+      await invite.userChoice;
+      invite = null;
+      bt.hidden = true;
+    });
+  }
+
+  // Le systeme reconnu est deja mis en avant : le laisser aussi dans la
+  // liste du bas ferait doublon.
+  const doublon = document.querySelector('.autres [data-systeme="' + systeme + '"]');
+  if (doublon) doublon.remove();
+  if (!document.querySelector('.autres .carte')) document.querySelector('#autres').remove();
+} else {
+  document.querySelector('#autres').open = true;
+}
+
+addEventListener('appinstalled', () => location.reload());
+</script>
+</body>
+</html>

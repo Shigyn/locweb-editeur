@@ -12,13 +12,23 @@
 
 export const VERSIONS = [
   {
+    version: '1.8',
+    date: '2026-08-24',
+    titre: 'Les appels reçus depuis votre site',
+    points: [
+      "Votre site compte désormais les appuis sur votre numéro de téléphone : c'est souvent la vraie mesure de son travail.",
+      'Statistiques : chaque répartition s\'ouvre et se referme d\'un clic, pour ne garder à l\'écran que ce que vous regardez.',
+      'Vos statistiques démarrent seules dès que vous connectez votre compte Google — plus rien à installer.',
+    ],
+  },
+  {
     version: '1.7',
     date: '2026-08-23',
     titre: 'Un espace plus simple',
     points: [
       'Le menu passe de dix entrées à cinq : Accueil, Statistiques, Mon site, Demandes, Publicité.',
       "L'accueil répond à une seule question : combien de visiteurs, combien de demandes, et quoi faire ensuite.",
-      'Vos infos, vos connexions Google et votre parrainage sont regroupés dans Mon compte.',
+      'Vos infos et vos connexions Google sont regroupées dans Mon compte.',
       "Installez l'espace comme une application : menu du compte, puis Installer l'application.",
       'Vos coordonnées et vos réponses au questionnaire sont enfin vraiment enregistrées.',
     ],

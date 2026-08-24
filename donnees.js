@@ -222,10 +222,12 @@ export async function suisJeOperateur() {
    font le tri : un client recevrait sa seule ligne, pas celles des
    autres. */
 export async function tousLesClients() {
+  // `*` volontairement, pas une liste de colonnes : PostgREST rejette
+  // la requete ENTIERE des qu'une seule colonne demandee n'existe pas.
+  // Une migration en retard suffirait a faire disparaitre toute la vue,
+  // et c'est arrive.
   const { data, error } = await sb.from('clients')
-    .select('id, nom_site, domaine, formule, acces_client, statut, ville, telephone, date_creation,'
-      + ' profils_client(acces_ga4, acces_google_business, ga4_property_id, gbp_location_id,'
-      + ' contact_telephone, contact_email, metier_precis, complete_le)')
+    .select('*, profils_client(*)')
     .order('nom_site');
   if (error) throw error;
   return data || [];
@@ -235,7 +237,7 @@ export async function tousLesClients() {
    fiche. */
 export async function toutesLesDemandes() {
   const { data, error } = await sb.from('leads')
-    .select('id, client_id, nom, statut, date_creation')
+    .select('id, client_id, statut, date_creation')
     .order('date_creation', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -243,7 +245,7 @@ export async function toutesLesDemandes() {
 
 export async function listerToutesCampagnes() {
   const { data, error } = await sb.from('campagnes')
-    .select('id, nom, statut, objectif, budget_mensuel, zone, mots_cles, note, date_creation, client_id, clients(nom_site)')
+    .select('*, clients(nom_site)')
     .order('date_creation', { ascending: false });
   if (error) throw error;
   return data || [];

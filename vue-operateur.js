@@ -52,12 +52,14 @@ export async function rendre(page, etat, { oublier } = {}) {
       vider(corps);
       corps.append(actif === 'clients' ? await ongletClients() : await ongletCampagnes());
     } catch (err) {
+      // Le motif exact plutot qu'une supposition : "pas operateur" et
+      // "colonne inexistante" se corrigent de deux facons opposees.
       console.error('Vue opérateur :', err);
       vider(corps);
       corps.append(h('div.section', h('div.section-corps', { style: { padding: '28px 22px' } },
         h('p.mot', { 'data-ton': 'alerte' }, 'Lecture impossible.'),
         h('p.aide', { style: { marginTop: '8px' } },
-          "Ce compte n'est pas reconnu comme opérateur, ou la base a refusé la requête."))));
+          err?.message || "La base a refusé la requête."))));
     }
   }
 

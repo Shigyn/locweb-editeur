@@ -106,14 +106,18 @@ export async function ecrireBrouillon(ligneId, brouillon) {
   if (error) throw error;
 }
 
-export async function publierChamp(ligne, clientId) {
+/* `parQui` distingue une publication faite par le client de celle faite
+   par LocWeb depuis le mode operateur. Sans ca l'historique attribue
+   tout au client, et six mois plus tard personne ne sait qui a change
+   quoi — y compris quand le client affirme n'avoir rien touche. */
+export async function publierChamp(ligne, clientId, parQui = 'client') {
   const { error } = await sb.from('contenu_site')
     .update({ valeur: ligne.valeur_brouillon, valeur_brouillon: null, date_maj: new Date().toISOString() })
     .eq('id', ligne.id);
   if (error) throw error;
   await sb.from('historique_publications').insert({
     client_id: clientId, cle_bloc: ligne.cle_bloc,
-    ancienne_valeur: ligne.valeur, nouvelle_valeur: ligne.valeur_brouillon, publie_par: 'client',
+    ancienne_valeur: ligne.valeur, nouvelle_valeur: ligne.valeur_brouillon, publie_par: parQui,
   }).catch(() => {}); // annexe : ne doit jamais faire echouer la publication elle-meme
 }
 

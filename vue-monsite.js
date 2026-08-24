@@ -37,7 +37,7 @@ function groupesAutorises(acces, groupesPresents, secteur) {
 }
 const JOURS = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi', dimanche: 'Dimanche' };
 
-export async function rendre(page, etat, { charger }) {
+export async function rendre(page, etat, { charger, parQui = 'client' } = {}) {
   const { client } = etat;
 
   const [contenu, produits, historique] = await Promise.all([
@@ -89,7 +89,7 @@ export async function rendre(page, etat, { charger }) {
     let echec = false;
     for (const id of ids) {
       const ligne = [...textes, ...images].find((l) => l.id === id);
-      try { await D.publierChamp(ligne, client.id); }
+      try { await D.publierChamp(ligne, client.id, parQui); }
       catch { echec = true; continue; }
       ligne.valeur = ligne.valeur_brouillon; ligne.valeur_brouillon = null;
       enAttente.delete(id);

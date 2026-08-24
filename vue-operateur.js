@@ -282,7 +282,9 @@ export async function rendre(page, etat, { oublier } = {}) {
         }
       } else if (quoi === 'site') {
         const m = await import('./vue-monsite.js');
-        await m.rendre(hote, etatClient, { charger: chargerClient });
+        // L'historique doit dire que c'est LocWeb qui a publie, pas le
+        // client : c'est la seule trace qui restera dans six mois.
+        await m.rendre(hote, etatClient, { charger: chargerClient, parQui: 'operateur' });
       } else {
         hote.append(ficheProfil(c));
       }

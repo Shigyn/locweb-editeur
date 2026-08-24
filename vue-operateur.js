@@ -21,6 +21,14 @@ const ONGLETS = [
   { cle: 'campagnes', libelle: 'Campagnes' },
 ];
 
+/* Au niveau du module, pas dans `rendre`.
+
+   Declare a l'interieur, il tombait apres le `await dessiner()` qui
+   l'utilise : un `const` n'existe pas avant sa ligne, et l'attente rend
+   l'ordre d'execution trompeur. La table n'a aucune raison d'etre
+   recreee a chaque rendu de toute facon. */
+const FORMULES = { vitrine: 'Vitrine', restaurant: 'Restaurant', ecommerce: 'E-commerce' };
+
 export async function rendre(page, etat, { oublier } = {}) {
   vider(page);
   page.append(h('h1', 'Mode opérateur'));
@@ -144,8 +152,6 @@ export async function rendre(page, etat, { oublier } = {}) {
          compte?.derniere ? `dernière demande ${depuis(compte.derniere)}` : null]
           .filter(Boolean).join(' · ')));
   }
-
-  const FORMULES = { vitrine: 'Vitrine', restaurant: 'Restaurant', ecommerce: 'E-commerce' };
 
   function jeton(libelle, ok) {
     return h('span.op-jeton', { 'data-ok': ok ? 'oui' : 'non' }, libelle);

@@ -281,23 +281,28 @@ export async function demanderCampagne(clientId, champs) {
    pour la meme periode partagent donc le meme aller-retour reseau. */
 const cacheStats = new Map();
 
-async function appelStats(fonction, periode) {
+async function appelStats(fonction, periode, clientId) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) throw new Error('Session absente.');
   const reponse = await fetch(`${EDGE_FUNCTIONS_URL}/${fonction}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ periode }),
+    body: JSON.stringify(clientId ? { periode, client_id: clientId } : { periode }),
   });
   const donnees = await reponse.json();
   if (!reponse.ok) throw Object.assign(new Error(donnees.error || 'Requête refusée.'), { donnees });
   return donnees;
 }
 
-export function statsGa4(periode = '7j') {
-  const cle = `ga4:${periode}`;
+/* `clientId` n'est utilisable que par un operateur, et c'est la
+   fonction serveur qui le verifie — pas ce fichier. Il entre dans la
+   cle de cache, sinon les chiffres d'un client s'afficheraient pour le
+   suivant. */
+export function statsGa4(periode = '7j', clientId = null) {
+  const cle = `ga4:${periode}:${clientId || 'moi'}`;
   if (!cacheStats.has(cle)) {
-    cacheStats.set(cle, appelStats('ga4-donnees', periode).catch((e) => { cacheStats.delete(cle); throw e; }));
+    cacheStats.set(cle, appelStats('ga4-donnees', periode, clientId)
+      .catch((e) => { cacheStats.delete(cle); throw e; }));
   }
   return cacheStats.get(cle);
 }

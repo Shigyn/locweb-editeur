@@ -215,7 +215,7 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '55';
+export const VERSION = '56';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {

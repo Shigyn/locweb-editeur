@@ -12,7 +12,7 @@
 //    - Campagnes : qu'est-ce qui attend d'etre monte dans Google Ads
 // ===================================================================
 
-import { h, vider, souffler, depuis, euros, nombre, certain,
+import { h, vider, souffler, depuis, euros, nombre, certain, grapheAires,
          pastilleEtat, ETATS_CAMPAGNE, SUITE_CAMPAGNE } from './outils.js';
 import * as D from './donnees.js';
 
@@ -125,7 +125,7 @@ export async function rendre(page, etat, { oublier } = {}) {
       : null;
 
     // Ce qui compte d'un coup d'oeil : est-ce branche, et quelqu'un
-    // attend-il une reponse. Le reste se lit en ouvrant sa fiche.
+    // attend-il une reponse. Le detail se charge en ouvrant la fiche.
     const jetons = h('div.op-jetons',
       jeton('Analytics', Boolean(p.acces_ga4)),
       jeton('Fiche Google', Boolean(p.acces_google_business)),
@@ -133,24 +133,97 @@ export async function rendre(page, etat, { oublier } = {}) {
       jeton('Éditeur complet', c.acces_client === 'complet'));
 
     const nouvelles = compte?.nouvelles || 0;
+    const resume = h('div.op-resume');
 
-    return h('div.op-client',
-      h('div.op-client-tete',
+    // Les chiffres ne partent qu'a l'ouverture. Charger les stats des
+    // douze clients d'un coup ferait douze appels Google pour une page
+    // qu'on ne lit qu'en diagonale.
+    let charge = false;
+    const fiche = h('details.op-client', {
+      ontoggle: () => {
+        if (!fiche.open || charge) return;
+        charge = true;
+        remplirResume(c, p, resume);
+      },
+    },
+      h('summary.op-client-tete',
         h('div',
           h('p.op-client-nom', c.nom_site || 'Sans nom'),
-          url
-            ? h('a.op-client-lien', { href: url, target: '_blank', rel: 'noopener noreferrer' }, c.domaine)
-            : h('p.op-client-lien', { style: { color: 'var(--sourdine)' } }, 'Pas de domaine')),
+          h('p.op-client-lien', url ? c.domaine : 'Pas de domaine')),
         nouvelles
           ? h('span.etat', { 'data-ton': 'action' },
               `${nouvelles} demande${nouvelles > 1 ? 's' : ''} à traiter`)
-          : h('span.etat', compte?.total ? `${compte.total} demande${compte.total > 1 ? 's' : ''}` : 'Aucune demande')),
+          : h('span.etat', compte?.total ? `${compte.total} demande${compte.total > 1 ? 's' : ''}` : 'Aucune demande'),
+        h('span.section-chevron', { html: '&rsaquo;' })),
       jetons,
       h('p.op-client-pied',
         [c.formule ? FORMULES[c.formule] || c.formule : null,
          p.metier_precis || c.ville,
          compte?.derniere ? `dernière demande ${depuis(compte.derniere)}` : null]
-          .filter(Boolean).join(' · ')));
+          .filter(Boolean).join(' · ')),
+      resume);
+
+    return fiche;
+  }
+
+  /* Le resume de performances d'un client, charge a la demande.
+
+     La fonction ga4-donnees accepte un client_id quand l'appelant est
+     operateur — et c'est elle qui le verifie, pas cet ecran. */
+  async function remplirResume(c, p, hote) {
+    if (!p.acces_ga4) {
+      hote.append(h('p.aide', { style: { marginTop: '14px' } },
+        "Analytics n'est pas connecté chez ce client : aucun chiffre à afficher."),
+        actions(c, url(c)));
+      return;
+    }
+
+    hote.append(h('div.squelette', { style: { height: '76px', marginTop: '14px' } }));
+
+    let r;
+    try { r = await D.statsGa4('30j', c.id); }
+    catch (err) {
+      console.error(`Stats de ${c.nom_site} :`, err);
+      vider(hote);
+      hote.append(h('p.aide', { style: { marginTop: '14px' } },
+        err?.donnees?.error || err?.message || 'Chiffres indisponibles.'),
+        actions(c, url(c)));
+      return;
+    }
+
+    const t = r.totaux || {};
+    const serie = (r.series || []).map((l) => l.visiteurs);
+    const appels = (r.repartitions?.contacts || [])
+      .find((x) => x.cle === 'appel_telephone')?.valeur;
+
+    vider(hote);
+    hote.append(
+      h('p.op-resume-titre', '30 derniers jours'),
+      h('div.op-resume-chiffres',
+        mesure(nombre(t.visiteurs ?? 0), 'Visiteurs'),
+        mesure(nombre(t.pages_vues ?? 0), 'Pages vues'),
+        mesure(appels === undefined ? '—' : nombre(appels), 'Appels depuis le site')),
+      serie.length > 1
+        ? h('div.op-resume-graphe', grapheAires(serie, { hauteur: 44 }))
+        : null,
+      actions(c, url(c)));
+  }
+
+  function url(c) {
+    if (!c.domaine) return null;
+    return /^https?:\/\//.test(c.domaine) ? c.domaine : `https://${c.domaine}`;
+  }
+
+  function mesure(valeur, etiquette) {
+    return h('div', h('p.op-resume-val', valeur), h('p.op-resume-etiq', etiquette));
+  }
+
+  function actions(c, lien) {
+    return h('div.op-resume-actions',
+      lien
+        ? h('a.bt.bt-plein.bt-mini', { href: lien, target: '_blank', rel: 'noopener noreferrer' },
+            'Voir le site')
+        : null);
   }
 
   function jeton(libelle, ok) {

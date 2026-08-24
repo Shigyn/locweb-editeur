@@ -1523,3 +1523,28 @@ a.op-client-lien:hover{ color: var(--encre); text-decoration: underline; }
   color: var(--vert); border-color: var(--vert-voile); background: var(--vert-voile);
 }
 .op-jeton[data-ok="oui"]::before{ content: '✓ '; }
+
+/* La fiche client s'ouvre au clic sur son nom. */
+details.op-client > .op-client-tete{ cursor: pointer; list-style: none; }
+details.op-client > .op-client-tete::-webkit-details-marker{ display: none; }
+details.op-client .section-chevron{ margin-left: auto; align-self: center; }
+details.op-client[open] .section-chevron{ transform: rotate(90deg); }
+details.op-client[open] .op-client-nom{ color: var(--encre); }
+
+.op-resume{ margin-top: 4px; }
+.op-resume-titre{
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--sourdine);
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--trait);
+}
+.op-resume-chiffres{
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 14px; margin-top: 12px;
+}
+.op-resume-val{
+  font-size: 1.4rem; font-weight: 700; letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+.op-resume-etiq{ font-size: .8rem; color: var(--sourdine); margin-top: 2px; }
+.op-resume-graphe{ margin-top: 14px; opacity: .5; }
+.op-resume-actions{ display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }

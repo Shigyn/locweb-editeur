@@ -173,13 +173,24 @@ if ('serviceWorker' in navigator) {
 }
 
 const ua = navigator.userAgent;
-const systeme =
-  /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios'
-  : /Android/.test(ua) ? 'android'
-  : /Windows/.test(ua) ? 'windows'
-  : /Linux|X11/.test(ua) ? 'linux'
-  : /Mac/.test(ua) ? 'mac'
-  : null;
+
+function reconnaitre() {
+  // ?appareil=ios permet de voir depuis un PC ce qu'un client sur
+  // iPhone verra. Utile avant de dire a quelqu'un au telephone sur
+  // quel bouton appuyer.
+  const force = new URLSearchParams(location.search).get('appareil');
+  if (force && force in RECOMMANDE) return force;
+
+  // L'iPad recent se declare comme un Mac : seule la presence d'un
+  // ecran tactile le distingue.
+  if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+  if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  if (/Windows/.test(ua)) return 'windows';
+  if (/Mac/.test(ua)) return 'mac';
+  if (/Linux|X11|CrOS/.test(ua)) return 'linux';
+  return null;
+}
 
 const dejaInstallee = matchMedia('(display-mode: standalone)').matches
   || navigator.standalone === true;
@@ -236,6 +247,7 @@ const RECOMMANDE = {
 
 const BASE = 'https://github.com/Shigyn/locweb-app/releases/latest/download/';
 const hote = document.querySelector('#recommande');
+const systeme = reconnaitre();
 
 if (dejaInstallee) {
   hote.innerHTML = '<div class="carte"><span class="etiquette">C’est fait</span>'

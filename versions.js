@@ -12,6 +12,16 @@
 
 export const VERSIONS = [
   {
+    version: '1.9',
+    date: '2026-08-25',
+    titre: 'Votre espace devient une application',
+    points: [
+      "Installez-le sur votre téléphone ou votre ordinateur : une icône, une fenêtre à part, et vous restez connecté.",
+      "Windows, Android, Linux, iPhone et iPad — depuis le menu de votre compte, « Installer l'application ».",
+      "Une fois installé, l'essentiel reste consultable même sans réseau.",
+    ],
+  },
+  {
     version: '1.8',
     date: '2026-08-24',
     titre: 'Les appels reçus depuis votre site',

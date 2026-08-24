@@ -1476,3 +1476,9 @@ a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
    comparer. */
 .repartition-barre{ background: var(--encre-douce); }
 .camembert-puce{ opacity: .9; }
+
+/* Ni noir plein dans les graphiques ni dans les puces de legende : sur
+   fond creme, le noir fait une tache qui se lit avant la donnee. */
+.camembert-puce{ background: var(--encre-douce); }
+.repartition-barre{ background: var(--encre-douce); opacity: .55; }
+.zone svg polyline[stroke]{ stroke: var(--encre-douce); }

@@ -191,7 +191,14 @@ export function grapheAires(valeurs, { hauteur = 64, couleur = 'var(--encre-douc
    et les arcs restent plus faciles à comparer que des parts pointues.
    Nuances de gris plutôt que couleurs : la teinte ne porte aucune
    information ici, seule la taille de l'arc compte. */
-const NUANCES = ['1', '.72', '.52', '.36', '.24', '.15'];
+/* Une echelle de gris, pas de noir.
+
+   Le noir plein sur fond creme fait une tache qui aspire le regard : le
+   camembert se lisait avant le chiffre qu'il illustre. On part d'un
+   gris profond et on descend — l'ecart entre les parts reste lisible,
+   la page reste calme. */
+const TEINTE_PART = 'var(--encre-douce)';
+const NUANCES = ['.88', '.62', '.44', '.30', '.20', '.13'];
 
 export function camembert(entrees, { taille = 132, trou = 0.62 } = {}) {
   const total = entrees.reduce((s, e) => s + e.valeur, 0);
@@ -211,14 +218,14 @@ export function camembert(entrees, { taille = 132, trou = 0.62 } = {}) {
     // on trace alors deux demi-anneaux qui forment le cercle complet.
     if (part >= 0.999) {
       arcs += `<path d="M ${cx} ${cy - R} A ${R} ${R} 0 1 1 ${cx - 0.01} ${cy - R} L ${cx - 0.01} ${cy - r} A ${r} ${r} 0 1 0 ${cx} ${cy - r} Z"
-                 fill="var(--encre)" fill-opacity="${NUANCES[i] || '.12'}" />`;
+                 fill="${TEINTE_PART}" fill-opacity="${NUANCES[i] || '.10'}" />`;
       angle = fin;
       return;
     }
 
     const p = (rayon, a) => `${(cx + rayon * Math.cos(a)).toFixed(2)} ${(cy + rayon * Math.sin(a)).toFixed(2)}`;
     arcs += `<path d="M ${p(R, angle)} A ${R} ${R} 0 ${grand} 1 ${p(R, fin)} L ${p(r, fin)} A ${r} ${r} 0 ${grand} 0 ${p(r, angle)} Z"
-               fill="var(--encre)" fill-opacity="${NUANCES[i] || '.12'}" />`;
+               fill="${TEINTE_PART}" fill-opacity="${NUANCES[i] || '.10'}" />`;
     angle = fin;
   });
 

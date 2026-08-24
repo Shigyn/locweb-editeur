@@ -17,7 +17,7 @@
 //  manque, on le dit — jamais de chiffre de demonstration.
 // ===================================================================
 
-import { h, vider, nombre, grapheAires, EXPLICATIONS, avecAide } from './outils.js';
+import { h, vider, nombre, grapheAires, grapheComplet, EXPLICATIONS, avecAide } from './outils.js';
 import * as D from './donnees.js';
 import { blocAFaire } from './completion.js';
 
@@ -95,18 +95,19 @@ function verdict(stats, demandes30, profil) {
 
 /* ---------- 2. les chiffres ---------- */
 
-/* On n'affiche que des cartes qui portent une valeur.
+/* Trois chiffres : qui vient, qui ecrit, qui appelle.
 
-   Trois cartes vides ne disent pas "pas de donnees", elles donnent
-   l'impression d'un outil casse. Et surtout : le taux de contact se
-   calcule a partir des deux autres — l'afficher a cote d'elles, c'est
-   montrer trois fois la meme chose. Il n'apparait donc que lorsqu'il
-   apprend quelque chose, et cede sa place aux appels Google des que la
-   fiche est reliee : un appel est un canal a part entiere, pas une
-   division des deux colonnes precedentes. */
+   Le taux de contact est parti : il se calculait a partir des deux
+   autres cartes, donc l'afficher a cote d'elles revenait a montrer
+   trois fois la meme chose. A sa place l'appel depuis le site, qui est
+   l'action qui rapporte vraiment chez un artisan et qui n'apparait
+   nulle part ailleurs.
+
+   On n'affiche jamais une carte sans valeur : trois cases vides ne
+   disent pas "pas de donnees", elles donnent l'impression d'un outil
+   casse. */
 function chiffres(stats, fiche, demandes30) {
   const visiteurs = stats?.totaux?.visiteurs ?? null;
-  const appels = fiche?.totaux?.appels ?? null;
   const grille = h('div.grille-kpi');
 
   if (visiteurs !== null) {
@@ -116,12 +117,18 @@ function chiffres(stats, fiche, demandes30) {
 
   grille.append(kpi('demandes', 'Demandes reçues', nombre(demandes30.length), null, null));
 
-  if (appels !== null) {
-    grille.append(kpi('appels', 'Appels depuis Google', nombre(appels), null, null));
-  } else if (visiteurs) {
-    const taux = (demandes30.length / visiteurs) * 100;
-    grille.append(kpi('conversion', 'Taux de contact', `${taux.toFixed(1)} %`,
-      null, null, 'conversion'));
+  // L'evenement vient du site (clients/mesure.js). Tant qu'un site n'a
+  // pas sa balise, l'evenement n'existe pas : on se rabat alors sur les
+  // appels de la fiche Google plutot que d'afficher un zero qui
+  // ferait croire que personne n'appelle.
+  const appelsSite = (stats?.repartitions?.contacts || [])
+    .find((c) => c.cle === 'appel_telephone')?.valeur;
+  const appelsFiche = fiche?.totaux?.appels ?? null;
+
+  if (appelsSite !== undefined) {
+    grille.append(kpi('appels', 'Appels depuis le site', nombre(appelsSite), null, null, 'contacts'));
+  } else if (appelsFiche !== null) {
+    grille.append(kpi('appels', 'Appels depuis Google', nombre(appelsFiche), null, null));
   }
 
   return grille;
@@ -151,6 +158,9 @@ function badgeVariation(v) {
 
 /* ---------- 3. la courbe ---------- */
 
+// Le meme graphe que Statistiques, avec ses axes et ses dates. La
+// version d'appoint etiree a 110 px n'avait ni echelle ni reperes : une
+// ligne qui monte et descend sans qu'on sache de combien ni quand.
 function courbe(stats) {
   const serie = stats?.series || [];
   if (serie.length < 2) return null;
@@ -159,6 +169,14 @@ function courbe(stats) {
       h('h2', 'Visiteurs'),
       h('a.section-lien', { href: '#/statistiques' }, 'Tout voir →')),
     h('div.section-corps', { style: { paddingTop: '18px' } },
-      h('div.kpi-graphe', { style: { height: '110px' } },
-        grapheAires(serie.map((l) => l.visiteurs), { hauteur: 110 }))));
+      grapheComplet(
+        serie.map((l) => l.visiteurs),
+        serie.map((l) => formaterJour(l.date)),
+        { hauteur: 190 })));
+}
+
+/* "20260823" -> "23/08". GA4 renvoie ses dates collees. */
+function formaterJour(brut) {
+  const s = String(brut || '');
+  return s.length === 8 ? `${s.slice(6, 8)}/${s.slice(4, 6)}` : s;
 }

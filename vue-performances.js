@@ -10,6 +10,7 @@
 
 import {
   h, vider, nombre, grapheComplet, camembert, souffler, EXPLICATIONS, avecAide,
+  sectionPliable,
 } from './outils.js';
 import * as D from './donnees.js';
 
@@ -448,10 +449,22 @@ function blocPliable(titre, ouvert = true) {
   return { bloc, corps };
 }
 
+/* Chaque repartition se plie, fermee a l'arrivee.
+
+   Huit blocs deplies les uns sous les autres font une page interminable
+   ou tout se vaut. Fermes, on voit d'un coup d'oeil ce qui existe, et
+   on ouvre ce qui interesse. Le resume porte la reponse principale —
+   "Telephone 75 %" — donc le bloc reste utile ferme. */
 function carteCamembert(titre, cleAide, entrees) {
-  return h('div.section',
-    h('div.section-tete', avecAide(h('h2', titre), EXPLICATIONS[cleAide])),
-    h('div.section-corps', { style: { paddingTop: '18px' } }, camembert(entrees)));
+  const tete = entrees.slice().sort((a, b) => b.valeur - a.valeur)[0];
+  const total = entrees.reduce((s, e) => s + e.valeur, 0);
+  const { bloc, corps } = sectionPliable({
+    titre,
+    resume: tete && total ? `${tete.nom} ${Math.round(tete.valeur / total * 100)} %` : null,
+  });
+  corps.append(h('div', { style: { paddingTop: '4px' } }, camembert(entrees)));
+  avecAide(bloc.querySelector('.section-nom'), EXPLICATIONS[cleAide]);
+  return bloc;
 }
 
 function carteRepartition(titre, cleAide, entrees) {
@@ -465,9 +478,14 @@ function carteRepartition(titre, cleAide, entrees) {
       h('span.repartition-val', nombre(e.valeur))));
   });
 
-  return h('div.section',
-    h('div.section-tete', avecAide(h('h2', titre), EXPLICATIONS[cleAide])),
-    h('div.section-corps', { style: { paddingTop: '16px' } }, corps));
+  const tete = entrees.slice().sort((a, b) => b.valeur - a.valeur)[0];
+  const { bloc, corps: dedans } = sectionPliable({
+    titre,
+    resume: tete ? `${tete.nom} · ${nombre(tete.valeur)}` : null,
+  });
+  dedans.append(h('div', { style: { paddingTop: '4px' } }, corps));
+  avecAide(bloc.querySelector('.section-nom'), EXPLICATIONS[cleAide]);
+  return bloc;
 }
 
 function badgeVariation(v) {

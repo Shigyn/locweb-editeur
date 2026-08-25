@@ -215,7 +215,7 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '64';
+export const VERSION = '65';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {
@@ -299,6 +299,13 @@ export async function rafraichirPastille() {
 // coquille mise en cache, sinon un client hors ligne ouvrirait une
 // icone sur une page blanche.
 import(v('./installation.js')).then((m) => m.installerServiceWorker());
+
+/* ---------- fenetre de l'application de bureau ----------
+
+   Sans effet dans un navigateur : le module sort aussitot si
+   `window.__TAURI__` n'existe pas. */
+
+import(v('./bureau.js')).then((m) => m.preparerFenetreBureau());
 
 /* ---------- reprise de session ---------- */
 

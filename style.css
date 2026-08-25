@@ -1571,3 +1571,28 @@ details.op-client[open] .op-client-nom{ color: var(--encre); }
 .op-ligne:last-child{ border-bottom: 0; }
 .op-ligne-etiq{ font-size: .84rem; color: var(--sourdine); flex: none; }
 .op-ligne-val{ font-size: .9rem; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+
+/* ================= application de bureau =================
+
+   Rien ici ne s'applique dans un navigateur : la classe
+   `dans-application` n'est posee que par bureau.js, quand la page
+   tourne dans la fenetre installee, et le bouton n'y est pas cree.
+
+   La fenetre est ouverte sans barre de titre — elle affichait un
+   bandeau gris au-dessus d'une interface qui a deja son entete. Ce
+   que le systeme assurait, la page le reprend : cette croix ferme
+   l'application, et `.entete` / `.connexion` servent de prise pour
+   deplacer la fenetre. */
+
+.fermer-application{
+  position: fixed; top: 8px; right: 10px; z-index: 200;
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border-radius: var(--r-s); color: var(--sourdine);
+  transition: background-color .14s, color .14s;
+}
+.fermer-application svg{ width: 15px; height: 15px; }
+.fermer-application:hover{ background: var(--alerte); color: #fff; }
+
+/* La croix se superpose au coin droit de l'entete : sans ce retrait,
+   elle recouvrirait l'icone des reglages. */
+html.dans-application .entete-droite{ padding-right: 38px; }

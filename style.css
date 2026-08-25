@@ -59,7 +59,17 @@ body{
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   min-height: 100dvh;
-  padding-bottom: 90px; /* place pour la barre de publication fixe */
+}
+
+/* Barres de defilement discretes.
+
+   L'application Windows affiche sinon la barre classique de Windows,
+   avec ses fleches aux extremites — ce qui trahit la page web dans ce
+   qui doit passer pour une application. Ces deux proprietes sont
+   standard et valent aussi bien pour le navigateur. */
+html{
+  scrollbar-width: thin;
+  scrollbar-color: var(--trait-fort) transparent;
 }
 
 button, input, select, textarea{ font: inherit; color: inherit; }
@@ -178,7 +188,12 @@ a.bt{ text-decoration:none; }
 .rail-site a:hover{ color: var(--encre); }
 .rail-pied > .bt{ width: 100%; margin-top: 4px; min-height: 40px; font-size: .88rem; }
 
-.zone{ margin-left: var(--rail); min-height: 100dvh; }
+/* Le retrait sous le contenu — la place de la barre de publication
+   fixe — etait porte par `body`, qui s'ajoutait donc aux 100dvh de
+   cette zone : chaque page depassait de 90 pixels et faisait
+   apparaitre une barre de defilement meme sur un ecran vide. Ici il
+   est compris dans la hauteur, grace au `box-sizing: border-box`. */
+.zone{ margin-left: var(--rail); min-height: 100dvh; padding-bottom: 90px; }
 
 /* ---------- entete haute ---------- */
 

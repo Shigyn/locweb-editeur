@@ -1645,3 +1645,27 @@ html.dans-application .entete-droite{ padding-right: 38px; }
 .rap-detail{ display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; }
 .rap-detail dt{ font-size: .88rem; color: var(--encre-douce); }
 .rap-detail dd{ font-size: .88rem; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* ================= demander un avis ================= */
+
+.avis-carte{
+  background: var(--surface); border: 1px solid var(--trait);
+  border-radius: var(--r); padding: 20px 22px; margin-top: 18px;
+}
+.avis-corps{ display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+/* Fond blanc et marge autour du code : un QR pose a meme une surface
+   coloree, ou colle a un bord, ne se scanne pas. */
+.qr-avis{
+  flex: none; border-radius: var(--r-s); background: #fff;
+  padding: 10px; border: 1px solid var(--trait);
+}
+.avis-texte-zone{ flex: 1 1 260px; min-width: 0; }
+.avis-titre{ font-size: 1rem; font-weight: 600; letter-spacing: -.01em; margin-bottom: 8px; }
+.avis-texte{ color: var(--encre-douce); font-size: .92rem; margin-bottom: 14px; max-width: 52ch; }
+.avis-actions{ display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.avis-lien{
+  flex: 1 1 220px; min-width: 0; padding: 8px 12px;
+  border: 1px solid var(--trait-fort); border-radius: var(--r-s);
+  background: var(--surface-creux); color: var(--encre-douce);
+  font-size: .85rem; text-overflow: ellipsis;
+}

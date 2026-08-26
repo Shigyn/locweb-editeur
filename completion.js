@@ -103,6 +103,16 @@ export function aFaire(profil = {}, client = {}, { stats = null, demandes = [] }
       ou: '#/mon-site',
     });
   }
+  // Les avis sont le premier levier de referencement local, et le lien
+  // se saisit une fois pour toutes. Tant qu'il manque, le QR de
+  // l'accueil ne peut pas exister.
+  if (!profil.lien_avis_google) {
+    liste.push({
+      titre: "Activer la demande d'avis",
+      pourquoi: 'Les avis Google font remonter votre fiche dans le coin.',
+      ou: '#/aide',
+    });
+  }
   if (!profil.contact_telephone) {
     liste.push({
       titre: 'Vos coordonnées',

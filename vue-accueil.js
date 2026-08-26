@@ -20,6 +20,7 @@
 import { h, vider, nombre, grapheAires, grapheComplet, EXPLICATIONS, avecAide } from './outils.js';
 import * as D from './donnees.js';
 import { blocAFaire } from './completion.js';
+import { blocAvis, lienValide } from './avis.js';
 
 const ICONES_KPI = {
   visiteurs: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
@@ -54,6 +55,11 @@ export async function rendre(page, etat, { charger }) {
   if (graphe) zone.append(graphe);
   const actions = blocAFaire(profil || {}, client, { stats, demandes, limite: 3 });
   if (actions) zone.append(actions);
+
+  // Le QR n'apparait que s'il a un lien a encoder. Sans lien, c'est la
+  // liste « a faire » ci-dessus qui le signale — inutile d'occuper
+  // l'accueil avec un encart qui ne sert a rien.
+  if (lienValide(profil?.lien_avis_google)) zone.append(blocAvis(profil));
 }
 
 /* ---------- 1. la phrase qui tranche ---------- */

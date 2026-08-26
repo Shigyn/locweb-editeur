@@ -6,6 +6,7 @@
 
 import { h, vider, differer, souffler, certain, depuis, prettifyKey } from './outils.js';
 import * as D from './donnees.js';
+import { sectionChantiers } from './chantiers.js';
 import { MANIFEST, GROUP_ORDER } from './manifest.js?v=6';
 
 /* Ce que le client peut modifier depend de sa formule :
@@ -40,10 +41,14 @@ const JOURS = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Je
 export async function rendre(page, etat, { charger, parQui = 'client' } = {}) {
   const { client } = etat;
 
-  const [contenu, produits, historique] = await Promise.all([
+  const [contenu, produits, historique, realisations] = await Promise.all([
     charger('contenu', () => D.lireContenu(client.id)),
     client.acces_client === 'complet' ? charger('produits', () => D.listerProduits(client.id)) : Promise.resolve([]),
     D.listerHistorique(client.id).catch(() => []),
+    // Les chantiers ne dependent pas du manifeste : ils existent pour
+    // tout client autorise a toucher son site, quel que soit son
+    // niveau d'acces aux sections balisees.
+    client.acces_client === 'aucun' ? Promise.resolve([]) : D.listerRealisations(client.id).catch(() => []),
   ]);
 
   vider(page);
@@ -124,6 +129,7 @@ export async function rendre(page, etat, { charger, parQui = 'client' } = {}) {
     if (client.acces_client === 'complet') {
       page.append(sectionProduits(client, produits, etat.profil?.secteur));
     }
+    page.append(sectionChantiers(client, realisations));
   }
 
   if (groupesVerrouilles.length && client.acces_client !== 'aucun') {

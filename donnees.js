@@ -382,3 +382,42 @@ export async function oublierAbonnementPush(endpoint) {
   const { error } = await sb.from('abonnements_push').delete().eq('endpoint', endpoint);
   if (error) throw error;
 }
+
+/* ---------- chantiers (photos avant / apres) ---------- */
+
+/* Le bucket `site-images` sert deja aux photos de produits. Un seul
+   bucket, des chemins distincts : un bucket de plus voudrait dire une
+   policy de plus a tenir a jour, pour aucun gain. */
+export async function envoyerFichierSite(chemin, blob) {
+  const { error } = await sb.storage.from('site-images')
+    .upload(chemin, blob, { contentType: 'image/jpeg', upsert: false });
+  if (error) throw error;
+  return sb.storage.from('site-images').getPublicUrl(chemin).data.publicUrl;
+}
+
+export async function listerRealisations(clientId) {
+  const { data, error } = await sb.from('realisations')
+    .select('id, titre, description, photo_avant, photo_apres, ordre, publiee, cree_le')
+    .eq('client_id', clientId)
+    .order('ordre', { ascending: false })
+    .order('cree_le', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function creerRealisation(clientId, champs) {
+  const { data, error } = await sb.from('realisations')
+    .insert({ client_id: clientId, ...champs }).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function majRealisation(id, champs) {
+  const { error } = await sb.from('realisations').update(champs).eq('id', id);
+  if (error) throw error;
+}
+
+export async function supprimerRealisation(id) {
+  const { error } = await sb.from('realisations').delete().eq('id', id);
+  if (error) throw error;
+}

@@ -1676,3 +1676,51 @@ html.dans-application .entete-droite{ padding-right: 38px; }
   background: var(--surface); border: 1px solid var(--trait);
   border-radius: var(--r); padding: 20px 22px; margin-bottom: 14px;
 }
+
+/* ================= chantiers (avant / apres) ================= */
+
+.chantier-liste{ display: grid; gap: 14px; }
+.chantier-invite{ color: var(--sourdine); font-size: .92rem; max-width: 56ch; }
+
+.chantier-carte{
+  display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 18px; padding: 16px; border: 1px solid var(--trait);
+  border-radius: var(--r); background: var(--surface-creux);
+}
+@media (max-width: 720px){
+  .chantier-carte{ grid-template-columns: 1fr; }
+}
+
+.chantier-photos{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chantier-champ{ display: grid; gap: 6px; min-width: 0; }
+.chantier-libelle{ font-size: .76rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--sourdine); }
+
+/* Rapport 4/3 fixe : sans lui, la carte saute a chaque photo chargee,
+   et deux cliches de formats differents se decalent l'un l'autre. */
+.chantier-vignette{
+  aspect-ratio: 4 / 3; border-radius: var(--r-s); overflow: hidden;
+  background: var(--fond); border: 1px dashed var(--trait-fort);
+  display: grid; place-items: center;
+}
+.chantier-vignette img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.chantier-vide{ font-size: .76rem; color: var(--sourdine); }
+.chantier-bt-photo{ width: 100%; justify-content: center; font-size: .82rem; padding: 7px 10px; }
+
+.chantier-infos{ display: grid; gap: 8px; align-content: start; min-width: 0; }
+.chantier-titre, .chantier-desc{
+  width: 100%; padding: 9px 12px; border: 1px solid var(--trait-fort);
+  border-radius: var(--r-s); background: var(--surface); color: var(--encre);
+}
+.chantier-desc{ resize: vertical; font: inherit; }
+.chantier-pied{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.chantier-visible{ display: inline-flex; align-items: center; gap: 8px; font-size: .86rem; color: var(--encre-douce); }
+.chantier-suppr{ color: var(--alerte); font-size: .84rem; }
+.chantier-actions{ margin-top: 14px; }
+
+/* Sur telephone, la cible tactile passe a 44 px : c'est le seuil sous
+   lequel un appui rate regulierement. Or c'est precisement dehors, sur
+   un chantier et parfois avec les mains sales, que ce bouton sert. */
+@media (max-width: 720px){
+  .chantier-bt-photo{ min-height: 44px; }
+  .chantier-visible{ min-height: 44px; }
+}

@@ -1724,3 +1724,36 @@ html.dans-application .entete-droite{ padding-right: 38px; }
   .chantier-bt-photo{ min-height: 44px; }
   .chantier-visible{ min-height: 44px; }
 }
+
+/* ================= Search Console ================= */
+
+.sc-chiffres{
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px; margin-bottom: 16px;
+}
+.sc-chiffre{
+  background: var(--surface-creux); border: 1px solid var(--trait);
+  border-radius: var(--r-s); padding: 14px 16px;
+}
+.sc-etiq{ font-size: .8rem; color: var(--sourdine); margin-bottom: 4px; }
+.sc-valeur{ font-size: 1.6rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.sc-aide{ font-size: .78rem; color: var(--sourdine); margin-top: 4px; }
+
+/* Le tableau peut etre large : il defile dans son propre cadre, jamais
+   en poussant la page de cote. */
+.sc-defile{ overflow-x: auto; }
+.sc-table{ width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 420px; }
+.sc-table th{
+  text-align: left; font-size: .74rem; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--sourdine);
+  padding: 0 10px 8px; border-bottom: 1px solid var(--trait);
+}
+.sc-table td{ padding: 9px 10px; border-bottom: 1px solid var(--trait); }
+.sc-table tr:last-child td{ border-bottom: 0; }
+.sc-mot{ color: var(--encre); overflow-wrap: anywhere; }
+/* `.sc-table th` porte deja `text-align: left` et pese plus lourd
+   qu'une classe seule : sans le prefixe, les en-tetes de colonnes
+   chiffrees restaient alignes a gauche au-dessus de nombres alignes a
+   droite. */
+.sc-table .sc-num{ text-align: right; font-variant-numeric: tabular-nums; color: var(--encre-douce); white-space: nowrap; }
+.sc-note{ margin-top: 12px; font-size: .8rem; color: var(--sourdine); max-width: 68ch; }

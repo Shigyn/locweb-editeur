@@ -337,6 +337,17 @@ export function statsGa4Mois(annee, mois, clientId = null) {
   return cacheStats.get(cle);
 }
 
+/* Search Console : ce qui se passe AVANT l'arrivee sur le site. Meme
+   mise en cache que les autres, meme regle sur `clientId`. */
+export function statsSearchConsole(periode = '30j', clientId = null) {
+  const cle = `sc:${periode}:${clientId || 'moi'}`;
+  if (!cacheStats.has(cle)) {
+    cacheStats.set(cle, appelStats('search-console-donnees', periode, clientId)
+      .catch((e) => { cacheStats.delete(cle); throw e; }));
+  }
+  return cacheStats.get(cle);
+}
+
 export function statsGbp(periode = '30j', clientId = null) {
   const cle = `gbp:${periode}:${clientId || 'moi'}`;
   if (!cacheStats.has(cle)) {

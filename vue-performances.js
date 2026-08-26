@@ -10,7 +10,7 @@
 
 import {
   h, vider, nombre, grapheComplet, camembert, souffler, EXPLICATIONS, avecAide,
-  sectionPliable,
+  sectionPliable, dateLongue,
 } from './outils.js';
 import * as D from './donnees.js';
 
@@ -315,6 +315,90 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
     page.append(zoneGbp);
     chargerGbp(zoneGbp, periodeActive, clientId);
   }
+
+  // Search Console : meme principe, chargement independant. Si la
+  // propriete n'est pas reliee, la fonction repond `search_console_absent`
+  // et on n'affiche rien du tout — un encart « indisponible » de plus
+  // n'apprendrait rien au client.
+  if (etat.profil?.search_console_site) {
+    const zoneSc = h('div');
+    page.append(zoneSc);
+    chargerRecherche(zoneSc, periodeActive, clientId, etat.profil);
+  }
+}
+
+/* ---------- ce que les gens tapent sur Google ----------
+
+   Presente dans cet ordre : les mots tapes, puis les apparitions,
+   puis les clics. La position vient en dernier, par requete, et
+   jamais en titre.
+
+   Ce n'est pas de la pudeur : une position moyenne globale ne veut
+   rien dire — etre 3e sur son propre nom et 30e sur « plombier
+   Beziers » donne une moyenne de 16 qui ne decrit aucune realite et
+   ne se soigne pas. Par requete, chaque ligne dit quoi faire. */
+async function chargerRecherche(hote, periode, clientId, profil) {
+  vider(hote);
+
+  let d;
+  try {
+    d = await D.statsSearchConsole(periode, clientId);
+  } catch (e) {
+    // Silencieux : ni le client ni Nico n'ont d'action a mener depuis
+    // cette page, et un bandeau rouge de plus ferait douter du reste.
+    console.warn('Search Console indisponible', e);
+    return;
+  }
+
+  const t = d.totaux || {};
+  const requetes = (d.requetes || []).filter((r) => r.cle);
+  if (!t.apparitions && !requetes.length) return;
+
+  const { bloc, corps } = sectionPliable({
+    titre: 'Ce que les gens tapent sur Google',
+    sous: "Avant d'arriver sur votre site",
+    resume: t.apparitions ? `${nombre(Math.round(t.apparitions))} apparitions` : null,
+  });
+
+  corps.append(h('div.sc-chiffres',
+    chiffreSc('Apparitions dans Google', Math.round(t.apparitions || 0),
+      'Le nombre de fois où votre site est apparu dans les résultats.'),
+    chiffreSc('Clics vers votre site', Math.round(t.clics || 0),
+      'Parmi ces apparitions, ceux qui ont cliqué.')));
+
+  if (requetes.length) {
+    const table = h('table.sc-table',
+      h('thead', h('tr',
+        h('th', 'Ce qui a été tapé'),
+        h('th.sc-num', 'Vu'),
+        h('th.sc-num', 'Cliqué'),
+        h('th.sc-num', 'Position'))),
+      h('tbody', ...requetes.map((r) => h('tr',
+        h('td.sc-mot', r.cle),
+        h('td.sc-num', nombre(Math.round(r.apparitions))),
+        h('td.sc-num', nombre(Math.round(r.clics))),
+        h('td.sc-num', r.position ? Math.round(r.position) : '—')))));
+    corps.append(h('div.sc-defile', table));
+  }
+
+  /* Deux precisions que le client doit avoir sous les yeux, sinon il
+     conclut de travers : le retard de publication de Google, et le
+     fait que les chiffres ne remontent pas avant la verification. */
+  const depuis = profil?.search_console_depuis;
+  corps.append(h('p.sc-note',
+    `Google publie ces chiffres avec deux à trois jours de retard`
+    + (depuis ? `, et ne les conserve que depuis le ${dateLongue(depuis)}.` : '.')
+    + ' Les recherches trop rares sont volontairement omises par Google :'
+    + ' le total des lignes est donc toujours inférieur au total ci-dessus.'));
+
+  hote.append(bloc);
+}
+
+function chiffreSc(etiquette, valeur, aide) {
+  return h('div.sc-chiffre',
+    h('p.sc-etiq', etiquette),
+    h('p.sc-valeur', nombre(valeur)),
+    h('p.sc-aide', aide));
 }
 
 const ICONES_GBP = {

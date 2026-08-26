@@ -22,9 +22,22 @@ import * as D from './donnees.js';
 import { GOOGLE_OAUTH_CLIENT_ID } from './config.js';
 import { champsProfil } from './completion.js';
 
+/* Un seul consentement pour les trois services : Google presente une
+   liste unique au client, et lui redemander separement ferait trois
+   ecrans d'autorisation pour un artisan qui n'en comprend deja qu'un.
+
+   Ajouter un scope ici oblige tout client deja connecte a se
+   reconnecter — l'ancien jeton ne couvre pas le nouveau service et
+   Google renvoie une erreur d'autorisation, pas une demande de
+   consentement. C'est pour cela qu'on ne les ajoute pas un par un au
+   fil de l'eau. */
 const SCOPES_GOOGLE = [
   'https://www.googleapis.com/auth/business.manage',
   'https://www.googleapis.com/auth/analytics.readonly',
+  // Search Console : ce que les gens tapent AVANT d'arriver sur le
+  // site. C'est la seule source qui explique pourquoi le trafic est
+  // faible, la ou Analytics ne fait que le constater.
+  'https://www.googleapis.com/auth/webmasters.readonly',
 ].join(' ');
 
 // Libelles des formules. Le tarif ne figure pas ici : il n'est affiche
@@ -410,6 +423,26 @@ export async function rendre(page, etat) {
           profil.gbp_location_id = id;
           souffler('Fiche reliée.', 'bien');
           if (f) proposerReprise(f);
+        },
+      }));
+
+      zoneChoix.append(bloc({
+        titre: 'Search Console',
+        options: (comptes.sites || []).map((s) => ({
+          valeur: s.id, libelle: s.nom, brut: s,
+        })),
+        valeur: profil.search_console_site,
+        souci: comptes.soucis?.recherche,
+        surChoix: async (id) => {
+          await D.majProfilTolerant(client.id, {
+            search_console_site: id,
+            // Search Console ne remonte jamais avant la verification :
+            // on note a partir de quand les chiffres existent.
+            search_console_depuis: profil.search_console_depuis
+              || new Date().toISOString().slice(0, 10),
+          });
+          profil.search_console_site = id;
+          souffler('Search Console relié.', 'bien');
         },
       }));
     }

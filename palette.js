@@ -17,6 +17,7 @@ import * as D from './donnees.js';
 const PAGES = [
   { titre: 'Accueil', detail: "Vue d'ensemble", lien: '#/accueil', motsCles: 'tableau bord resume' },
   { titre: 'Statistiques', detail: 'Visites, appels, fiche Google', lien: '#/statistiques', motsCles: 'performances visiteurs analytics trafic bilan rapport' },
+  { titre: 'Rapport', detail: 'Le bilan du mois, en une page', lien: '#/rapports', motsCles: 'rapport mensuel bilan resume conseil mois' },
   { titre: 'Mon site', detail: 'Modifier les textes et les photos', lien: '#/mon-site', motsCles: 'editeur contenu textes photos horaires publier' },
   { titre: 'Demandes', detail: 'Devis et contacts recus', lien: '#/demandes', motsCles: 'leads clients messages activite prospects' },
   { titre: 'Publicité', detail: 'Campagnes Google et Meta', lien: '#/publicite', motsCles: 'ads acquisition campagne budget facebook' },

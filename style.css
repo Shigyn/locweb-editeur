@@ -1596,3 +1596,52 @@ details.op-client[open] .op-client-nom{ color: var(--encre); }
 /* La croix se superpose au coin droit de l'entete : sans ce retrait,
    elle recouvrirait l'icone des reglages. */
 html.dans-application .entete-droite{ padding-right: 38px; }
+
+/* ================= rapport mensuel ================= */
+
+.rap-tete{ margin-bottom: 22px; }
+.rap-label{ display: inline-flex; align-items: center; gap: 10px; font-size: .84rem; color: var(--sourdine); }
+.rap-choix{
+  padding: 8px 12px; border: 1px solid var(--trait-fort); border-radius: var(--r-s);
+  background: var(--surface); color: var(--encre); font-weight: 600; font-size: .92rem;
+}
+.rap-mois{
+  font-size: .8rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--sourdine); margin-bottom: 14px;
+}
+
+/* Les appels d'abord, les visiteurs en dernier : sur le site d'un
+   artisan, l'appui sur le numero est l'action qui compte. */
+.rap-cartes{
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 22px;
+}
+.rap-carte{
+  background: var(--surface); border: 1px solid var(--trait);
+  border-radius: var(--r); padding: 18px 20px;
+}
+.rap-etiq{ font-size: .82rem; color: var(--sourdine); margin-bottom: 6px; }
+.rap-valeur{
+  font-size: 2rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.rap-var{ margin-top: 4px; font-size: .82rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rap-var[data-sens="haut"]{ color: var(--vert); }
+/* Une baisse se lit, elle ne s'accuse pas : gris, pas rouge. Le rouge
+   dirait « probleme » la ou il n'y a souvent qu'une saison creuse. */
+.rap-var[data-sens="bas"], .rap-var[data-sens="plat"]{ color: var(--sourdine); }
+
+.rap-bloc{
+  background: var(--surface); border: 1px solid var(--trait);
+  border-radius: var(--r); padding: 20px 22px; margin-bottom: 12px;
+}
+.rap-titre{ font-size: 1rem; font-weight: 600; letter-spacing: -.01em; margin-bottom: 10px; }
+.rap-phrase{ color: var(--encre-douce); margin-bottom: 6px; max-width: 62ch; }
+.rap-phrase:last-child{ margin-bottom: 0; }
+
+/* Le conseil se distingue sans crier : un trait a gauche suffit. */
+.rap-conseil{ border-left: 3px solid var(--accent); }
+
+.rap-detail{ display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; }
+.rap-detail dt{ font-size: .88rem; color: var(--encre-douce); }
+.rap-detail dd{ font-size: .88rem; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }

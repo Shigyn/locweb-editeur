@@ -215,13 +215,14 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '65';
+export const VERSION = '66';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {
   accueil:      () => import(v('./vue-accueil.js')),
   statistiques: () => import(v('./vue-performances.js')),
   'mon-site':   () => import(v('./vue-monsite.js')),
+  rapports:     () => import(v('./vue-rapports.js')),
   demandes:     () => import(v('./vue-activite.js')),
   publicite:    () => import(v('./vue-acquisition.js')),
   compte:       () => import(v('./vue-compte.js')),
@@ -237,7 +238,6 @@ const ALIAS = {
   performances: 'statistiques',
   activite:     'demandes',
   acquisition:  'publicite',
-  rapports:     'statistiques',
   'mes-infos':  'compte',
   parametrage:  'compte?onglet=connexions',
   parrainage:   'compte',

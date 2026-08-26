@@ -287,13 +287,15 @@ export async function demanderCampagne(clientId, champs) {
    pour la meme periode partagent donc le meme aller-retour reseau. */
 const cacheStats = new Map();
 
-async function appelStats(fonction, periode, clientId) {
+async function appelStats(fonction, periode, clientId, fenetre = null) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) throw new Error('Session absente.');
+  const corps = fenetre ? { ...fenetre } : { periode };
+  if (clientId) corps.client_id = clientId;
   const reponse = await fetch(`${EDGE_FUNCTIONS_URL}/${fonction}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify(clientId ? { periode, client_id: clientId } : { periode }),
+    body: JSON.stringify(corps),
   });
   const donnees = await reponse.json();
   if (!reponse.ok) throw Object.assign(new Error(donnees.error || 'Requête refusée.'), { donnees });
@@ -308,6 +310,28 @@ export function statsGa4(periode = '7j', clientId = null) {
   const cle = `ga4:${periode}:${clientId || 'moi'}`;
   if (!cacheStats.has(cle)) {
     cacheStats.set(cle, appelStats('ga4-donnees', periode, clientId)
+      .catch((e) => { cacheStats.delete(cle); throw e; }));
+  }
+  return cacheStats.get(cle);
+}
+
+/* Un mois civil, pas les trente derniers jours.
+
+   Le rapport parle de « juillet », et juillet n'est pas la fenetre
+   glissante qui finit aujourd'hui : la comparaison avec juin serait
+   fausse, et les chiffres changeraient d'un jour a l'autre pour un
+   mois pourtant termine. `mois` va de 1 a 12. */
+export function statsGa4Mois(annee, mois, clientId = null) {
+  const deuxChiffres = (n) => String(n).padStart(2, '0');
+  const debut = `${annee}-${deuxChiffres(mois)}-01`;
+  // Jour 0 du mois suivant = dernier jour de celui-ci, sans avoir a
+  // connaitre sa longueur ni les annees bissextiles.
+  const dernier = new Date(Date.UTC(annee, mois, 0)).getUTCDate();
+  const fin = `${annee}-${deuxChiffres(mois)}-${deuxChiffres(dernier)}`;
+
+  const cle = `ga4:${debut}:${fin}:${clientId || 'moi'}`;
+  if (!cacheStats.has(cle)) {
+    cacheStats.set(cle, appelStats('ga4-donnees', null, clientId, { debut, fin })
       .catch((e) => { cacheStats.delete(cle); throw e; }));
   }
   return cacheStats.get(cle);

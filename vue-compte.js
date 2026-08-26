@@ -97,6 +97,7 @@ export async function rendre(page, etat) {
   async function ongletInfos() {
     const zone = h('div');
 
+    zone.append(await blocNotifications());
     zone.append(groupe('Qui contacter', 'En cas de problème sur votre site.', champsProfil.contact,
       '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-6.2 7.5-6.2s7.5 2.6 7.5 6.2"/>'));
     zone.append(groupe('Mon métier', null, champsProfil.activite,
@@ -219,6 +220,73 @@ export async function rendre(page, etat) {
     });
     corps.append(grille);
     return bloc;
+  }
+
+  /* ---------- etre prevenu d'une nouvelle demande ----------
+
+     Place en tete de l'onglet, avant les coordonnees : c'est le seul
+     reglage de cette page qui change quelque chose au quotidien. Une
+     demande vue trois jours plus tard est un chantier perdu.
+
+     Le module n'est charge qu'ici : inutile de le tirer au demarrage
+     pour un reglage que le client ouvre une fois. */
+  async function blocNotifications() {
+    const P = await import('./push.js');
+
+    const carte = h('div.carte-simple');
+    const titre = h('p.avis-titre', 'Être prévenu des nouvelles demandes');
+    const texte = h('p.avis-texte');
+    const zoneBouton = h('div.avis-actions');
+    carte.append(titre, texte, zoneBouton);
+
+    async function dessiner() {
+      vider(zoneBouton);
+
+      if (!P.pushDisponible()) {
+        texte.textContent = "Votre navigateur ne sait pas afficher de notifications. "
+          + "Installez l'application depuis le menu de votre compte pour en recevoir.";
+        return;
+      }
+
+      if (P.pushRefuse()) {
+        // Un refus est definitif par appareil : aucun bouton ne peut le
+        // rattraper, seul le client peut revenir dessus dans son
+        // navigateur. Proposer un bouton ici ne ferait qu'echouer.
+        texte.textContent = "Les notifications sont bloquées pour ce site sur cet appareil. "
+          + "Vous pouvez les réautoriser depuis les réglages de votre navigateur, "
+          + "à la ligne Notifications.";
+        return;
+      }
+
+      if (await P.pushActif()) {
+        texte.textContent = "Cet appareil vous prévient dès qu'une demande arrive, "
+          + "même application fermée.";
+        zoneBouton.append(h('button.bt.bt-nu', {
+          onclick: async (e) => {
+            e.target.disabled = true;
+            await P.desactiverPush();
+            await dessiner();
+            souffler('Notifications désactivées.', 'bien');
+          },
+        }, 'Ne plus être prévenu sur cet appareil'));
+        return;
+      }
+
+      texte.textContent = "Recevez une notification dès qu'une demande arrive, "
+        + "même quand l'application est fermée. C'est souvent l'heure qui suit "
+        + "qui décide si le devis aboutit.";
+      zoneBouton.append(h('button.bt.bt-vif', {
+        onclick: async (e) => {
+          e.target.disabled = true;
+          const { ok, raison } = await P.activerPush(client.id);
+          await dessiner();
+          souffler(ok ? 'Notifications activées.' : raison, ok ? 'bien' : 'alerte');
+        },
+      }, 'Me prévenir sur cet appareil'));
+    }
+
+    await dessiner();
+    return carte;
   }
 
   /* ================= onglet 2 : connexions ================= */

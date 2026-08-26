@@ -14,7 +14,7 @@
 //  fraiches seraient pires que pas de donnees du tout.
 // ===================================================================
 
-const CACHE = 'locweb-espace-v4';
+const CACHE = 'locweb-espace-v5';
 
 // Le strict necessaire pour que l'app s'ouvre hors ligne. Le reste des
 // modules est mis en cache au fil de la navigation.
@@ -90,4 +90,47 @@ self.addEventListener('fetch', (e) => {
 // attendre la fermeture de tous les onglets.
 self.addEventListener('message', (e) => {
   if (e.data === 'active-toi') self.skipWaiting();
+});
+
+/* ---------- notifications push ----------
+
+   Une demande de devis vue trois jours plus tard est un chantier
+   perdu. Le service worker recoit le message meme application fermee :
+   c'est tout l'interet par rapport a un onglet ouvert. */
+
+self.addEventListener('push', (e) => {
+  // Sans charge utile lisible on notifie quand meme : mieux vaut un
+  // libelle generique qu'une demande passee inapercue.
+  let d = { titre: 'Nouvelle demande', corps: 'Ouvrez votre espace pour la voir.', url: '/#/demandes' };
+  try { d = { ...d, ...(e.data ? e.data.json() : {}) }; } catch { /* charge illisible */ }
+
+  e.waitUntil(self.registration.showNotification(d.titre, {
+    body: d.corps,
+    icon: '/icone-192.png',
+    badge: '/icone-192.png',
+    // Regroupe : trois demandes n'empilent pas trois bandeaux.
+    tag: d.etiquette || 'locweb',
+    renotify: true,
+    data: { url: d.url || '/#/demandes' },
+  }));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const cible = e.notification.data?.url || '/#/demandes';
+
+  // Si l'espace est deja ouvert quelque part, on le ramene au premier
+  // plan plutot que d'ouvrir une seconde fenetre — sinon le client se
+  // retrouve avec cinq onglets identiques au bout d'une semaine.
+  e.waitUntil((async () => {
+    const fenetres = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const f of fenetres) {
+      if (new URL(f.url).origin === self.location.origin) {
+        await f.focus();
+        if ('navigate' in f) await f.navigate(cible).catch(() => undefined);
+        return;
+      }
+    }
+    await self.clients.openWindow(cible);
+  })());
 });

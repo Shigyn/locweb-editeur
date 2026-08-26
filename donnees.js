@@ -359,3 +359,26 @@ export function prechargerStats(profil) {
   }
   if (profil?.acces_google_business) statsGbp('30j').catch(() => {});
 }
+
+/* ---------- notifications push ---------- */
+
+/* Une ligne par APPAREIL, pas par client : le meme artisan peut avoir
+   l'application sur son telephone et sur son ordinateur, et vouloir
+   etre prevenu sur les deux. L'endpoint sert de cle — c'est lui que le
+   navigateur regenere s'il renouvelle l'abonnement. */
+export async function enregistrerAbonnementPush(clientId, abonnement) {
+  const brut = abonnement.toJSON();
+  const { error } = await sb.from('abonnements_push').upsert({
+    client_id: clientId,
+    endpoint: brut.endpoint,
+    p256dh: brut.keys.p256dh,
+    auth: brut.keys.auth,
+    agent: navigator.userAgent.slice(0, 200),
+  }, { onConflict: 'endpoint' });
+  if (error) throw error;
+}
+
+export async function oublierAbonnementPush(endpoint) {
+  const { error } = await sb.from('abonnements_push').delete().eq('endpoint', endpoint);
+  if (error) throw error;
+}

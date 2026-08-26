@@ -1669,3 +1669,10 @@ html.dans-application .entete-droite{ padding-right: 38px; }
   background: var(--surface-creux); color: var(--encre-douce);
   font-size: .85rem; text-overflow: ellipsis;
 }
+
+/* Carte simple : un bloc autonome dans une page d'onglets, quand le
+   contenu ne merite ni titre pliable ni grille de champs. */
+.carte-simple{
+  background: var(--surface); border: 1px solid var(--trait);
+  border-radius: var(--r); padding: 20px 22px; margin-bottom: 14px;
+}

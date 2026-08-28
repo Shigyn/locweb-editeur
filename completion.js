@@ -76,7 +76,9 @@ export function completion(profil = {}, client = {}) {
  * `stats` et `demandes` sont facultatifs : sans eux, seules les etapes
  * de configuration remontent.
  */
-export function aFaire(profil = {}, client = {}, { stats = null, demandes = [] } = {}) {
+export function aFaire(profil = {}, client = {}, {
+  stats = null, demandes = [], chantiers = false, nbChantiers = 0,
+} = {}) {
   const liste = [];
   const visiteurs = stats?.totaux?.visiteurs ?? null;
   const sansReponse = demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
@@ -104,10 +106,13 @@ export function aFaire(profil = {}, client = {}, { stats = null, demandes = [] }
       ou: '#/compte?onglet=connexions',
     });
   }
-  if (visiteurs !== null && visiteurs > 50 && !demandes.length) {
+  /* Proposee uniquement quand la section existe pour ce client : un
+     restaurateur ou un photographe n'a pas de chantier a photographier,
+     et l'entree le renverrait vers une section qu'il ne voit meme pas. */
+  if (chantiers && !nbChantiers) {
     liste.push({
-      titre: 'Rendez votre téléphone plus visible',
-      pourquoi: 'Des visiteurs viennent, mais aucun ne vous contacte.',
+      titre: 'Ajoutez des photos de vos prestations',
+      pourquoi: "Un avant / après convainc plus qu'un paragraphe.",
       ou: '#/mon-site',
     });
   }
@@ -173,8 +178,10 @@ function anneau(pourcent, taille = 52) {
  * Le bloc "A faire". `limite` coupe la liste — l'accueil en montre
  * trois, une liste de huit lignes ne se lit pas, elle se subit.
  */
-export function blocAFaire(profil, client, { stats, demandes, limite = 3 } = {}) {
-  const liste = aFaire(profil, client, { stats, demandes });
+export function blocAFaire(profil, client, {
+  stats, demandes, chantiers, nbChantiers, limite = 3,
+} = {}) {
+  const liste = aFaire(profil, client, { stats, demandes, chantiers, nbChantiers });
   if (!liste.length) return null;
 
   const { pourcent } = completion(profil, client);

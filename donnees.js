@@ -36,7 +36,7 @@ export async function monClient() {
   if (!user) return null;
   const { data, error } = await sb
     .from('clients')
-    .select('id, nom_site, domaine, acces_client, metier, ville, telephone')
+    .select('id, nom_site, domaine, acces_client, metier, ville, telephone, chantiers')
     .eq('auth_user_id', user.id)
     .single();
   if (error || !data) return null;

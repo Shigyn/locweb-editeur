@@ -29,6 +29,20 @@ const GROUPES_RESTAURANT = ['Hero', 'Services', 'Horaires'];
    de developpement, pas une section : le client n'a aucun moyen de
    savoir ce qu'il y trouvera, et ce qui s'y range est justement ce
    qu'on n'a pas su nommer. */
+/* Les photos avant / apres n'ont de sens que pour une prestation qui
+   transforme quelque chose. Un restaurateur, un coach ou un photographe
+   n'a rien a y mettre — leur afficher une section vide encombre leur
+   editeur pour rien.
+
+   Par defaut on decide d'apres le secteur ; `clients.chantiers` permet
+   de forcer dans un sens ou dans l'autre a la mise en place, pour le
+   paysagiste declare « independant » ou l'artisan qui n'en veut pas. */
+export function chantiersActifs(client, profil) {
+  if (client?.acces_client === 'aucun') return false;
+  if (typeof client?.chantiers === 'boolean') return client.chantiers;
+  return profil?.secteur === 'artisan';
+}
+
 function groupesAutorises(acces, groupesPresents, secteur) {
   if (acces === 'aucun') return [];
   const tous = [...groupesPresents].filter((g) => g !== 'Autres');
@@ -48,7 +62,8 @@ export async function rendre(page, etat, { charger, parQui = 'client' } = {}) {
     // Les chantiers ne dependent pas du manifeste : ils existent pour
     // tout client autorise a toucher son site, quel que soit son
     // niveau d'acces aux sections balisees.
-    client.acces_client === 'aucun' ? Promise.resolve([]) : D.listerRealisations(client.id).catch(() => []),
+    // Inutile d'interroger la base pour une section qu'on n'affichera pas.
+    chantiersActifs(client, etat.profil) ? D.listerRealisations(client.id).catch(() => []) : Promise.resolve([]),
   ]);
 
   vider(page);
@@ -129,7 +144,9 @@ export async function rendre(page, etat, { charger, parQui = 'client' } = {}) {
     if (client.acces_client === 'complet') {
       page.append(sectionProduits(client, produits, etat.profil?.secteur));
     }
-    page.append(sectionChantiers(client, realisations));
+    if (chantiersActifs(client, etat.profil)) {
+      page.append(sectionChantiers(client, realisations));
+    }
   }
 
   if (groupesVerrouilles.length && client.acces_client !== 'aucun') {

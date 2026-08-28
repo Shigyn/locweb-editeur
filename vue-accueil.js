@@ -21,6 +21,7 @@ import { h, vider, nombre, grapheAires, grapheComplet, EXPLICATIONS, avecAide } 
 import * as D from './donnees.js';
 import { blocAFaire } from './completion.js';
 import { blocAvis, lienValide } from './avis.js';
+import { chantiersActifs } from './vue-monsite.js';
 
 const ICONES_KPI = {
   visiteurs: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
@@ -40,9 +41,14 @@ export async function rendre(page, etat, { charger }) {
   page.append(zone);
   zone.append(h('div.squelette', { style: { height: '104px', borderRadius: '16px', marginBottom: '18px' } }));
 
-  const [stats, fiche] = await Promise.all([
+  // Les chantiers ne servent qu'a savoir s'il faut proposer d'en
+  // ajouter : inutile d'interroger la base pour un client qui n'a pas
+  // la section.
+  const avecChantiers = chantiersActifs(client, profil);
+  const [stats, fiche, realisations] = await Promise.all([
     profil?.acces_ga4 ? D.statsGa4('30j').catch(() => null) : null,
     profil?.acces_google_business ? D.statsGbp('30j').catch(() => null) : null,
+    avecChantiers ? D.listerRealisations(client.id).catch(() => []) : [],
   ]);
 
   const limite = Date.now() - 30 * 864e5;
@@ -53,7 +59,10 @@ export async function rendre(page, etat, { charger }) {
   zone.append(chiffres(stats, fiche, demandes30));
   const graphe = courbe(stats);
   if (graphe) zone.append(graphe);
-  const actions = blocAFaire(profil || {}, client, { stats, demandes, limite: 3 });
+  const actions = blocAFaire(profil || {}, client, {
+    stats, demandes, limite: 3,
+    chantiers: avecChantiers, nbChantiers: realisations.length,
+  });
   if (actions) zone.append(actions);
 
   // Le QR n'apparait que s'il a un lien a encoder. Sans lien, c'est la

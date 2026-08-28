@@ -47,12 +47,20 @@ export const champsProfil = {
   ],
 };
 
-// Etapes de configuration : elles servent au calcul du pourcentage.
+/* Etapes de configuration : elles servent au calcul du pourcentage.
+
+   Uniquement ce que le client doit fournir lui-meme. La connexion
+   Google n'y figure pas, volontairement : tous les clients ne la
+   veulent pas, et certains ne prennent l'abonnement que pour
+   l'editeur. Les compter ici bloquait ces clients-la a 60 % pour
+   toujours — ce qui ne se lit pas comme une suggestion mais comme
+   « votre installation est incomplete ».
+
+   Elles restent proposees dans la liste `aFaire` ci-dessous, ou elles
+   ont leur place : c'est un conseil, pas un reproche. */
 const ETAPES = [
   { id: 'contact',  fait: (p) => Boolean(p.contact_telephone && (p.contact_prenom || p.contact_nom)) },
   { id: 'activite', fait: (p) => Boolean(p.metier_precis && p.zone_intervention) },
-  { id: 'ga4',      fait: (p) => Boolean(p.acces_ga4) },
-  { id: 'gbp',      fait: (p) => Boolean(p.acces_google_business) },
   { id: 'reseaux',  fait: (p) => Object.values(p.reseaux || {}).some(Boolean) },
 ];
 

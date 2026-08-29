@@ -34,9 +34,21 @@ export async function deconnexion() { await sb.auth.signOut(); }
 export async function monClient() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return null;
+  /* `select('*')` et non une liste de colonnes.
+
+     PostgREST rejette la requete ENTIERE des qu'une seule colonne
+     citee n'existe pas encore. Comme cette requete est celle de la
+     connexion, une migration pas encore passee ne cassait pas une
+     page : elle empechait TOUS les clients de se connecter, avec pour
+     seul message « Aucun client associe a ce compte » — qui envoie
+     chercher le probleme a l'oppose de la ou il est.
+
+     Constate le 2026-08-27 en ajoutant `chantiers`. Avec `*`, une
+     colonne manquante est simplement absente de la reponse, et le code
+     qui la lit retombe sur son defaut. */
   const { data, error } = await sb
     .from('clients')
-    .select('id, nom_site, domaine, acces_client, metier, ville, telephone, chantiers')
+    .select('*')
     .eq('auth_user_id', user.id)
     .single();
   if (error || !data) return null;

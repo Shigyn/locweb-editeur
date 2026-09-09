@@ -333,8 +333,13 @@ export const MANIFEST = {
   temoignage_1_nom: { label: 'Temoignage 1 — signature', groupe: 'Preuve sociale' },
   temoignage_2_texte: { label: 'Temoignage 2 — texte', groupe: 'Preuve sociale' },
   temoignage_2_nom: { label: 'Temoignage 2 — signature', groupe: 'Preuve sociale' },
-  temoignage_3_texte: { label: 'Temoignage 3 — texte', groupe: 'Preuve sociale' },
-  temoignage_3_nom: { label: 'Temoignage 3 — signature', groupe: 'Preuve sociale' }
+  temoignage_1_source: { label: 'Temoignage 1 — provenance', groupe: 'Preuve sociale' },
+  temoignage_2_source: { label: 'Temoignage 2 — provenance', groupe: 'Preuve sociale' },
+  temoignages_appel_titre: { label: 'Laisser un avis — titre', groupe: 'Preuve sociale' },
+  temoignages_appel_texte: { label: 'Laisser un avis — texte', groupe: 'Preuve sociale' },
+
+  bande_tarifs_titre: { label: 'Bande avant les tarifs — titre', groupe: 'Offre' },
+  bande_tarifs_texte: { label: 'Bande avant les tarifs — texte', groupe: 'Offre' }
 };
 
 export const GROUP_ORDER = [

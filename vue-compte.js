@@ -470,18 +470,69 @@ export async function rendre(page, etat) {
         manuel());
     }
 
+    /* UNE FOIS RELIEE, LA PROPRIETE SE VERROUILLE.
+
+       Le menu deroulant liste TOUTES les proprietes du compte Google
+       qui a autorise l'acces. Quand c'est le compte de l'agence, il en
+       porte plusieurs : celle du client, mais aussi celle de LocWeb et
+       celles des autres clients. Un clic de travers, et un
+       restaurateur regarde les visiteurs de quelqu'un d'autre — sans
+       qu'aucune erreur ne s'affiche, puisque techniquement tout
+       fonctionne. C'est le genre de panne qu'on ne decouvre qu'en
+       s'etonnant d'un chiffre, des semaines plus tard.
+
+       Le choix ne se fait donc qu'UNE fois. Ensuite il s'affiche en
+       clair avec un bouton << Modifier >>, exactement comme la saisie
+       manuelle juste en dessous. Rien n'est interdit, mais plus rien
+       ne se change par accident. */
     function listeChoix({ libelle, options, valeur, surChoix }) {
-      const select = h('select',
-        h('option', { value: '' }, 'Choisir...'),
-        ...options.map((o) => h('option', { value: o.valeur }, o.libelle)));
-      select.value = valeur || '';
-      select.addEventListener('change', async () => {
-        const choisi = options.find((o) => o.valeur === select.value);
-        try { await surChoix(select.value || null, choisi?.brut); }
-        catch { souffler('Enregistrement impossible.', 'alerte'); }
-      });
-      return h('label.champ', { style: { marginBottom: '12px' } },
-        h('span', libelle), select);
+      const zone = h('div');
+      let verrouille = !!valeur;
+
+      function menu() {
+        const select = h('select',
+          h('option', { value: '' }, 'Choisir...'),
+          ...options.map((o) => h('option', { value: o.valeur }, o.libelle)));
+        select.value = valeur || '';
+        select.addEventListener('change', async () => {
+          const choisi = options.find((o) => o.valeur === select.value);
+          try {
+            await surChoix(select.value || null, choisi?.brut);
+            valeur = select.value || null;
+            // On ne reverrouille que sur un choix REEL : repasser sur
+            // << Choisir... >> doit laisser la liste ouverte, sinon on
+            // se retrouve enferme sur un champ vide.
+            if (valeur) { verrouille = true; dessiner(); }
+          } catch {
+            souffler('Enregistrement impossible.', 'alerte');
+          }
+        });
+        return h('label.champ', { style: { marginBottom: '12px' } },
+          h('span', libelle), select);
+      }
+
+      function verrou() {
+        const choisi = options.find((o) => o.valeur === valeur);
+        /* Le verrou est SOEUR du label, pas son enfant. Dans un
+           `.champ`, la regle `.champ span` (0,0,1,1) l'emporte sur
+           `.champ-verrou-val` (0,0,1,0) : la valeur passerait en bloc,
+           petite et grisee, et casserait le flex du cadre. */
+        return h('div', { style: { marginBottom: '12px' } },
+          h('label.champ', { style: { marginBottom: '6px' } }, h('span', libelle)),
+          h('div.champ-verrou',
+            h('span.champ-verrou-val', choisi ? choisi.libelle : valeur),
+            h('button.bt.bt-plein.bt-mini', {
+              onclick: (e) => { e.preventDefault(); verrouille = false; dessiner(); },
+            }, 'Modifier')));
+      }
+
+      function dessiner() {
+        vider(zone);
+        zone.append(verrouille ? verrou() : menu());
+      }
+
+      dessiner();
+      return zone;
     }
 
     /* Ce que Google sait deja du client : on ne l'ecrase jamais sans

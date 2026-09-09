@@ -118,10 +118,108 @@ export const MANIFEST = {
   service_menuiserie_desc: { label: 'Menuiserie sur mesure — description', groupe: 'Services' },
   service_suivi_desc: { label: 'Suivi de chantier — description', groupe: 'Services' },
   expertise_texte_1: { label: 'Expertise — paragraphe 1', groupe: 'Expertise' },
-  expertise_texte_2: { label: 'Expertise — paragraphe 2', groupe: 'Expertise' }
+  expertise_texte_2: { label: 'Expertise — paragraphe 2', groupe: 'Expertise' },
+
+  /* ---- Auto Wash 34 (Beziers) ---- */
+  hero_surtitre: { label: 'Hero — surtitre', groupe: 'Hero' },
+  hero_titre: { label: 'Hero — titre principal', groupe: 'Hero' },
+  hero_accroche: { label: 'Hero — accroche', groupe: 'Hero' },
+  hero_mots: { label: "Hero — mots qui tournent (separes par des virgules)", groupe: 'Hero' },
+  hero_photo_1: { label: 'Hero — photo 1 du diaporama', groupe: 'Hero' },
+  hero_photo_2: { label: 'Hero — photo 2 du diaporama', groupe: 'Hero' },
+  hero_photo_3: { label: 'Hero — photo 3 du diaporama', groupe: 'Hero' },
+  formules_titre: { label: 'Formules — titre', groupe: 'Services' },
+  formules_intro: { label: 'Formules — introduction', groupe: 'Services' },
+  formule_1_titre: { label: 'Formule 1 — nom', groupe: 'Services' },
+  formule_1_liste: { label: 'Formule 1 — ce qui est inclus', groupe: 'Services' },
+  formule_2_titre: { label: 'Formule 2 — nom', groupe: 'Services' },
+  formule_2_liste: { label: 'Formule 2 — ce qui est inclus', groupe: 'Services' },
+  formule_3_titre: { label: 'Formule 3 — nom', groupe: 'Services' },
+  formule_3_liste: { label: 'Formule 3 — ce qui est inclus', groupe: 'Services' },
+  bande_photo: { label: 'Bande — photo de fond', groupe: 'Preuve sociale' },
+  citation_texte: { label: 'Bande — phrase mise en avant', groupe: 'Preuve sociale' },
+  citation_auteur: { label: 'Bande — signature', groupe: 'Preuve sociale' },
+  deroule_titre: { label: 'Deroulement — titre', groupe: 'Engagement' },
+  deroule_intro: { label: 'Deroulement — introduction', groupe: 'Engagement' },
+  etape_1_titre: { label: 'Etape 1 — titre', groupe: 'Engagement' },
+  etape_1_texte: { label: 'Etape 1 — texte', groupe: 'Engagement' },
+  etape_2_titre: { label: 'Etape 2 — titre', groupe: 'Engagement' },
+  etape_2_texte: { label: 'Etape 2 — texte', groupe: 'Engagement' },
+  etape_3_titre: { label: 'Etape 3 — titre', groupe: 'Engagement' },
+  etape_3_texte: { label: 'Etape 3 — texte', groupe: 'Engagement' },
+  zone_titre: { label: 'Zone desservie — titre', groupe: 'A propos' },
+  zone_intro: { label: 'Zone desservie — introduction', groupe: 'A propos' },
+  zone_communes: { label: 'Zone desservie — liste des communes', groupe: 'A propos' },
+  contact_titre: { label: 'Contact — titre', groupe: 'Footer' },
+  contact_intro: { label: 'Contact — introduction', groupe: 'Footer' },
+  contact_adresse: { label: 'Adresse', groupe: 'Footer' },
+  contact_horaires: { label: 'Horaires', groupe: 'Horaires' },
+
+  /* ---- Auto Wash 34 : bande d'appel ----
+     Libelles entre GUILLEMETS et non entre apostrophes : « Bande
+     d'appel » en contient une, qui fermait la chaine au milieu. */
+  appel_photo: { label: "Bande d'appel — photo de fond", groupe: 'Engagement' },
+  appel_surtitre: { label: "Bande d'appel — surtitre", groupe: 'Engagement' },
+  appel_titre: { label: "Bande d'appel — titre", groupe: 'Engagement' },
+  appel_texte: { label: "Bande d'appel — texte", groupe: 'Engagement' },
+
+  /* ---- Auto Wash 34 : textiles ---- */
+  formule_4_titre: { label: "Formule 4 — nom", groupe: 'Services' },
+  formule_4_liste: { label: "Formule 4 — ce qui est inclus", groupe: 'Services' },
+  textile_titre: { label: "Textiles — titre", groupe: 'Services' },
+  textile_intro: { label: "Textiles — introduction", groupe: 'Services' },
+  textile_etiquette: { label: "Textiles — intitule de la liste", groupe: 'Services' },
+  textile_liste: { label: "Textiles — ce qui est traite", groupe: 'Services' },
+  textile_photo_1: { label: "Textiles — photo 1", groupe: 'Services' },
+  textile_legende_1: { label: "Textiles — legende 1", groupe: 'Services' },
+  textile_photo_2: { label: "Textiles — photo 2", groupe: 'Services' },
+  textile_legende_2: { label: "Textiles — legende 2", groupe: 'Services' },
+  faq_q7: { label: "FAQ — question 7", groupe: 'FAQ' },
+  faq_r7: { label: "FAQ — reponse 7", groupe: 'FAQ' },
+  faq_q8: { label: "FAQ — question 8", groupe: 'FAQ' },
+  faq_r8: { label: "FAQ — reponse 8", groupe: 'FAQ' },
+
+  /* ---- Auto Wash 34 : questions frequentes ---- */
+  faq_titre: { label: 'FAQ — titre', groupe: 'FAQ' },
+  faq_intro: { label: 'FAQ — introduction', groupe: 'FAQ' },
+  faq_q1: { label: 'FAQ — question 1', groupe: 'FAQ' },
+  faq_r1: { label: 'FAQ — reponse 1', groupe: 'FAQ' },
+  faq_q2: { label: 'FAQ — question 2', groupe: 'FAQ' },
+  faq_r2: { label: 'FAQ — reponse 2', groupe: 'FAQ' },
+  faq_q3: { label: 'FAQ — question 3', groupe: 'FAQ' },
+  faq_r3: { label: 'FAQ — reponse 3', groupe: 'FAQ' },
+  faq_q4: { label: 'FAQ — question 4', groupe: 'FAQ' },
+  faq_r4: { label: 'FAQ — reponse 4', groupe: 'FAQ' },
+  faq_q5: { label: 'FAQ — question 5', groupe: 'FAQ' },
+  faq_r5: { label: 'FAQ — reponse 5', groupe: 'FAQ' },
+  faq_q6: { label: 'FAQ — question 6', groupe: 'FAQ' },
+  faq_r6: { label: 'FAQ — reponse 6', groupe: 'FAQ' },
+
+  //  Redybat — carreleur, peintre et plaquiste a Lyon (2026-09-09).
+  //  Chacun des quatre metiers a un texte ET une photo. La ligne image
+  //  n'est pas facultative : sans elle, l'onglet Images de l'editeur
+  //  annonce « aucune zone balisee » alors que le site tourne tres bien
+  //  avec ses visuels statiques, et rien ne le signale.
+  services_titre: { label: 'Nos metiers — titre', groupe: 'Services' },
+  services_intro: { label: 'Nos metiers — introduction', groupe: 'Services' },
+  service_carrelage_img: { label: 'Carrelage — photo', groupe: 'Services' },
+  service_peinture_desc: { label: 'Peinture — description', groupe: 'Services' },
+  service_peinture_img: { label: 'Peinture — photo', groupe: 'Services' },
+  service_placo_desc: { label: 'Placo et cloisons — description', groupe: 'Services' },
+  service_placo_img: { label: 'Placo et cloisons — photo', groupe: 'Services' },
+  service_facade_desc: { label: 'Facade — description', groupe: 'Services' },
+  service_facade_img: { label: 'Facade — photo', groupe: 'Services' },
+
+  realisations_titre: { label: 'Realisations — titre', groupe: 'Preuve sociale' },
+  realisations_intro: { label: 'Realisations — introduction', groupe: 'Preuve sociale' },
+  realisation_1_avant: { label: 'Chantier 1 — photo avant', groupe: 'Preuve sociale' },
+  realisation_1_apres: { label: 'Chantier 1 — photo apres', groupe: 'Preuve sociale' },
+  realisation_2_avant: { label: 'Chantier 2 — photo avant', groupe: 'Preuve sociale' },
+  realisation_2_apres: { label: 'Chantier 2 — photo apres', groupe: 'Preuve sociale' },
+  realisation_2_lieu: { label: 'Chantier 2 — lieu', groupe: 'Preuve sociale' }
 };
 
 export const GROUP_ORDER = [
   'Hero', 'Services', 'À propos', 'Engagement', 'Expertise', 'Preuve sociale',
-  'Offre', 'Horaires', 'Footer', 'Autres'
+  'Offre', 'FAQ', 'Horaires', 'Footer', 'Autres'
 ];

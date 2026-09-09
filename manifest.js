@@ -223,7 +223,50 @@ export const MANIFEST = {
   bande_titre: { label: 'Bande 1 — titre', groupe: 'Expertise' },
   bande_texte: { label: 'Bande 1 — texte', groupe: 'Expertise' },
   bande2_titre: { label: 'Bande 2 — titre', groupe: 'Engagement' },
-  bande2_texte: { label: 'Bande 2 — texte', groupe: 'Engagement' }
+  bande2_texte: { label: 'Bande 2 — texte', groupe: 'Engagement' },
+
+  //  Sensi'Dyf — Georgia Gomez, psychopedagogue a Beziers (2026-09-09).
+  //  `parcours_formations` est volontairement VIDE a la livraison : ses
+  //  diplomes ne figurent nulle part sur ses pages publiques, et on ne
+  //  devine pas les qualifications de quelqu'un qui travaille avec des
+  //  enfants en situation de handicap.
+  hero_publics: { label: 'Hero — publics accompagnes', groupe: 'Hero' },
+
+  regard_titre: { label: 'Le regard — titre', groupe: 'A propos' },
+  regard_intro: { label: 'Le regard — introduction', groupe: 'A propos' },
+  regard_titre_1: { label: 'Le regard — volet 1, titre', groupe: 'A propos' },
+  regard_texte_1: { label: 'Le regard — volet 1, texte', groupe: 'A propos' },
+  regard_img_1: { label: 'Le regard — volet 1, photo', groupe: 'A propos' },
+  regard_texte_2: { label: 'Le regard — volet 2, texte', groupe: 'A propos' },
+  regard_img_2: { label: 'Le regard — volet 2, photo', groupe: 'A propos' },
+  regard_texte_3: { label: 'Le regard — volet 3, texte', groupe: 'A propos' },
+  regard_img_3: { label: 'Le regard — volet 3, photo', groupe: 'A propos' },
+
+  bande1_titre: { label: 'Bande sensorielle — titre', groupe: 'Expertise' },
+  bande1_texte: { label: 'Bande sensorielle — texte', groupe: 'Expertise' },
+
+  service_caa: { label: 'CAA — description', groupe: 'Services' },
+  service_aba: { label: 'Comportements defis — description', groupe: 'Services' },
+  service_reflexes: { label: 'Reflexes archaiques — description', groupe: 'Services' },
+  service_oro: { label: 'Reeducation oro-myo-faciale — description', groupe: 'Services' },
+  service_ecole: { label: 'Coaching scolaire — description', groupe: 'Services' },
+  service_parentalite: { label: 'Parentalite — description', groupe: 'Services' },
+  service_mdph: { label: 'Demarches MDPH — description', groupe: 'Services' },
+  service_materiel: { label: 'Materiel specialise — description', groupe: 'Services' },
+
+  parcours_titre: { label: 'Qui je suis — titre', groupe: 'A propos' },
+  parcours_citation: { label: 'Qui je suis — citation mise en avant', groupe: 'A propos' },
+  parcours_texte_1: { label: 'Qui je suis — paragraphe 1', groupe: 'A propos' },
+  parcours_texte_2: { label: 'Qui je suis — paragraphe 2', groupe: 'A propos' },
+  parcours_texte_3: { label: 'Qui je suis — paragraphe 3', groupe: 'A propos' },
+  parcours_photo: { label: 'Qui je suis — photo', groupe: 'A propos' },
+  parcours_formations: { label: 'Qui je suis — formations et diplomes (A REMPLIR)', groupe: 'A propos' },
+
+  financement_titre: { label: 'Financement — titre', groupe: 'Offre' },
+  financement_soustitre: { label: 'Financement — sous-titre', groupe: 'Offre' },
+  financement_texte_1: { label: 'Financement — paragraphe 1', groupe: 'Offre' },
+  financement_texte_2: { label: 'Financement — paragraphe 2', groupe: 'Offre' },
+  financement_texte_3: { label: 'Financement — paragraphe 3', groupe: 'Offre' }
 };
 
 export const GROUP_ORDER = [

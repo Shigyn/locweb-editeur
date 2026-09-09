@@ -327,6 +327,13 @@ function sectionProduits(client, produits, secteur) {
   }
   corps.append(suggestions);
 
+  /* Quelles rubriques sont ouvertes. L'ensemble vit EN DEHORS de
+     `dessiner`, et c'est tout l'interet : la fonction est rappelee a
+     chaque ajout, suppression ou changement de categorie. Sans cette
+     memoire, renommer une categorie refermerait toute la carte sous
+     les doigts du restaurateur. */
+  const ouverts = new Set();
+
   function dessiner() {
     vider(liste);
     majSuggestions();
@@ -352,11 +359,34 @@ function sectionProduits(client, produits, secteur) {
       dessiner();
     };
 
+    /* Deplacer un plat d'une rubrique a l'autre le fait DISPARAITRE
+       si la rubrique d'arrivee est repliee. On l'ouvre donc. */
+    const ouvrirEtRedessiner = (categorie) => {
+      ouverts.add(categorie || 'Sans catégorie');
+      dessiner();
+    };
+
+    /* Une rubrique = un sous-menu replie. Quatre-vingts plats a la
+       suite font une liste ou l'on ne retrouve rien : replies, les
+       dix rubriques tiennent dans un ecran et l'on ouvre celle qu'on
+       veut modifier.
+
+       `details` plutot qu'un repliage maison : il s'ouvre au clavier,
+       il est annonce correctement par les lecteurs d'ecran, et le
+       navigateur cherche dedans quand on fait Ctrl+F. */
     groupes.forEach((lot, cle) => {
-      liste.append(h('p.groupe-produits',
-        cle || 'Sans catégorie',
-        h('span.groupe-compte', `${lot.length} article${lot.length > 1 ? 's' : ''}`)));
-      lot.forEach((p) => liste.append(carteProduit(client, p, retirer, dessiner)));
+      const titre = cle || 'Sans catégorie';
+      const bloc = h('details.groupe-carte', { open: ouverts.has(titre) },
+        h('summary.groupe-produits',
+          titre,
+          h('span.groupe-compte', `${lot.length} article${lot.length > 1 ? 's' : ''}`)));
+      bloc.addEventListener('toggle', () => {
+        if (bloc.open) ouverts.add(titre); else ouverts.delete(titre);
+      });
+      const grille = h('div.produits-grille');
+      lot.forEach((p) => grille.append(carteProduit(client, p, retirer, ouvrirEtRedessiner)));
+      bloc.append(grille);
+      liste.append(bloc);
     });
   }
   dessiner();
@@ -365,6 +395,10 @@ function sectionProduits(client, produits, secteur) {
     let p;
     try { p = await D.creerProduit(client.id); } catch { souffler('Impossible de créer le produit.', 'alerte'); return; }
     produits.push(p);
+    /* Le plat neuf n'a pas de categorie : il arrive dans
+       << Sans categorie >>. On ouvre la rubrique, sinon le client
+       clique sur << Ajouter >> et ne voit rien se passer. */
+    ouverts.add('Sans catégorie');
     dessiner();
     await D.syncProduitStripe(p.id);
   } }, secteur === 'restaurateur' ? '+ Ajouter un plat' : '+ Ajouter un produit'));
@@ -380,7 +414,11 @@ function carteProduit(client, p, surSuppression, surRegroupement) {
   const categorie = h('input', { type: 'text', value: p.categorie ?? '', list: 'categories-produits', placeholder: 'Entrées, Plats, Desserts...' });
   const desc = h('textarea', { rows: 2, value: p.description ?? '' });
   const dispo = h('input', { type: 'checkbox', checked: !!p.disponible });
-  const img = h('img', { src: p.image_url || '' });
+  /* `hidden` tant qu'il n'y a pas de photo : un <img src=""> affiche
+     l'icone d'image brisee du navigateur, ce qui donne au client
+     l'impression que sa photo a disparu alors qu'il n'en a jamais
+     mis. Il reapparait des qu'un fichier est envoye. */
+  const img = h('img', { src: p.image_url || '', hidden: !p.image_url });
   const fichier = h('input', { type: 'file', accept: 'image/*' });
 
   async function sauver(field, valeur) {
@@ -394,7 +432,7 @@ function carteProduit(client, p, surSuppression, surRegroupement) {
   prix.addEventListener('change', () => sauver('prix', Number(prix.value)));
   categorie.addEventListener('change', async () => {
     await sauver('categorie', categorie.value);
-    surRegroupement?.();
+    surRegroupement?.(categorie.value);
   });
   desc.addEventListener('change', () => sauver('description', desc.value));
   dispo.addEventListener('change', () => sauver('disponible', dispo.checked));
@@ -405,25 +443,58 @@ function carteProduit(client, p, surSuppression, surRegroupement) {
     let url;
     try { url = await D.uploaderImage(client.id, file); } catch { souffler("Erreur lors de l'envoi de la photo.", 'alerte'); return; }
     img.src = url;
+    img.hidden = false;
     await sauver('image_url', url);
   });
 
-  return h('div.produit',
-    h('div.produit-tete', img, h('label.entree-fichier', 'Changer la photo', fichier)),
-    h('div.produit-grille',
-      h('label.champ', h('span', 'Nom'), nom),
-      h('label.champ', h('span', 'Prix (EUR)'), prix),
-      h('label.champ.produit-desc', h('span', 'Catégorie'), categorie),
-      h('label.champ.produit-desc', h('span', 'Description'), desc)),
-    h('div.produit-bas',
-      h('label.produit-dispo', dispo, 'Disponible à la vente'),
-      h('button.bt.bt-nu', { onclick: async () => {
-        if (!await certain(
-          `"${p.nom || 'Ce produit'}" sera définitivement retiré de votre site. Cette action est irréversible.`,
-          { titre: 'Supprimer ce produit ?', action: 'Supprimer', danger: true })) return;
-        await D.supprimerProduit(p.id);
-        surSuppression(p);
-      } }, 'Supprimer')));
+  /* La TUILE : ce qu'on voit tant qu'on ne modifie rien. Une photo,
+     un nom, un prix. C'est la meme lecture que sur le site, et c'est
+     voulu : le restaurateur retrouve son plat au meme endroit et
+     sous la meme forme que son client.
+
+     Avant, chaque plat depliait son formulaire complet : quatre-vingts
+     plats faisaient quatre-vingts ecrans, et atteindre les boissons
+     demandait une minute de defilement. */
+  const vignette = p.image_url
+    ? img
+    : h('span.tuile-vide', (p.nom || '?').trim().charAt(0).toUpperCase());
+
+  const resume = h('summary.tuile-tete',
+    h('span.tuile-photo', vignette),
+    h('span.tuile-txt',
+      h('b.tuile-nom', p.nom || 'Sans nom'),
+      h('span.tuile-prix', p.prix != null ? Number(p.prix).toFixed(2).replace('.', ',') + ' €' : '—')));
+
+  /* Le nom et le prix de la tuile suivent ce qu'on tape dans le
+     formulaire : sans ca, on renomme un plat et la tuile continue
+     d'afficher l'ancien nom jusqu'au prochain rechargement. */
+  nom.addEventListener('input', () => {
+    resume.querySelector('.tuile-nom').textContent = nom.value || 'Sans nom';
+  });
+  prix.addEventListener('input', () => {
+    const v = Number(prix.value);
+    resume.querySelector('.tuile-prix').textContent =
+      prix.value === '' || Number.isNaN(v) ? '—' : v.toFixed(2).replace('.', ',') + ' €';
+  });
+
+  return h('details.produit-tuile',
+    resume,
+    h('div.produit',
+      h('div.produit-tete', img, h('label.entree-fichier', 'Changer la photo', fichier)),
+      h('div.produit-grille',
+        h('label.champ', h('span', 'Nom'), nom),
+        h('label.champ', h('span', 'Prix (EUR)'), prix),
+        h('label.champ.produit-desc', h('span', 'Catégorie'), categorie),
+        h('label.champ.produit-desc', h('span', 'Description'), desc)),
+      h('div.produit-bas',
+        h('label.produit-dispo', dispo, 'Disponible à la vente'),
+        h('button.bt.bt-nu', { onclick: async () => {
+          if (!await certain(
+            `"${p.nom || 'Ce produit'}" sera définitivement retiré de votre site. Cette action est irréversible.`,
+            { titre: 'Supprimer ce produit ?', action: 'Supprimer', danger: true })) return;
+          await D.supprimerProduit(p.id);
+          surSuppression(p);
+        } }, 'Supprimer'))));
 }
 
 function carteHistorique(historique) {

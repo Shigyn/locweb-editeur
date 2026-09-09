@@ -274,7 +274,16 @@ export const MANIFEST = {
   //  laisser hors manifeste, c'est laisser le client changer le
   //  numero affiche sans changer celui qui est compose.
   contact_lien_tel: { label: 'Lien d\'appel (tel:)', groupe: 'Footer' },
-  contact_lien_sms: { label: 'Lien SMS (sms:)', groupe: 'Footer' }
+  contact_lien_sms: { label: 'Lien SMS (sms:)', groupe: 'Footer' },
+
+  //  L'appel decouverte. Le libelle du bouton du hero et celui du
+  //  formulaire sont deux cles distinctes mais doivent dire la
+  //  MEME chose : deux libelles differents pour une seule action
+  //  font hesiter au moment de cliquer.
+  hero_cta: { label: 'Hero — libelle du bouton principal', groupe: 'Hero' },
+  contact_bouton: { label: 'Formulaire — libelle du bouton', groupe: 'Footer' },
+  appel_texte_1: { label: 'Appel decouverte — paragraphe 1', groupe: 'Offre' },
+  appel_texte_2: { label: 'Appel decouverte — paragraphe 2', groupe: 'Offre' }
 };
 
 export const GROUP_ORDER = [

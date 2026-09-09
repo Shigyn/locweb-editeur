@@ -414,11 +414,18 @@ function carteProduit(client, p, surSuppression, surRegroupement) {
   const categorie = h('input', { type: 'text', value: p.categorie ?? '', list: 'categories-produits', placeholder: 'Entrées, Plats, Desserts...' });
   const desc = h('textarea', { rows: 2, value: p.description ?? '' });
   const dispo = h('input', { type: 'checkbox', checked: !!p.disponible });
-  /* `hidden` tant qu'il n'y a pas de photo : un <img src=""> affiche
-     l'icone d'image brisee du navigateur, ce qui donne au client
-     l'impression que sa photo a disparu alors qu'il n'en a jamais
-     mis. Il reapparait des qu'un fichier est envoye. */
+  /* DEUX elements image, et c'est indispensable : un noeud du DOM
+     n'existe qu'a UN endroit. La premiere version reutilisait le
+     meme `img` dans la tuile et dans le formulaire — l'ajouter au
+     formulaire le RETIRAIT de la tuile, et toute la carte est
+     apparue en carres vides. Le code semblait juste, les URL
+     repondaient en 200 : rien ne se voyait ailleurs qu'a l'ecran.
+
+     `hidden` tant qu'il n'y a pas de photo : un <img src=""> affiche
+     l'icone d'image brisee, ce qui laisse croire au client que SA
+     photo a disparu alors qu'il n'en a jamais mis. */
   const img = h('img', { src: p.image_url || '', hidden: !p.image_url });
+  const imgTuile = h('img', { src: p.image_url || '', alt: '' });
   const fichier = h('input', { type: 'file', accept: 'image/*' });
 
   async function sauver(field, valeur) {
@@ -444,6 +451,11 @@ function carteProduit(client, p, surSuppression, surRegroupement) {
     try { url = await D.uploaderImage(client.id, file); } catch { souffler("Erreur lors de l'envoi de la photo.", 'alerte'); return; }
     img.src = url;
     img.hidden = false;
+    /* La tuile aussi, sinon le client envoie une photo, la voit
+       dans le formulaire, referme, et retrouve son carre vide. */
+    imgTuile.src = url;
+    const creux = resume.querySelector('.tuile-vide');
+    if (creux) creux.replaceWith(imgTuile);
     await sauver('image_url', url);
   });
 
@@ -456,7 +468,7 @@ function carteProduit(client, p, surSuppression, surRegroupement) {
      plats faisaient quatre-vingts ecrans, et atteindre les boissons
      demandait une minute de defilement. */
   const vignette = p.image_url
-    ? img
+    ? imgTuile
     : h('span.tuile-vide', (p.nom || '?').trim().charAt(0).toUpperCase());
 
   const resume = h('summary.tuile-tete',

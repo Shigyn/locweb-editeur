@@ -216,7 +216,14 @@ export const MANIFEST = {
   realisation_1_apres: { label: 'Chantier 1 — photo apres', groupe: 'Preuve sociale' },
   realisation_2_avant: { label: 'Chantier 2 — photo avant', groupe: 'Preuve sociale' },
   realisation_2_apres: { label: 'Chantier 2 — photo apres', groupe: 'Preuve sociale' },
-  realisation_2_lieu: { label: 'Chantier 2 — lieu', groupe: 'Preuve sociale' }
+  realisation_2_lieu: { label: 'Chantier 2 — lieu', groupe: 'Preuve sociale' },
+
+  //  Les deux bandes photo pleine largeur qui rythment la page.
+  bande_chiffre: { label: 'Bande 1 — chiffre mis en avant', groupe: 'Expertise' },
+  bande_titre: { label: 'Bande 1 — titre', groupe: 'Expertise' },
+  bande_texte: { label: 'Bande 1 — texte', groupe: 'Expertise' },
+  bande2_titre: { label: 'Bande 2 — titre', groupe: 'Engagement' },
+  bande2_texte: { label: 'Bande 2 — texte', groupe: 'Engagement' }
 };
 
 export const GROUP_ORDER = [

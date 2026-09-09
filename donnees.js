@@ -201,6 +201,26 @@ export async function listerDemandes(clientId) {
   return data || [];
 }
 
+/* Les commandes d'un restaurant.
+
+   Elles ne passent PAS par la meme table que les demandes : un
+   formulaire de contact et une commande a emporter n'ont ni les memes
+   colonnes ni le meme cycle de vie. Un snack n'a aucune ligne dans
+   `leads`, et son espace client affichait donc << aucune demande
+   recue >> pour toujours alors qu'il recevait des commandes tous les
+   soirs.
+
+   Lecture seule : le statut se change au comptoir, sur l'ecran de
+   service, par quelqu'un qui a le plat sous les yeux. Voir la
+   migration 35 pour la policy correspondante. */
+export async function listerCommandes(clientId) {
+  const { data, error } = await sb.from('commandes')
+    .select('id, statut, total, nom_client, telephone_client, heure_demandee, heure_confirmee, adresse_livraison, date_creation')
+    .eq('client_id', clientId).order('date_creation', { ascending: false }).limit(200);
+  if (error) throw error;
+  return data || [];
+}
+
 export async function majDemande(id, statut) {
   const { error } = await sb.from('leads').update({ statut, date_traitement: new Date().toISOString() }).eq('id', id);
   if (error) throw error;

@@ -266,7 +266,15 @@ export const MANIFEST = {
   financement_soustitre: { label: 'Financement — sous-titre', groupe: 'Offre' },
   financement_texte_1: { label: 'Financement — paragraphe 1', groupe: 'Offre' },
   financement_texte_2: { label: 'Financement — paragraphe 2', groupe: 'Offre' },
-  financement_texte_3: { label: 'Financement — paragraphe 3', groupe: 'Offre' }
+  financement_texte_3: { label: 'Financement — paragraphe 3', groupe: 'Offre' },
+
+  //  Le NUMERO se change a un seul endroit (`contact_telephone`,
+  //  deja au manifeste), mais les deux LIENS qui l'appellent sont
+  //  distincts : `tel:` et `sms:` ne se composent pas pareil. Les
+  //  laisser hors manifeste, c'est laisser le client changer le
+  //  numero affiche sans changer celui qui est compose.
+  contact_lien_tel: { label: 'Lien d\'appel (tel:)', groupe: 'Footer' },
+  contact_lien_sms: { label: 'Lien SMS (sms:)', groupe: 'Footer' }
 };
 
 export const GROUP_ORDER = [

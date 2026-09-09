@@ -339,7 +339,22 @@ export const MANIFEST = {
   temoignages_appel_texte: { label: 'Laisser un avis — texte', groupe: 'Preuve sociale' },
 
   bande_tarifs_titre: { label: 'Bande avant les tarifs — titre', groupe: 'Offre' },
-  bande_tarifs_texte: { label: 'Bande avant les tarifs — texte', groupe: 'Offre' }
+  bande_tarifs_texte: { label: 'Bande avant les tarifs — texte', groupe: 'Offre' },
+
+  //  KSM : les avis Google poses sous la carte de localisation.
+  //  Les textes sont ceux des clients, releves sur la fiche : les
+  //  rendre modifiables permet de les remplacer par des avis plus
+  //  recents, pas d'en inventer.
+  avis_titre: { label: 'Avis — titre de la section', groupe: 'Preuve sociale' },
+  avis_note: { label: 'Avis — note globale', groupe: 'Preuve sociale' },
+  avis_nombre: { label: 'Avis — nombre d\'avis', groupe: 'Preuve sociale' },
+  avis_lien: { label: 'Avis — bouton vers la fiche Google', groupe: 'Preuve sociale' },
+  avis_1_texte: { label: 'Avis 1 — texte', groupe: 'Preuve sociale' },
+  avis_1_nom: { label: 'Avis 1 — signature', groupe: 'Preuve sociale' },
+  avis_2_texte: { label: 'Avis 2 — texte', groupe: 'Preuve sociale' },
+  avis_2_nom: { label: 'Avis 2 — signature', groupe: 'Preuve sociale' },
+  avis_3_texte: { label: 'Avis 3 — texte', groupe: 'Preuve sociale' },
+  avis_3_nom: { label: 'Avis 3 — signature', groupe: 'Preuve sociale' }
 };
 
 export const GROUP_ORDER = [

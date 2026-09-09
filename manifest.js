@@ -283,7 +283,58 @@ export const MANIFEST = {
   hero_cta: { label: 'Hero — libelle du bouton principal', groupe: 'Hero' },
   contact_bouton: { label: 'Formulaire — libelle du bouton', groupe: 'Footer' },
   appel_texte_1: { label: 'Appel decouverte — paragraphe 1', groupe: 'Offre' },
-  appel_texte_2: { label: 'Appel decouverte — paragraphe 2', groupe: 'Offre' }
+  appel_texte_2: { label: 'Appel decouverte — paragraphe 2', groupe: 'Offre' },
+
+  //  Sensi'Dyf, deuxieme lot : prestations completes, lieu, tarifs et
+  //  temoignages. Les trois temoignages sont livres VIDES : on
+  //  n'invente pas d'avis sur un site d'accompagnement du handicap.
+  presta_groupe_1: { label: 'Prestations — titre du groupe 1', groupe: 'Services' },
+  presta_groupe_2: { label: 'Prestations — titre du groupe 2', groupe: 'Services' },
+  services_note: { label: 'Prestations — note de bas de section', groupe: 'Services' },
+  service_parcours: { label: 'Referente de parcours — description', groupe: 'Services' },
+  service_polyhandicap: { label: 'Polyhandicap — description', groupe: 'Services' },
+  service_habiletes: { label: 'Groupes d\'habiletes sociales — description', groupe: 'Services' },
+  service_langage: { label: 'Ateliers de langage — description', groupe: 'Services' },
+  service_bilan: { label: 'Bilan psychopedagogique — description', groupe: 'Services' },
+
+  ou_titre: { label: 'Cabinet ou domicile — titre', groupe: 'A propos' },
+  ou_intro: { label: 'Cabinet ou domicile — introduction', groupe: 'A propos' },
+  ou_cabinet: { label: 'Le cabinet — description', groupe: 'A propos' },
+  ou_domicile: { label: 'A domicile — description', groupe: 'A propos' },
+  ou_pch: { label: 'PCH et CESU — description', groupe: 'A propos' },
+
+  formations_titre: { label: 'Formations — titre', groupe: 'A propos' },
+  formations_texte_1: { label: 'Formations — paragraphe 1', groupe: 'A propos' },
+  formations_texte_2: { label: 'Formations — Haute Autorite de Sante', groupe: 'A propos' },
+
+  tarifs_titre: { label: 'Tarifs — titre', groupe: 'Offre' },
+  tarifs_intro: { label: 'Tarifs — introduction', groupe: 'Offre' },
+  tarifs_note: { label: 'Tarifs — note (deplacements, groupes)', groupe: 'Offre' },
+  tarif_1_nom: { label: 'Tarif 1 — intitule', groupe: 'Offre' },
+  tarif_1_note: { label: 'Tarif 1 — precision', groupe: 'Offre' },
+  tarif_1_prix: { label: 'Tarif 1 — prix', groupe: 'Offre' },
+  tarif_2_nom: { label: 'Tarif 2 — intitule', groupe: 'Offre' },
+  tarif_2_note: { label: 'Tarif 2 — precision', groupe: 'Offre' },
+  tarif_2_prix: { label: 'Tarif 2 — prix', groupe: 'Offre' },
+  tarif_3_nom: { label: 'Tarif 3 — intitule', groupe: 'Offre' },
+  tarif_3_note: { label: 'Tarif 3 — precision', groupe: 'Offre' },
+  tarif_3_prix: { label: 'Tarif 3 — prix', groupe: 'Offre' },
+  tarif_4_nom: { label: 'Tarif 4 — intitule', groupe: 'Offre' },
+  tarif_4_note: { label: 'Tarif 4 — precision', groupe: 'Offre' },
+  tarif_4_prix: { label: 'Tarif 4 — prix', groupe: 'Offre' },
+
+  financement_texte_4: { label: 'Financement — devis et factures', groupe: 'Offre' },
+  financement_texte_5: { label: 'Financement — moyens de paiement', groupe: 'Offre' },
+
+  temoignages_titre: { label: 'Temoignages — titre', groupe: 'Preuve sociale' },
+  temoignages_intro: { label: 'Temoignages — introduction', groupe: 'Preuve sociale' },
+  temoignages_lien: { label: 'Temoignages — lien vers la fiche Google', groupe: 'Preuve sociale' },
+  temoignage_1_texte: { label: 'Temoignage 1 — texte', groupe: 'Preuve sociale' },
+  temoignage_1_nom: { label: 'Temoignage 1 — signature', groupe: 'Preuve sociale' },
+  temoignage_2_texte: { label: 'Temoignage 2 — texte', groupe: 'Preuve sociale' },
+  temoignage_2_nom: { label: 'Temoignage 2 — signature', groupe: 'Preuve sociale' },
+  temoignage_3_texte: { label: 'Temoignage 3 — texte', groupe: 'Preuve sociale' },
+  temoignage_3_nom: { label: 'Temoignage 3 — signature', groupe: 'Preuve sociale' }
 };
 
 export const GROUP_ORDER = [

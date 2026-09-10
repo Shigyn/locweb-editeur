@@ -215,7 +215,7 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '80';
+export const VERSION = '81';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {
@@ -296,12 +296,15 @@ addEventListener('hashchange', router);
    << Commandes >> — comme la page elle-meme. */
 export async function rafraichirPastille() {
   try {
-    const [demandes, commandes] = await Promise.all([
+    const [demandes, carte] = await Promise.all([
       charger('demandes', () => D.listerDemandes(etat.client.id)),
-      charger('commandes', () => D.listerCommandes(etat.client.id)).catch(() => []),
+      charger('a-une-carte', () => D.aUneCarte(etat.client.id)).catch(() => false),
     ]);
 
-    const resto = commandes.length > 0 && demandes.length === 0;
+    /* La carte plutot que les commandes : elle est lisible tout de
+       suite, la ou les commandes attendent une policy. Un snack qui
+       n'a encore rien vendu doit deja voir le bon mot. */
+    const resto = carte && demandes.length === 0;
     const libelle = $('#rail-demandes');
     if (libelle) libelle.textContent = resto ? 'Commandes' : 'Devis demandés';
 

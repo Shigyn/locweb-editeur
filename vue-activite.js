@@ -11,7 +11,7 @@ import * as D from './donnees.js';
 
 export async function rendre(page, etat, { charger, oublier, rafraichirPastille }) {
   const { client } = etat;
-  const [demandes, campagnes, commandes] = await Promise.all([
+  const [demandes, campagnes, commandes, carte] = await Promise.all([
     charger('demandes', () => D.listerDemandes(client.id)),
     charger('campagnes', () => D.listerCampagnes(client.id)).catch(() => []),
     /* Un client sans commandes n'a simplement rien ici, et un client
@@ -19,6 +19,7 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
        cas on retombe sur une liste vide, jamais sur une page en
        erreur. */
     charger('commandes', () => D.listerCommandes(client.id)).catch(() => []),
+    charger('a-une-carte', () => D.aUneCarte(client.id)).catch(() => false),
   ]);
 
   vider(page);
@@ -26,7 +27,8 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
      pas de << demandes >>, il recoit des commandes — et lui afficher un
      mot qui ne correspond a rien de son metier, c'est lui apprendre a
      ne pas ouvrir la page. */
-  page.append(h('h1', commandes.length && !demandes.length ? 'Commandes' : 'Devis demandés'));
+  const resto = carte && !demandes.length;
+  page.append(h('h1', resto ? 'Commandes' : 'Devis demandés'));
 
   // Ce que le client a demande A LocWeb, avant ce qu'il a recu DE ses
   // visiteurs : quand on vient de commander une campagne, c'est la
@@ -56,7 +58,9 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
     // annonce en plus qu'il n'a pas de formulaire de contact.
     if (!commandes.length) {
       page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
-        h('p', { style: { color: 'var(--sourdine)' } }, "Aucune demande reçue pour le moment."))));
+        h('p', { style: { color: 'var(--sourdine)' } }, resto
+          ? "Aucune commande pour le moment."
+          : "Aucun devis demandé pour le moment."))));
     }
     return;
   }

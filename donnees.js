@@ -221,6 +221,22 @@ export async function listerCommandes(clientId) {
   return data || [];
 }
 
+/* Ce client vend-il des produits ?
+
+   Sert a savoir quoi ecrire dans le rail et sur la page : un
+   restaurateur ne recoit pas de << devis demandes >> mais des
+   commandes. On se base sur la CARTE et non sur les commandes elles-
+   memes : la carte est lisible sans policy particuliere, puisque le
+   site public l'affiche deja. Un compteur suffit, on ne rapatrie pas
+   les lignes pour repondre a une question par oui ou non. */
+export async function aUneCarte(clientId) {
+  const { count, error } = await sb.from('produits')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', clientId);
+  if (error) return false;
+  return (count || 0) > 0;
+}
+
 export async function majDemande(id, statut) {
   const { error } = await sb.from('leads').update({ statut, date_traitement: new Date().toISOString() }).eq('id', id);
   if (error) throw error;

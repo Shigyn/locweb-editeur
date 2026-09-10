@@ -215,7 +215,7 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '81';
+export const VERSION = '82';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {
@@ -287,13 +287,18 @@ addEventListener('hashchange', router);
 
    << Demandes >> ne voulait rien dire de precis : Nicolas lui-meme
    n'avait pas compris qu'il s'agissait du formulaire du site.
-   L'intitule par defaut est donc << Devis demandes >>.
+   L'intitule est donc << Devis demandes >>.
 
-   Et un restaurateur ne recoit pas de devis. KSM n'a pas de
-   formulaire du tout : la page lui affichait << Aucune demande recue >>
-   avec une pastille a zero, pour un concept qui n'existe pas chez lui.
-   Quand un client a des commandes et aucune demande, le rail dit
-   << Commandes >> — comme la page elle-meme. */
+   ET CHEZ UN RESTAURATEUR, L'ENTREE DISPARAIT. Un snack n'a pas de
+   formulaire : la page lui affichait << Aucune demande recue >> avec
+   une pastille a zero, pour un concept qui n'existe pas chez lui. Ses
+   commandes, il les suit sur son ecran de comptoir, qui est fait pour
+   ca et qu'il a deja. Dupliquer ici ce qu'il regarde la-bas ne lui
+   apporte rien et lui donne un second endroit ou chercher.
+
+   On le reconnait a sa CARTE et non a ses commandes : la carte est
+   lisible tout de suite, la ou les commandes demanderaient une policy
+   dediee. Un client qui a des produits vend des produits. */
 export async function rafraichirPastille() {
   try {
     const [demandes, carte] = await Promise.all([
@@ -301,18 +306,13 @@ export async function rafraichirPastille() {
       charger('a-une-carte', () => D.aUneCarte(etat.client.id)).catch(() => false),
     ]);
 
-    /* La carte plutot que les commandes : elle est lisible tout de
-       suite, la ou les commandes attendent une policy. Un snack qui
-       n'a encore rien vendu doit deja voir le bon mot. */
     const resto = carte && demandes.length === 0;
-    const libelle = $('#rail-demandes');
-    if (libelle) libelle.textContent = resto ? 'Commandes' : 'Devis demandés';
+
+    // L'entree entiere s'efface, pastille comprise.
+    const entree = document.querySelector('a[data-route="demandes"]');
+    if (entree) entree.hidden = resto;
 
     const el = $('#pastille-activite');
-    // La pastille compte les demandes SANS REPONSE. Chez un
-    // restaurateur elle vaudrait zero pour toujours : les commandes se
-    // traitent au comptoir, pas ici. On la masque plutot que d'afficher
-    // un compteur qui ne bougera jamais.
     const n = resto ? 0 : demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;
     el.textContent = n > 99 ? '99+' : String(n);
     el.hidden = n === 0;

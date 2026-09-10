@@ -11,15 +11,9 @@ import * as D from './donnees.js';
 
 export async function rendre(page, etat, { charger, oublier, rafraichirPastille }) {
   const { client } = etat;
-  const [demandes, campagnes, commandes, carte] = await Promise.all([
+  const [demandes, campagnes] = await Promise.all([
     charger('demandes', () => D.listerDemandes(client.id)),
     charger('campagnes', () => D.listerCampagnes(client.id)).catch(() => []),
-    /* Un client sans commandes n'a simplement rien ici, et un client
-       dont la policy n'est pas encore posee non plus : dans les deux
-       cas on retombe sur une liste vide, jamais sur une page en
-       erreur. */
-    charger('commandes', () => D.listerCommandes(client.id)).catch(() => []),
-    charger('a-une-carte', () => D.aUneCarte(client.id)).catch(() => false),
   ]);
 
   vider(page);
@@ -27,8 +21,7 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
      pas de << demandes >>, il recoit des commandes — et lui afficher un
      mot qui ne correspond a rien de son metier, c'est lui apprendre a
      ne pas ouvrir la page. */
-  const resto = carte && !demandes.length;
-  page.append(h('h1', resto ? 'Commandes' : 'Devis demandés'));
+  page.append(h('h1', 'Devis demandés'));
 
   // Ce que le client a demande A LocWeb, avant ce qu'il a recu DE ses
   // visiteurs : quand on vient de commander une campagne, c'est la
@@ -51,17 +44,9 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
       liste));
   }
 
-  if (commandes.length) page.append(blocCommandes(commandes));
-
   if (!demandes.length) {
-    // Un restaurant qui recoit des commandes n'a pas besoin qu'on lui
-    // annonce en plus qu'il n'a pas de formulaire de contact.
-    if (!commandes.length) {
-      page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
-        h('p', { style: { color: 'var(--sourdine)' } }, resto
-          ? "Aucune commande pour le moment."
-          : "Aucun devis demandé pour le moment."))));
-    }
+    page.append(h('div.section', h('div.section-corps', { style: { paddingTop: '14px' } },
+      h('p', { style: { color: 'var(--sourdine)' } }, "Aucun devis demandé pour le moment."))));
     return;
   }
 
@@ -125,62 +110,4 @@ function ligneDemande(d, oublier, rafraichirPastille) {
     select);
 
   return [ligne, detail];
-}
-
-/* =================================================================
-   LES COMMANDES
-
-   Volontairement en LECTURE SEULE. Le statut d'une commande se change
-   au comptoir, sur l'ecran de service, par quelqu'un qui a le plat
-   sous les yeux : une commande passee a << prete >> depuis un
-   telephone en salle, c'est un client qui attend pour rien.
-
-   Ce que cette page apporte, c'est ce que l'ecran du comptoir ne
-   montre pas — le passe. L'ecran de service n'affiche que les
-   commandes en cours ; ici on voit combien il y en a eu, pour combien,
-   et sur quel rythme.
-   ================================================================= */
-const ETATS_COMMANDE = {
-  recue:     { libelle: 'A accepter', ton: 'attente' },
-  acceptee:  { libelle: 'En preparation', ton: 'encours' },
-  prete:     { libelle: 'Prete', ton: 'bien' },
-  recuperee: { libelle: 'Recuperee', ton: 'bien' },
-  annulee:   { libelle: 'Annulee', ton: 'sourdine' },
-};
-
-function blocCommandes(commandes) {
-  const euros = (n) => (Number(n) || 0).toFixed(2).replace('.', ',') + ' \u20ac';
-
-  const limite = new Date();
-  limite.setDate(limite.getDate() - 30);
-  const sur30 = commandes.filter((c) => new Date(c.date_creation) >= limite);
-  const encaisse = sur30.reduce((t, c) => t + (Number(c.total) || 0), 0);
-  // Le panier moyen n'a de sens que sur des commandes qui ont eu lieu :
-  // compter les annulees le tirerait vers le bas sans rien dire de
-  // vrai.
-  const valides = sur30.filter((c) => c.statut !== 'annulee');
-  const panier = valides.length ? encaisse / valides.length : 0;
-
-  const synthese = h('div.synthese',
-    h('div.mesure', h('p.val', nombre(sur30.length)), h('p.etiq', 'Commandes'), h('p.sous', 'sur 30 jours')),
-    h('div.mesure', h('p.val', euros(encaisse)), h('p.etiq', 'Total'), h('p.sous', 'sur 30 jours')),
-    h('div.mesure', h('p.val', euros(panier)), h('p.etiq', 'Panier moyen'), h('p.sous', 'hors annulees')));
-
-  const liste = h('div.liste-carte');
-  commandes.slice(0, 50).forEach((c) => {
-    const heure = c.heure_confirmee || c.heure_demandee
-      || (c.adresse_livraison || '').replace(/^Retrait sur place\s*\u2014\s*/, '') || null;
-    const etat = ETATS_COMMANDE[c.statut] || { libelle: c.statut || '\u2014' };
-    liste.append(h('div.ligne-liste', { style: { flexWrap: 'wrap' } },
-      h('div.principal',
-        h('strong', c.nom_client || 'Sans nom'),
-        h('span', [c.telephone_client, heure && `retrait ${heure}`, depuis(c.date_creation)]
-          .filter(Boolean).join(' \u00b7 '))),
-      h('strong', { style: { marginLeft: 'auto', whiteSpace: 'nowrap' } }, euros(c.total)),
-      h('span.etat', { style: { marginLeft: '12px' } }, etat.libelle)));
-  });
-
-  return h('div.section',
-    h('div.section-tete', h('h2', 'Commandes recues')),
-    h('div.section-corps', { style: { paddingTop: '10px' } }, synthese, liste));
 }

@@ -33,10 +33,6 @@ const ICONES_KPI = {
 export async function rendre(page, etat, { charger }) {
   const { client, profil } = etat;
   const demandes = await charger('demandes', () => D.listerDemandes(client.id));
-  // Un restaurant ne recoit pas de demandes mais des commandes. Sans
-  // ca, sa page d'accueil affiche un zero permanent alors qu'il
-  // travaille tous les soirs.
-  const commandes = await charger('commandes', () => D.listerCommandes(client.id)).catch(() => []);
 
   vider(page);
   page.append(h('h1', `Bonjour, ${client.nom_site || 'bienvenue'}`));
@@ -60,8 +56,7 @@ export async function rendre(page, etat, { charger }) {
 
   vider(zone);
   zone.append(verdict(stats, demandes30, profil));
-  const commandes30 = commandes.filter((c) => new Date(c.date_creation) >= limite);
-  zone.append(chiffres(stats, fiche, demandes30, commandes30));
+  zone.append(chiffres(stats, fiche, demandes30));
   const graphe = courbe(stats);
   if (graphe) zone.append(graphe);
   const actions = blocAFaire(profil || {}, client, {
@@ -126,7 +121,7 @@ function verdict(stats, demandes30, profil) {
    On n'affiche jamais une carte sans valeur : trois cases vides ne
    disent pas "pas de donnees", elles donnent l'impression d'un outil
    casse. */
-function chiffres(stats, fiche, demandes30, commandes30 = []) {
+function chiffres(stats, fiche, demandes30) {
   const visiteurs = stats?.totaux?.visiteurs ?? null;
   const grille = h('div.grille-kpi');
 
@@ -135,14 +130,7 @@ function chiffres(stats, fiche, demandes30, commandes30 = []) {
       stats?.variations?.visiteurs, (stats?.series || []).map((l) => l.visiteurs)));
   }
 
-  /* Les commandes prennent la place des demandes quand il y en a :
-     afficher les deux compteurs a un snack qui n'a pas de formulaire,
-     c'est mettre un zero permanent a cote du chiffre qui compte. */
-  if (commandes30.length) {
-    grille.append(kpi('demandes', 'Commandes reçues', nombre(commandes30.length), null, null));
-  } else {
-    grille.append(kpi('demandes', 'Devis demandés', nombre(demandes30.length), null, null));
-  }
+  grille.append(kpi('demandes', 'Devis demandés', nombre(demandes30.length), null, null));
 
   // L'evenement vient du site (clients/mesure.js). Tant qu'un site n'a
   // pas sa balise, l'evenement n'existe pas : on se rabat alors sur les

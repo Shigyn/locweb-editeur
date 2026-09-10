@@ -201,34 +201,6 @@ export async function listerDemandes(clientId) {
   return data || [];
 }
 
-/* Les commandes d'un restaurant.
-
-   Elles ne passent PAS par la meme table que les demandes : un
-   formulaire de contact et une commande a emporter n'ont ni les memes
-   colonnes ni le meme cycle de vie. Un snack n'a aucune ligne dans
-   `leads`, et son espace client affichait donc << aucune demande
-   recue >> pour toujours alors qu'il recevait des commandes tous les
-   soirs.
-
-   Lecture seule : le statut se change au comptoir, sur l'ecran de
-   service, par quelqu'un qui a le plat sous les yeux. Voir la
-   migration 35 pour la policy correspondante. */
-export async function listerCommandes(clientId) {
-  const { data, error } = await sb.from('commandes')
-    .select('id, statut, total, nom_client, telephone_client, heure_demandee, heure_confirmee, adresse_livraison, date_creation')
-    .eq('client_id', clientId).order('date_creation', { ascending: false }).limit(200);
-  if (error) throw error;
-  return data || [];
-}
-
-/* Ce client vend-il des produits ?
-
-   Sert a savoir quoi ecrire dans le rail et sur la page : un
-   restaurateur ne recoit pas de << devis demandes >> mais des
-   commandes. On se base sur la CARTE et non sur les commandes elles-
-   memes : la carte est lisible sans policy particuliere, puisque le
-   site public l'affiche deja. Un compteur suffit, on ne rapatrie pas
-   les lignes pour repondre a une question par oui ou non. */
 export async function aUneCarte(clientId) {
   const { count, error } = await sb.from('produits')
     .select('id', { count: 'exact', head: true })

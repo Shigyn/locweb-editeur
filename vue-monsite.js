@@ -7,7 +7,7 @@
 import { h, vider, differer, souffler, certain, depuis, prettifyKey } from './outils.js';
 import * as D from './donnees.js';
 import { sectionChantiers } from './chantiers.js';
-import { MANIFEST, GROUP_ORDER } from './manifest.js?v=6';
+import { MANIFEST, GROUP_ORDER } from './manifest.js?v=7';
 
 /* Ce que le client peut modifier depend de sa formule :
      aucun     — rien, tout passe par LocWeb ;

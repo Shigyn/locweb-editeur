@@ -14,7 +14,7 @@
 //  fraiches seraient pires que pas de donnees du tout.
 // ===================================================================
 
-const CACHE = 'locweb-espace-v14';
+const CACHE = 'locweb-espace-v15';
 
 // Le strict necessaire pour que l'app s'ouvre hors ligne. Le reste des
 // modules est mis en cache au fil de la navigation.

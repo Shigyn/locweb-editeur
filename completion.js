@@ -58,17 +58,35 @@ export const champsProfil = {
 
    Elles restent proposees dans la liste `aFaire` ci-dessous, ou elles
    ont leur place : c'est un conseil, pas un reproche. */
+/* LES ETAPES SONT PONDEREES, et la premiere est deja faite.
+
+   Avant : trois etapes de profil a poids egal, et rien qui compte le
+   site lui-meme. Un client dont le site etait en ligne, mesure, et
+   qui prenait des commandes tous les soirs s'affichait a 33 % — ce qui
+   ne se lit pas comme << il reste deux champs a remplir >> mais comme
+   << votre installation a echoue >>.
+
+   Le site en ligne pese donc 8 sur 10 : c'est le travail, il est
+   fait, et le client l'a paye. Restent deux champs de profil a 1
+   chacun. Un client livre part a 80 % et monte a 100 % en remplissant
+   ses coordonnees et son metier.
+
+   `reseaux` sort du calcul : beaucoup de clients n'ont aucun reseau
+   social et n'en veulent pas. Les compter les bloquait a 67 % pour
+   toujours, pour une chose qu'ils ne feront jamais. */
 const ETAPES = [
-  { id: 'contact',  fait: (p) => Boolean(p.contact_telephone && (p.contact_prenom || p.contact_nom)) },
-  { id: 'activite', fait: (p) => Boolean(p.metier_precis && p.zone_intervention) },
-  { id: 'reseaux',  fait: (p) => Object.values(p.reseaux || {}).some(Boolean) },
+  { id: 'site',     poids: 8, fait: () => true },
+  { id: 'contact',  poids: 1, fait: (p) => Boolean(p.contact_telephone && (p.contact_prenom || p.contact_nom)) },
+  { id: 'activite', poids: 1, fait: (p) => Boolean(p.metier_precis && p.zone_intervention) },
 ];
 
 /** Retourne { faites, total, pourcent, reste: [id] }. */
 export function completion(profil = {}, client = {}) {
   const reste = ETAPES.filter((e) => !e.fait(profil, client)).map((e) => e.id);
   const faites = ETAPES.length - reste.length;
-  return { faites, total: ETAPES.length, pourcent: Math.round((faites / ETAPES.length) * 100), reste };
+  const total = ETAPES.reduce((t, e) => t + e.poids, 0);
+  const acquis = ETAPES.filter((e) => e.fait(profil, client)).reduce((t, e) => t + e.poids, 0);
+  return { faites, total: ETAPES.length, pourcent: Math.round((acquis / total) * 100), reste };
 }
 
 /**
@@ -116,16 +134,20 @@ export function aFaire(profil = {}, client = {}, {
       ou: '#/mon-site',
     });
   }
-  // Les avis sont le premier levier de referencement local, et le lien
-  // se saisit une fois pour toutes. Tant qu'il manque, le QR de
-  // l'accueil ne peut pas exister.
-  if (!profil.lien_avis_google) {
-    liste.push({
-      titre: "Activer la demande d'avis",
-      pourquoi: 'Les avis Google font remonter votre fiche dans le coin.',
-      ou: '#/aide',
-    });
-  }
+  /* RETIREE LE 2026-09-10 : << Activer la demande d'avis >>.
+
+     Elle renvoyait vers #/aide pour renseigner `lien_avis_google`.
+     Sauf que ce champ est LU a trois endroits et ECRIT nulle part :
+     aucun ecran ne permet de le saisir. L'entree ne pouvait donc
+     jamais etre validee, et elle serait restee en tete de liste pour
+     toujours.
+
+     C'est le pire cas pour une liste de taches : un client qui voit
+     un point qu'il ne peut pas cocher cesse de croire aux autres.
+     Mieux vaut deux conseils vrais qu'un troisieme decoratif.
+
+     A remettre le jour ou un champ existera pour saisir ce lien —
+     pas avant. */
   if (!profil.contact_telephone) {
     liste.push({
       titre: 'Vos coordonnées',

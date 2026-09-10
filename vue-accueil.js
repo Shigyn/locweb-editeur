@@ -141,7 +141,7 @@ function chiffres(stats, fiche, demandes30, commandes30 = []) {
   if (commandes30.length) {
     grille.append(kpi('demandes', 'Commandes reçues', nombre(commandes30.length), null, null));
   } else {
-    grille.append(kpi('demandes', 'Demandes reçues', nombre(demandes30.length), null, null));
+    grille.append(kpi('demandes', 'Devis demandés', nombre(demandes30.length), null, null));
   }
 
   // L'evenement vient du site (clients/mesure.js). Tant qu'un site n'a

@@ -26,7 +26,7 @@ export async function rendre(page, etat, { charger, oublier, rafraichirPastille 
      pas de << demandes >>, il recoit des commandes — et lui afficher un
      mot qui ne correspond a rien de son metier, c'est lui apprendre a
      ne pas ouvrir la page. */
-  page.append(h('h1', commandes.length && !demandes.length ? 'Commandes' : 'Demandes'));
+  page.append(h('h1', commandes.length && !demandes.length ? 'Commandes' : 'Devis demandés'));
 
   // Ce que le client a demande A LocWeb, avant ce qu'il a recu DE ses
   // visiteurs : quand on vient de commander une campagne, c'est la

@@ -19,7 +19,7 @@ const PAGES = [
   { titre: 'Statistiques', detail: 'Visites, appels, fiche Google', lien: '#/statistiques', motsCles: 'performances visiteurs analytics trafic bilan rapport' },
   { titre: 'Rapport', detail: 'Le bilan du mois, en une page', lien: '#/rapports', motsCles: 'rapport mensuel bilan resume conseil mois' },
   { titre: 'Mon site', detail: 'Modifier les textes et les photos', lien: '#/mon-site', motsCles: 'editeur contenu textes photos horaires publier' },
-  { titre: 'Demandes', detail: 'Devis et contacts recus', lien: '#/demandes', motsCles: 'leads clients messages activite prospects' },
+  { titre: 'Devis demandés', detail: 'Ce que le formulaire du site a recu', lien: '#/demandes', motsCles: 'leads clients messages activite prospects demandes commandes' },
   { titre: 'Publicité', detail: 'Campagnes Google et Meta', lien: '#/publicite', motsCles: 'ads acquisition campagne budget facebook' },
   { titre: 'Mon compte', detail: 'Coordonnees, metier, abonnement', lien: '#/compte', motsCles: 'infos profil telephone email formule prix' },
   { titre: 'Connexions', detail: 'Google Analytics, fiche Google, pixels', lien: '#/compte?onglet=connexions', motsCles: 'parametrage ga4 business ads pixel meta connecter' },

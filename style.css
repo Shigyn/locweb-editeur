@@ -1,3 +1,19 @@
+/* L'ATTRIBUT `hidden` DOIT GAGNER, TOUJOURS.
+
+   La feuille du navigateur declare `[hidden]{display:none}` avec une
+   specificite de (0,0,1,0). N'IMPORTE quelle regle d'auteur qui pose
+   un `display` la bat : `.rail-nav a{display:flex}` suffit. Le
+   resultat est un element qu'on croit masque et qui reste a l'ecran,
+   sans erreur nulle part — `el.hidden = true` semble simplement ne
+   rien faire.
+
+   Ce fichier portait deja CINQ rustines de ce genre, posees une par
+   une au fil des rencontres : .maj-pastille, .cloche-pastille,
+   .notif-panneau, .palette-fond, .avertissement. Constate une sixieme
+   fois le 2026-09-10 sur l'entree du rail et sa pastille. Une regle
+   globale coute une ligne et ferme le sujet. */
+[hidden]{ display: none !important; }
+
 /* ===================================================================
    Espace client LocWeb — feuille unique.
 

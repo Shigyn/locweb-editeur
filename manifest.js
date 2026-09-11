@@ -122,6 +122,7 @@ export const MANIFEST = {
 
   /* ---- Auto Wash 34 (Beziers) ---- */
   hero_surtitre: { label: 'Hero — surtitre', groupe: 'Hero' },
+  hero_surtitre_2: { label: 'Hero — second surtitre', groupe: 'Hero' },
   hero_titre: { label: 'Hero — titre principal', groupe: 'Hero' },
   hero_accroche: { label: 'Hero — accroche', groupe: 'Hero' },
   hero_mots: { label: "Hero — mots qui tournent (separes par des virgules)", groupe: 'Hero' },

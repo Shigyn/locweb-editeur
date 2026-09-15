@@ -505,7 +505,7 @@ async function chargerGbp(zone, periode, clientId) {
             av.repondu
               ? h('span.etat', { 'data-ton': 'bien' }, 'Répondu')
               : h('span.etat', { 'data-ton': 'veille' }, 'Sans réponse')),
-          av.texte ? h('p.avis-texte', av.texte) : null));
+          av.texte ? texteAvis(av.texte) : null));
       });
       corps.append(liste);
     } else {
@@ -613,4 +613,32 @@ function carteVide(titre, texte, action) {
     h('p', { style: { fontWeight: '650', marginBottom: '6px' } }, titre),
     h('p', { style: { color: 'var(--sourdine)', fontSize: '.9rem', maxWidth: '46ch', margin: '0 auto' } }, texte),
     action ? h('div', { style: { marginTop: '18px' } }, action) : null));
+}
+
+/* Google colle sa traduction a l'avis d'origine :
+   « texte (Translated by Google) traduction », ou l'inverse
+   « traduction (Original) texte ». On ne garde que l'avis tel que le
+   client l'a ecrit. */
+function avisOriginal(texte) {
+  const t = String(texte);
+  const original = t.split(/\(Original\)/i);
+  if (original.length > 1) return original[1].trim();
+  return t.split(/\(Translated by Google\)/i)[0].trim();
+}
+
+/* Un avis long mange tout le bloc : trois lignes, puis « Afficher la
+   suite ». Decide sur la longueur plutot qu'en mesurant : le bloc peut
+   etre replie (hauteur 0) au moment ou l'avis est construit. */
+function texteAvis(brut) {
+  const texte = avisOriginal(brut);
+  if (texte.length <= 220) return h('p.avis-texte', texte);
+  const p = h('p.avis-texte.replie', texte);
+  const bouton = h('button.avis-suite', {
+    type: 'button',
+    onclick: () => {
+      const replie = p.classList.toggle('replie');
+      bouton.textContent = replie ? 'Afficher la suite' : 'Réduire';
+    },
+  }, 'Afficher la suite');
+  return h('div', p, bouton);
 }

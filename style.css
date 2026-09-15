@@ -687,6 +687,9 @@ button.entete-avatar{ cursor:pointer; border:0; }
 .avis-note{ color: var(--ambre); font-size:.86rem; letter-spacing:.06em; }
 .avis-tete .etat{ margin-left:auto; }
 .avis-texte{ font-size:.88rem; color: var(--encre-douce); margin-top:6px; line-height:1.55; }
+.avis-texte.replie{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
+.avis-suite{ margin-top:4px; padding:0; background:none; border:0; font:inherit; font-size:.84rem; font-weight:600; color: var(--encre); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+.avis-suite[hidden]{ display:none; }
 
 /* ---------- mon editeur : sections depliables ---------- */
 

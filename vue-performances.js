@@ -97,6 +97,8 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
     return;
   }
 
+  let zoneGbp = null;
+  let zoneSc = null;
   const onglets = h('div.onglets-periode');
   const zone = h('div');
   let periodeActive = '7j';
@@ -108,6 +110,11 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
         periodeActive = p.cle;
         [...onglets.children].forEach((b, i) => { b.className = PERIODES[i].cle === p.cle ? 'onglet actif' : 'onglet'; });
         charger(p);
+        // La fiche et la recherche Google suivent la meme periode que le
+        // site : sans ca, elles restaient sur « 7 jours » quel que soit
+        // l'onglet choisi.
+        if (zoneGbp) chargerGbp(zoneGbp, p.cle, clientId);
+        if (zoneSc) chargerRecherche(zoneSc, p.cle, clientId, etat.profil);
       },
     }, p.libelle));
   });
@@ -311,7 +318,7 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
   // La fiche Google se charge a part : elle a sa propre connexion, sa
   // propre API, et peut echouer sans empecher le reste d'exister.
   if (etat.profil?.acces_google_business) {
-    const zoneGbp = h('div');
+    zoneGbp = h('div');
     page.append(zoneGbp);
     chargerGbp(zoneGbp, periodeActive, clientId);
   }
@@ -321,7 +328,7 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
   // et on n'affiche rien du tout — un encart « indisponible » de plus
   // n'apprendrait rien au client.
   if (etat.profil?.search_console_site) {
-    const zoneSc = h('div');
+    zoneSc = h('div');
     page.append(zoneSc);
     chargerRecherche(zoneSc, periodeActive, clientId, etat.profil);
   }
@@ -338,11 +345,13 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
    Beziers » donne une moyenne de 16 qui ne decrit aucune realite et
    ne se soigne pas. Par requete, chaque ligne dit quoi faire. */
 async function chargerRecherche(hote, periode, clientId, profil) {
+  hote.dataset.periode = periode;
   vider(hote);
 
   let d;
   try {
     d = await D.statsSearchConsole(periode, clientId);
+    if (hote.dataset.periode !== periode) return;
   } catch (e) {
     // Silencieux : ni le client ni Nico n'ont d'action a mener depuis
     // cette page, et un bandeau rouge de plus ferait douter du reste.
@@ -423,6 +432,9 @@ const AIDE_GBP = {
 };
 
 async function chargerGbp(zone, periode, clientId) {
+  // Deux onglets cliques vite : seule la derniere periode demandee
+  // a le droit de s'afficher, sinon les deux blocs s'empilent.
+  zone.dataset.periode = periode;
   vider(zone);
   const attente = blocPliable('Performance de votre fiche Google');
   attente.corps.append(h('div.grille-kpi', ...[0, 1, 2, 3].map(() => h('div.squelette.sq-kpi'))));
@@ -432,6 +444,7 @@ async function chargerGbp(zone, periode, clientId) {
   try {
     r = await D.statsGbp(periode, clientId);
   } catch (e) {
+    if (zone.dataset.periode !== periode) return;
     vider(zone);
     const echec = blocPliable('Performance de votre fiche Google');
     zone.append(echec.bloc);
@@ -462,6 +475,7 @@ async function chargerGbp(zone, periode, clientId) {
     return;
   }
 
+  if (zone.dataset.periode !== periode) return;
   const t = r.totaux || {};
   vider(zone);
   const gbp = blocPliable('Performance de votre fiche Google');
@@ -480,6 +494,12 @@ async function chargerGbp(zone, periode, clientId) {
       etiquette));
   });
   gbp.corps.append(grille);
+  if (r.du && r.au) {
+    const jour = (iso) => new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    gbp.corps.append(h('p.gbp-dates', r.du === r.au
+      ? `Chiffres du ${jour(r.au)} : Google les publie avec quelques jours de retard.`
+      : `Chiffres du ${jour(r.du)} au ${jour(r.au)} : Google les publie avec quelques jours de retard.`));
+  }
 
   /* ---------- avis ---------- */
 

@@ -1495,6 +1495,8 @@ a.champ-lien:hover .champ-lien-icone{ color: var(--encre); }
   border-top: 1px dashed var(--trait);
 }
 .demande-ads-pied select{ width: auto; min-width: 210px; }
+.bt-supprimer{ margin-left: auto; color: var(--alerte); }
+.bt-supprimer:hover{ background: var(--alerte-voile); color: var(--alerte); }
 
 /* ---------- cote client : le suivi de sa demande ---------- */
 

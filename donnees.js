@@ -284,6 +284,11 @@ export async function majCampagne(id, champs) {
   if (error) throw error;
 }
 
+export async function supprimerCampagne(id) {
+  const { error } = await sb.from('campagnes').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export async function listerCampagnes(clientId) {
   const { data, error } = await sb.from('campagnes').select('*').eq('client_id', clientId).order('date_creation', { ascending: false });
   if (error) throw error;

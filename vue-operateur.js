@@ -415,7 +415,26 @@ export async function rendre(page, etat, { oublier } = {}) {
       motsCles,
       h('div.demande-ads-pied',
         h('span.demande-ads-etiq', 'Faire passer à'),
-        choix));
+        choix,
+        h('button.bt.bt-nu.bt-mini.bt-supprimer', {
+          type: 'button',
+          onclick: async () => {
+            const ok = await certain(
+              `Supprimer la campagne "${c.nom}" de ${c.clients?.nom_site || 'ce client'} ? Elle disparaîtra aussi de son espace. Cette action est définitive.`,
+              { titre: 'Supprimer la campagne', action: 'Supprimer', danger: true });
+            if (!ok) return;
+            try { await D.supprimerCampagne(c.id); }
+            catch (err) {
+              console.error('Suppression refusée :', err);
+              souffler('Suppression impossible.', 'alerte');
+              return;
+            }
+            oublier?.('campagnes');
+            souffler('Campagne supprimée.', 'bien');
+            // Redessine l'onglet : les compteurs du haut doivent suivre.
+            dessiner();
+          },
+        }, 'Supprimer')));
   }
 
   function fait(etiquette, valeur) {

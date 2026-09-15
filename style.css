@@ -679,7 +679,8 @@ button.entete-avatar{ cursor:pointer; border:0; }
 .note-etoiles{ color: var(--ambre); font-size:1.05rem; letter-spacing:.08em; }
 .note-compte{ font-size:.84rem; color: var(--sourdine); margin-top:3px; }
 
-.gbp-dates{ margin-top:10px; font-size:.8rem; color: var(--sourdine); }
+.barre-gbp{ margin-top:8px; margin-bottom:12px; }
+.gbp-dates{ margin:10px 0 18px; font-size:.8rem; color: var(--sourdine); }
 .avis-liste{ display:grid; gap:2px; }
 .avis{ padding:14px 0; border-bottom:1px solid var(--trait); }
 .avis:last-child{ border-bottom:0; }

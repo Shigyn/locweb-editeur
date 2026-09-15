@@ -110,10 +110,8 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
         periodeActive = p.cle;
         [...onglets.children].forEach((b, i) => { b.className = PERIODES[i].cle === p.cle ? 'onglet actif' : 'onglet'; });
         charger(p);
-        // La fiche et la recherche Google suivent la meme periode que le
-        // site : sans ca, elles restaient sur « 7 jours » quel que soit
-        // l'onglet choisi.
-        if (zoneGbp) chargerGbp(zoneGbp, p.cle, clientId);
+        // La recherche Google suit la periode du site. La fiche Google a
+        // ses propres onglets, juste au-dessus d'elle.
         if (zoneSc) chargerRecherche(zoneSc, p.cle, clientId, etat.profil);
       },
     }, p.libelle));
@@ -319,8 +317,9 @@ export async function rendre(page, etat, { charger: cache, clientId = null } = {
   // propre API, et peut echouer sans empecher le reste d'exister.
   if (etat.profil?.acces_google_business) {
     zoneGbp = h('div');
-    page.append(zoneGbp);
-    chargerGbp(zoneGbp, periodeActive, clientId);
+    const ongletsGbp = ongletsPeriode('7j', (cle) => chargerGbp(zoneGbp, cle, clientId));
+    page.append(h('div.barre-outils.barre-gbp', ongletsGbp), zoneGbp);
+    chargerGbp(zoneGbp, '7j', clientId);
   }
 
   // Search Console : meme principe, chargement independant. Si la
@@ -420,7 +419,7 @@ const ICONES_GBP = {
 const LIBELLES_GBP = {
   vues: 'Vues de la fiche',
   appels: 'Appels reçus',
-  itineraires: 'Itinéraires demandes',
+  itineraires: 'Itinéraires demandés',
   clics_site: 'Clics vers le site',
 };
 
@@ -546,9 +545,34 @@ function etoiles(note) {
 /* Grande section depliable : les deux blocs (site / fiche Google) font
    chacun une page entiere de contenu. Repliables, on choisit celui qu'on
    veut regarder au lieu de defiler dans les deux. */
-function blocPliable(titre, ouvert = true) {
+/* Les deux grands blocs arrivent fermes : on voit d'un coup d'oeil
+   « site » et « fiche Google », et on ouvre celui qui interesse. Changer
+   de periode reconstruit le bloc ; on se souvient donc de ce que la
+   personne a ouvert, sinon il se refermerait a chaque clic. */
+const BLOCS_OUVERTS = new Set();
+
+function ongletsPeriode(active, surChoix) {
+  const barre = h('div.onglets-periode');
+  PERIODES.forEach((p) => {
+    barre.append(h('button', {
+      class: p.cle === active ? 'onglet actif' : 'onglet',
+      onclick: () => {
+        [...barre.children].forEach((b, i) => { b.className = PERIODES[i].cle === p.cle ? 'onglet actif' : 'onglet'; });
+        surChoix(p.cle);
+      },
+    }, p.libelle));
+  });
+  return barre;
+}
+
+function blocPliable(titre, ouvert = BLOCS_OUVERTS.has(titre)) {
   const corps = h('div.bloc-corps');
-  const bloc = h('details.bloc-pliable', { open: ouvert },
+  const bloc = h('details.bloc-pliable', {
+    open: ouvert,
+    ontoggle: (e) => {
+      if (e.currentTarget.open) BLOCS_OUVERTS.add(titre); else BLOCS_OUVERTS.delete(titre);
+    },
+  },
     h('summary.bloc-tete',
       h('span.bloc-titre', titre),
       h('span.bloc-chevron', { html: '&rsaquo;' })),

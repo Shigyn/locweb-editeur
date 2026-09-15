@@ -581,8 +581,8 @@ export async function rendre(page, etat) {
     function champGbp() {
       return champVerrouille({
         valeur: profil.gbp_location_id,
-        placeholder: 'ex : 16711969773629618707',
-        aide: 'Identifiant de votre fiche Google Business.',
+        placeholder: 'ex : 1234567890123456789',
+        aide: 'Identifiant de votre fiche Google Business. Préférez le choix dans la liste ci-dessus : l’identifiant affiché dans Google n’est pas toujours celui qu’attend l’API.',
         surValidation: async (v) => {
           await D.majProfilTolerant(client.id, { gbp_location_id: v });
           profil.gbp_location_id = v;

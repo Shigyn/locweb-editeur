@@ -129,6 +129,7 @@ export async function rendre(page, etat, { oublier } = {}) {
     const jetons = h('div.op-jetons',
       jeton('Analytics', Boolean(p.acces_ga4), () => ouvrir(c, 'statistiques')),
       jeton('Fiche Google', Boolean(p.acces_google_business), () => ouvrir(c, 'fiche')),
+      jeton('Liaisons Google', Boolean(p.ga4_property_id && p.gbp_location_id), () => ouvrir(c, 'connexions')),
       jeton('Questionnaire', Boolean(p.complete_le), () => ouvrir(c, 'profil')),
       jeton('Éditeur', c.acces_client === 'complet', () => ouvrir(c, 'site')));
 
@@ -280,6 +281,10 @@ export async function rendre(page, etat, { oublier } = {}) {
             bloc?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 600);
         }
+      } else if (quoi === 'connexions') {
+        // Seul endroit ou choisir la propriete et la fiche d'un client.
+        const m = await import('./vue-compte.js');
+        await m.rendre(hote, etatClient, { vueOperateur: true, onglet: 'connexions' });
       } else if (quoi === 'site') {
         const m = await import('./vue-monsite.js');
         // L'historique doit dire que c'est LocWeb qui a publie, pas le

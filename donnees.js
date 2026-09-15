@@ -220,12 +220,15 @@ export async function majDemande(id, statut) {
    fiches d'etablissement, avec ce que Google sait deja de lui
    (telephone, adresse, horaires, categorie). Evite de lui faire
    recopier des identifiants a 20 chiffres. */
-export async function comptesGoogle() {
+/* Reserve a l'operateur (la fonction le verifie) : le compte Google
+   branche peut etre celui de l'agence, qui voit tous les clients. */
+export async function comptesGoogle(clientId = null) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) throw new Error('Session absente.');
   const reponse = await fetch(`${EDGE_FUNCTIONS_URL}/google-comptes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify(clientId ? { client_id: clientId } : {}),
   });
   const donnees = await reponse.json();
   if (!reponse.ok) throw Object.assign(new Error(donnees.error || 'Requête refusée.'), { donnees });

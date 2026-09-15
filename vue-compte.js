@@ -54,14 +54,14 @@ const ONGLETS = [
   { cle: 'connexions', libelle: 'Connexions' },
 ];
 
-export async function rendre(page, etat) {
+export async function rendre(page, etat, { vueOperateur = false, onglet = null } = {}) {
   const { client } = etat;
   const profil = etat.profil || {};
 
   vider(page);
-  page.append(h('h1', 'Mon compte'));
+  page.append(h('h1', vueOperateur ? 'Compte du client' : 'Mon compte'));
 
-  let actif = new URLSearchParams(location.hash.split('?')[1] || '').get('onglet');
+  let actif = onglet || new URLSearchParams(location.hash.split('?')[1] || '').get('onglet');
   if (!ONGLETS.some((o) => o.cle === actif)) actif = 'infos';
 
   const barre = h('div.onglets');
@@ -75,7 +75,10 @@ export async function rendre(page, etat) {
         if (o.cle === actif) return;
         actif = o.cle;
         [...barre.children].forEach((b, i) => b.classList.toggle('actif', ONGLETS[i].cle === actif));
-        history.replaceState(null, '', `${location.pathname}#/compte?onglet=${actif}`);
+        // Depuis le mode operateur, l'adresse reste celle du mode
+        // operateur : la reecrire renverrait sur « Mon compte » au
+        // prochain rechargement.
+        if (!vueOperateur) history.replaceState(null, '', `${location.pathname}#/compte?onglet=${actif}`);
         dessiner();
       },
     }, o.libelle));
@@ -366,16 +369,33 @@ export async function rendre(page, etat) {
        une propriete partagee qui n'apparait pas dans sa liste. */
     const zoneChoix = h('div', { style: { marginTop: '14px' } });
 
-    if (profil.acces_ga4 || profil.acces_google_business) {
-      zoneChoix.append(h('div.squelette', { style: { height: '60px' } }));
-      remplirChoix();
-    } else {
-      zoneChoix.append(champsManuels());
+    /* Qui choisit la propriete et la fiche : LocWeb, jamais le client.
+
+       Le compte Google branche est souvent celui de l'agence, qui voit
+       les statistiques de tous les clients. Constate sur KSM le
+       2026-09-15 : l'ecran lui proposait les fiches de LocWeb. Le client
+       voit donc ce qui est relie, en lecture ; l'operateur choisit (la
+       base refuse de toute facon une liaison posee par un client). */
+    zoneChoix.append(h('div.squelette', { style: { height: '60px' } }));
+    D.suisJeOperateur().then((operateur) => {
+      vider(zoneChoix);
+      if (!operateur) { zoneChoix.append(liaisonsEnLecture()); return; }
+      if (profil.acces_ga4 || profil.acces_google_business) remplirChoix();
+      else zoneChoix.append(champsManuels());
+    }).catch(() => { vider(zoneChoix); zoneChoix.append(liaisonsEnLecture()); });
+
+    function liaisonsEnLecture() {
+      const ligne = (libelle, relie) => h('p.ligne-etat', { 'data-ok': relie ? 'oui' : 'non' },
+        relie ? `${libelle} — reliée` : `${libelle} — LocWeb s'en occupe`);
+      return h('div', { style: { display: 'grid', gap: '4px' } },
+        ligne('Propriété Analytics', profil.ga4_property_id),
+        ligne('Fiche Google Business', profil.gbp_location_id),
+        ligne('Search Console', profil.search_console_site));
     }
 
     async function remplirChoix() {
       let comptes;
-      try { comptes = await D.comptesGoogle(); }
+      try { comptes = await D.comptesGoogle(client.id); }
       catch (err) {
         console.error('Liste des comptes Google indisponible :', err);
         vider(zoneChoix);
@@ -601,7 +621,9 @@ export async function rendre(page, etat) {
       h('div', { style: { display: 'grid', gap: '4px', marginTop: '6px' } },
         ligneEtat('Fiche Google Business', profil.acces_google_business),
         ligneEtat('Google Analytics', profil.acces_ga4)),
-      h('div', { style: { marginTop: '12px' } }, bouton),
+      // Le bouton branche le compte Google de la SESSION en cours : depuis
+      // le mode operateur, il relierait le compte a LocWeb, pas au client.
+      vueOperateur ? null : h('div', { style: { marginTop: '12px' } }, bouton),
       zoneChoix);
   }
 

@@ -55,9 +55,12 @@ const JOURS = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Je
 export async function rendre(page, etat, { charger, parQui = 'client' } = {}) {
   const { client } = etat;
 
-  const [contenu, produits, historique, realisations] = await Promise.all([
+  const [contenu, produits, promos, historique, realisations] = await Promise.all([
     charger('contenu', () => D.lireContenu(client.id)),
     client.acces_client === 'complet' ? charger('produits', () => D.listerProduits(client.id)) : Promise.resolve([]),
+    // donnees.js est importe sans numero de version : pendant les minutes ou le
+    // navigateur garde l'ancien, listerPromos n'existe pas encore.
+    client.acces_client === 'complet' && D.listerPromos ? charger('promos', () => D.listerPromos(client.id)).catch(() => ({ existe: false, promos: [] })) : Promise.resolve({ existe: false, promos: [] }),
     D.listerHistorique(client.id).catch(() => []),
     // Les chantiers ne dependent pas du manifeste : ils existent pour
     // tout client autorise a toucher son site, quel que soit son
@@ -142,6 +145,8 @@ export async function rendre(page, etat, { charger, parQui = 'client' } = {}) {
       page.append(sectionGroupe(client, groupe, lignesTexte, lignesImage, enAttente, majBarre));
     }
     if (client.acces_client === 'complet') {
+      // Seulement pour un site qui sait afficher des promos (KSM, 2026-10-28).
+      if (promos.existe) page.append(sectionPromos(client, promos.promos, produits));
       page.append(sectionProduits(client, produits, etat.profil?.secteur));
     }
     if (chantiersActifs(client, etat.profil)) {
@@ -310,6 +315,97 @@ function champImage(client, ligne, enAttente, majBarre) {
 }
 
 const CHAMPS_SYNC_STRIPE = ['nom', 'prix', 'description', 'disponible'];
+
+/* LES PROMOTIONS (2026-10-28, KSM). A part de « Ma carte » : une promo n'est
+   pas un plat de plus, c'est un plat existant a un autre prix. Le
+   restaurateur choisit le plat, garde ou change le nom, met son prix : la
+   promo arrive dans la rubrique Promotions du site avec les memes choix que
+   le plat d'origine. Plus aucune promo = plus de rubrique sur le site. */
+function sectionPromos(client, promos, carte) {
+  const liste = h('div');
+  const euros = (n) => Number(n).toFixed(2).replace('.', ',') + ' €';
+  const plats = carte.filter((p) => p.categorie && p.categorie !== 'Suppléments');
+
+  function dessiner() {
+    vider(liste);
+    if (!promos.length) {
+      liste.append(h('p.vide', 'Aucune promotion en ce moment : la rubrique Promotions est masquée sur votre site.'));
+      return;
+    }
+    promos.sort((a, b) => Number(a.prix) - Number(b.prix));
+    promos.forEach((p) => {
+      const nom = h('input', { type: 'text', value: p.nom ?? '' });
+      const prix = h('input', { type: 'number', step: '0.01', min: '0', value: p.prix ?? '' });
+      const sauver = async (champ, valeur) => {
+        try { await D.majProduit(p.id, { [champ]: valeur }); } catch { souffler('Enregistrement impossible.', 'alerte'); return; }
+        p[champ] = valeur;
+        souffler('Enregistré.', 'bien');
+        await D.syncProduitStripe(p.id);
+      };
+      nom.addEventListener('change', () => { if (nom.value.trim()) sauver('nom', nom.value.trim()); });
+      prix.addEventListener('change', () => { if (Number(prix.value) > 0) sauver('prix', Number(prix.value)); });
+      liste.append(h('div.produit',
+        h('div.produit-grille',
+          h('label.champ', h('span', 'Nom affiché'), nom),
+          h('label.champ', h('span', 'Prix de la promo (EUR)'), prix)),
+        h('div.produit-bas',
+          h('span', { style: { color: 'var(--sourdine)' } }, p.disponible === false ? 'Épuisée (comptoir)' : 'En ligne sur le site'),
+          h('button.bt.bt-nu', { onclick: async () => {
+            if (!await certain(`« ${p.nom} » disparaîtra de la rubrique Promotions de votre site.`,
+              { titre: 'Retirer cette promotion ?', action: 'Retirer', danger: true })) return;
+            try { await D.retirerPromo(p.id); } catch { souffler('Impossible de retirer la promotion.', 'alerte'); return; }
+            promos.splice(promos.indexOf(p), 1);
+            dessiner();
+            souffler('Promotion retirée.', 'bien');
+          } }, 'Retirer'))));
+    });
+  }
+  dessiner();
+
+  // Ajouter : un plat de la carte (par rubrique), son nom, son prix de promo.
+  const choix = h('select', h('option', { value: '' }, 'Choisir un plat de la carte…'));
+  const rubriques = new Map();
+  plats.forEach((p) => { if (!rubriques.has(p.categorie)) rubriques.set(p.categorie, []); rubriques.get(p.categorie).push(p); });
+  rubriques.forEach((lot, cat) => choix.append(h('optgroup', { label: cat },
+    ...lot.sort((a, b) => String(a.nom).localeCompare(String(b.nom), 'fr')).map((p) => h('option', { value: p.id }, `${p.nom} — ${euros(p.prix)}`)))));
+  const nouveauNom = h('input', { type: 'text', placeholder: 'ex. Le Fleurie + frites' });
+  const nouveauPrix = h('input', { type: 'number', step: '0.01', min: '0', placeholder: 'ex. 9.90' });
+  choix.addEventListener('change', () => {
+    const p = plats.find((x) => x.id === choix.value);
+    if (!p) return;
+    nouveauNom.value = p.nom;
+    nouveauPrix.value = p.prix;
+    nouveauPrix.focus();
+  });
+  const ajouter = h('button.bt.bt-plein', { onclick: async () => {
+    const plat = plats.find((x) => x.id === choix.value);
+    const nom = nouveauNom.value.trim(), prix = Number(nouveauPrix.value);
+    if (!plat) { souffler('Choisissez un plat de la carte.', 'alerte'); return; }
+    if (!nom || !(prix > 0)) { souffler('Indiquez le nom et le prix de la promotion.', 'alerte'); return; }
+    ajouter.disabled = true;
+    try {
+      const p = await D.creerPromo(client.id, plat, nom, prix);
+      promos.push(p);
+      choix.value = ''; nouveauNom.value = ''; nouveauPrix.value = '';
+      dessiner();
+      souffler('Promotion en ligne sur votre site.', 'bien');
+      await D.syncProduitStripe(p.id);
+    } catch { souffler('Impossible d’ajouter la promotion.', 'alerte'); }
+    ajouter.disabled = false;
+  } }, '+ Ajouter la promotion');
+
+  return h('div.section',
+    h('div.section-tete', h('h2', 'Promotions')),
+    h('div.section-corps', { style: { paddingTop: '14px' } },
+      h('p', { style: { color: 'var(--sourdine)', marginTop: 0 } }, 'Choisissez un plat de votre carte et son prix de promo : il apparaît dans la rubrique Promotions de votre site, avec les mêmes choix que le plat d’origine.'),
+      liste,
+      h('div.produit',
+        h('div.produit-grille',
+          h('label.champ.produit-desc', h('span', 'Plat de la carte'), choix),
+          h('label.champ', h('span', 'Nom affiché'), nouveauNom),
+          h('label.champ', h('span', 'Prix de la promo (EUR)'), nouveauPrix)),
+        h('div.produit-bas', ajouter))));
+}
 
 function sectionProduits(client, produits, secteur) {
   const corps = h('div.section-corps', { style: { paddingTop: '14px' } });

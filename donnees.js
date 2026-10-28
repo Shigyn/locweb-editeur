@@ -142,11 +142,47 @@ export async function listerHistorique(clientId, limite = 20) {
 
 /* ---------- produits ---------- */
 
+/* Les promotions (2026-10-28) ont leur propre section : elles n'apparaissent
+   pas dans « Ma carte », ou on les modifierait comme des plats ordinaires. */
+const PROMO = 'Promotions';
+const PROMO_RETIREE = 'Promotions retirées';
+
 export async function listerProduits(clientId) {
   const { data, error } = await sb.from('produits')
-    .select('id, nom, prix, description, image_url, stock, categorie, disponible').eq('client_id', clientId);
+    .select('id, nom, prix, description, image_url, stock, categorie, disponible').eq('client_id', clientId)
+    .or(`categorie.is.null,categorie.not.in.("${PROMO}","${PROMO_RETIREE}")`);
   if (error) throw error;
   return data || [];
+}
+
+/* Une promo = un plat de la carte avec un autre prix (et un nom a soi). Elle
+   garde son plat d'origine (promo_de) : le site lui reprend les memes choix.
+   `existe` : le site du client sait afficher des promos (il en a deja eu). */
+export async function listerPromos(clientId) {
+  const { data, error } = await sb.from('produits')
+    .select('id, nom, prix, image_url, disponible, categorie, promo_de').eq('client_id', clientId)
+    .in('categorie', [PROMO, PROMO_RETIREE]);
+  if (error) throw error;
+  const l = data || [];
+  return { existe: l.length > 0, promos: l.filter((p) => p.categorie === PROMO).sort((a, b) => Number(a.prix) - Number(b.prix)) };
+}
+
+export async function creerPromo(clientId, plat, nom, prix) {
+  const { data, error } = await sb.from('produits').insert({
+    client_id: clientId, nom, prix, description: plat.description, image_url: plat.image_url,
+    categorie: PROMO, disponible: true, promo_de: plat.id,
+  }).select('id, nom, prix, image_url, disponible, categorie, promo_de').single();
+  if (error) throw error;
+  return data;
+}
+
+/* Une promo deja commandee ne peut pas etre effacee (les commandes passees la
+   referencent) : elle part alors dans « Promotions retirees », hors du site. */
+export async function retirerPromo(id) {
+  const { error } = await sb.from('produits').delete().eq('id', id);
+  if (!error) return;
+  const { error: e2 } = await sb.from('produits').update({ categorie: PROMO_RETIREE, disponible: false }).eq('id', id);
+  if (e2) throw e2;
 }
 
 export async function creerProduit(clientId) {

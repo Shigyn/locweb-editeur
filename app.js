@@ -215,13 +215,14 @@ const page = $('#page');
    mais ses `import(v('./vue-xxx.js'))` pointent sur une URL sans version,
    que le navigateur sert depuis son cache. On voyait donc du code neuf
    appeler des vues perimees. */
-export const VERSION = '87';
+export const VERSION = '88';
 const v = (f) => `${f}?v=${VERSION}`;
 
 const VUES = {
   accueil:      () => import(v('./vue-accueil.js')),
   statistiques: () => import(v('./vue-performances.js')),
   'mon-site':   () => import(v('./vue-monsite.js')),
+  promotions:   () => import(v('./vue-promotions.js')),
   rapports:     () => import(v('./vue-rapports.js')),
   demandes:     () => import(v('./vue-activite.js')),
   publicite:    () => import(v('./vue-acquisition.js')),
@@ -311,6 +312,12 @@ export async function rafraichirPastille() {
     // L'entree entiere s'efface, pastille comprise.
     const entree = document.querySelector('a[data-route="demandes"]');
     if (entree) entree.hidden = resto;
+
+    /* L'onglet Promotions n'existe que pour un site qui sait les afficher :
+       on le reconnait a ce qu'il a deja eu une promo (KSM, 2026-10-28). */
+    const promos = carte && D.listerPromos ? await charger('promos', () => D.listerPromos(etat.client.id)).catch(() => null) : null;
+    const ongletPromos = document.querySelector('a[data-route="promotions"]');
+    if (ongletPromos) ongletPromos.hidden = !(promos && promos.existe);
 
     const el = $('#pastille-activite');
     const n = resto ? 0 : demandes.filter((d) => (d.statut || 'nouvelle') === 'nouvelle').length;

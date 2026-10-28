@@ -1861,3 +1861,26 @@ html.dans-application .entete-droite{ padding-right: 38px; }
    droite. */
 .sc-table .sc-num{ text-align: right; font-variant-numeric: tabular-nums; color: var(--encre-douce); white-space: nowrap; }
 .sc-note{ margin-top: 12px; font-size: .8rem; color: var(--sourdine); max-width: 68ch; }
+
+/* ---------- Promotions (2026-10-28) : une ligne par plat en promo ---------- */
+.promo-ligne{ display:grid; grid-template-columns: 1fr 150px auto; gap:14px; align-items:center;
+  padding:14px 16px; border:1px solid var(--trait); border-radius: var(--r); background: var(--surface-creux); margin-bottom:10px; }
+.promo-nom{ display:grid; gap:2px; min-width:0; }
+.promo-nom b{ font-weight:600; }
+.promo-nom span{ color: var(--sourdine); font-size:.86rem; }
+.promo-prix{ display:grid; gap:4px; font-size:.8rem; color: var(--sourdine); }
+.promo-actions{ display:flex; gap:8px; justify-content:flex-end; }
+.promo-nouvelle{ border-color: var(--ambre); background: var(--ambre-voile); }
+.promo-modale{ max-height: min(80vh, 720px); display:flex; flex-direction:column; }
+.promo-choix{ overflow-y:auto; margin-top:12px; padding-right:4px; }
+.promo-rubrique{ margin:16px 0 8px; font-size:.78rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color: var(--sourdine); }
+.promo-grille{ display:grid; gap:8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); }
+.promo-plat{ display:grid; gap:2px; text-align:left; padding:10px 12px; border:1px solid var(--trait-fort); border-radius: var(--r-s);
+  background: var(--surface); color: var(--encre); font: inherit; cursor:pointer; }
+.promo-plat:hover, .promo-plat:focus-visible{ border-color: var(--encre); }
+.promo-plat b{ font-weight:600; font-size:.92rem; }
+.promo-plat span{ color: var(--sourdine); font-size:.82rem; }
+@media (max-width: 640px){
+  .promo-ligne{ grid-template-columns: 1fr; }
+  .promo-actions{ justify-content:flex-start; }
+}

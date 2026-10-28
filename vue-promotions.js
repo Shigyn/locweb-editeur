@@ -24,7 +24,7 @@ export async function rendre(page, etat, { charger } = {}) {
   vider(page);
   page.append(h('h1', 'Promotions'));
   page.append(h('p', { style: { color: 'var(--sourdine)', margin: '0 0 18px' } },
-    'Les plats en promotion apparaissent dans la rubrique Promotions de votre site, avec les mêmes choix que le plat d’origine. Seul le prix change.'));
+    'Les promotions apparaissent dans la rubrique Promotions de votre site. Un plat de la carte garde les mêmes choix, seul le prix change. Vous pouvez aussi ajouter un produit qui n’est pas sur la carte.'));
 
   const liste = h('div.promos-liste');
   let brouillon = null; // le plat choisi dans la fenetre, en attente de son prix
@@ -50,6 +50,47 @@ export async function rendre(page, etat, { charger } = {}) {
       h('div.promo-nom', h('b', plat.nom), h('span', `Prix normal : ${euros(plat.prix)}`)),
       h('label.promo-prix', h('span', 'Prix promo (€)'), prix),
       h('div.promo-actions', valider, h('button.bt.bt-nu', { onclick: () => { brouillon = null; dessiner(); } }, 'Annuler')));
+  }
+
+  /* Un produit qui n'est PAS sur la carte (2026-10-28) : nom, description,
+     photo et prix a la main. Sans plat d'origine, le site lui propose
+     seulement « Retirer un ingredient » (lu dans la description), comme les
+     promos de la semaine du burger. */
+  function ligneNouveau() {
+    const nom = h('input', { type: 'text', placeholder: 'ex. Le burger du mois + frites' });
+    const desc = h('textarea', { rows: 2, placeholder: 'Ce qu’il y a dedans : steak, cheddar, salade…' });
+    const prix = h('input', { type: 'number', step: '0.01', min: '0', placeholder: 'Prix' });
+    const fichier = h('input', { type: 'file', accept: 'image/*' });
+    const apercu = h('img', { alt: '', hidden: true, style: { width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' } });
+    let photo = null;
+    fichier.addEventListener('change', async () => {
+      const f = fichier.files[0];
+      if (!f) return;
+      try { photo = await D.uploaderImage(client.id, f); } catch { souffler("Erreur lors de l'envoi de la photo.", 'alerte'); return; }
+      apercu.src = photo; apercu.hidden = false;
+    });
+    const valider = h('button.bt.bt-vif', { onclick: async () => {
+      const n = nom.value.trim(), v = Number(prix.value);
+      if (!n) { souffler('Indiquez le nom du produit.', 'alerte'); nom.focus(); return; }
+      if (!(v > 0)) { souffler('Indiquez le prix.', 'alerte'); prix.focus(); return; }
+      valider.disabled = true;
+      try {
+        const p = await D.creerPromo(client.id, { id: null, description: desc.value.trim(), image_url: photo }, n, v);
+        promos.push(p);
+        brouillon = null;
+        dessiner();
+        souffler('Promotion en ligne sur votre site.', 'bien');
+        D.syncProduitStripe(p.id);
+      } catch { valider.disabled = false; souffler('Impossible d’ajouter la promotion.', 'alerte'); }
+    } }, 'Mettre en promo');
+    setTimeout(() => nom.focus(), 0);
+    return h('div.produit.promo-nouvelle',
+      h('div.produit-tete', apercu, h('label.entree-fichier', 'Ajouter une photo', fichier)),
+      h('div.produit-grille',
+        h('label.champ', h('span', 'Nom'), nom),
+        h('label.champ', h('span', 'Prix (EUR)'), prix),
+        h('label.champ.produit-desc', h('span', 'Description'), desc)),
+      h('div.produit-bas', valider, h('button.bt.bt-nu', { onclick: () => { brouillon = null; dessiner(); } }, 'Annuler')));
   }
 
   function lignePromo(p) {
@@ -79,7 +120,8 @@ export async function rendre(page, etat, { charger } = {}) {
 
   function dessiner() {
     vider(liste);
-    if (brouillon) liste.append(ligneBrouillon(brouillon));
+    if (brouillon === 'nouveau') liste.append(ligneNouveau());
+    else if (brouillon) liste.append(ligneBrouillon(brouillon));
     promos.sort((a, b) => Number(a.prix) - Number(b.prix)).forEach((p) => liste.append(lignePromo(p)));
     if (!brouillon && !promos.length) liste.append(h('p.vide', 'Aucune promotion en ce moment : la rubrique Promotions est masquée sur votre site.'));
   }
@@ -100,6 +142,8 @@ export async function rendre(page, etat, { charger } = {}) {
     const fond = h('div.fond-modale', { onclick: (e) => { if (e.target === fond) fermer(); } },
       h('div.modale.modale-large.promo-modale', { role: 'dialog', 'aria-modal': 'true' },
         h('p.modale-titre', 'Quel plat mettre en promo ?'),
+        h('button.promo-plat.promo-hors-carte', { type: 'button', style: { marginTop: '12px' }, onclick: () => { fermer(); brouillon = 'nouveau'; dessiner(); } },
+          h('b', '+ Un produit qui n’est pas sur la carte'), h('span', 'Nom, description, photo et prix à la main')),
         corps,
         h('div.modale-pied', h('button.bt.bt-plein', { onclick: fermer }, 'Annuler'))));
     document.body.append(fond);

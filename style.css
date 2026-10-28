@@ -1884,3 +1884,4 @@ html.dans-application .entete-droite{ padding-right: 38px; }
   .promo-ligne{ grid-template-columns: 1fr; }
   .promo-actions{ justify-content:flex-start; }
 }
+.promo-hors-carte{ width:100%; border-style:dashed; background: var(--surface-creux); }
